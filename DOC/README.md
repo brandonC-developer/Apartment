@@ -6,8 +6,8 @@
 
 | Fase | Carpeta | Documento vigente | Estado |
 |---|---|---|---|
-| 1. Especificación de requisitos (ERS) | `fase-1-ers/` | `ERS_SGA_001_v1.5_borrador.md` | Borrador; pendiente de validación legal y aprobación |
-| 2. Arquitectura de software | `fase-2-arquitectura/` | `DAS_SGA_001_v0.4_borrador.md` | Borrador; depende de la ERS |
+| 1. Especificación de requisitos (ERS) | `fase-1-ers/` | `ERS_SGA_001_v1.6_borrador.md` | Borrador; pendiente de validación legal y aprobación |
+| 2. Arquitectura de software | `fase-2-arquitectura/` | `DAS_SGA_001_v0.5_borrador.md` | Borrador; depende de la ERS |
 | 3. Diseño técnico | `fase-3-diseno-tecnico/` | — | No iniciada |
 | 4. Estrategia y plan de pruebas | `fase-4-pruebas/` | — | No iniciada |
 | 5. Plan de implementación | `fase-5-implementacion/` | — | No iniciada |
@@ -33,6 +33,7 @@ Carpetas transversales:
 |---|---|---|
 | 2026-10-14 | `actualizaciones/2026-10-14_ERS-v1.4_DAS-v0.3/` | ERS v1.4 y DAS v0.3 |
 | 2026-10-17 | `actualizaciones/2026-10-17_ERS-v1.5_DAS-v0.4/` | ERS v1.5 y DAS v0.4; obligaciones legales; revisión de coherencia |
+| 2026-10-17 (b) | `actualizaciones/2026-10-17b_ERS-v1.6_DAS-v0.5/` | ERS v1.6 y DAS v0.5; cierre de DP-22, DP-24 y DP-25 |
 
 ## Pendiente de recomendar
 

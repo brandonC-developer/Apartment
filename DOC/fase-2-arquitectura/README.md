@@ -4,10 +4,11 @@
 
 | Versión | Archivo | Estado |
 |---|---|---|
-| 0.3 | `DAS_SGA_001_v0.3_borrador_actualizado.md` | Reemplazada por la 0.4 |
-| **0.4** | `DAS_SGA_001_v0.4_borrador.md` | **Vigente** (borrador, no aprobado) |
+| 0.3 | `DAS_SGA_001_v0.3_borrador_actualizado.md` | Reemplazada |
+| 0.4 | `DAS_SGA_001_v0.4_borrador.md` | Reemplazada por la 0.5 |
+| **0.5** | `DAS_SGA_001_v0.5_borrador.md` | **Vigente** (borrador, no aprobado) |
 
-**Depende de:** `../fase-1-ers/ERS_SGA_001_v1.5_borrador.md`.
+**Depende de:** `../fase-1-ers/ERS_SGA_001_v1.6_borrador.md`.
 
 **Pendiente de la evaluación metodológica:** añadir al DAS una sección de restricciones, un árbol de requisitos de calidad y un glosario (ver `../metodologia/EVALUACION_METODOLOGIA_v1.md`, sección 5).
 
