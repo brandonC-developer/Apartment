@@ -1,0 +1,219 @@
+psql:prueba_modelo_v0.2_postgres.sql:5: NOTICE:  database "sga_prueba" does not exist, skipping
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+=== H11: huecos con secuencia ===
+ numero_consumido_por_el_intento_fallido_anterior 
+--------------------------------------------------
+                                                4
+(1 row)
+
+ ultimo_comprobante_real 
+-------------------------
+                       2
+(1 row)
+
+ dentro_de_transaccion_que_se_revierte 
+---------------------------------------
+                                     1
+(1 row)
+
+ tras_rollback_sigue_en_1 
+--------------------------
+                        1
+(1 row)
+
+=== RESULTADOS ===
+   r   |                                       prueba                                       |                                detalle                                 
+-------+------------------------------------------------------------------------------------+------------------------------------------------------------------------
+ OK    | Estado vencida (hoy > fecha limite 2026-01-17)                                     | obtenido=vencida esperado=vencida
+ OK    | H5 empate CRC 0.5 a entero                                                         | obtenido=1 esperado=1
+ OK    | H5 empate USD 1.005 a 2 decimales                                                  | obtenido=1.01 esperado=1.01
+ OK    | Importe vigente tras correccion valida                                             | obtenido=200000.00 esperado=200000.00
+ OK    | R1 periodo regular duplicado                                                       | duplicate key value violates unique constraint "r1_regular"
+ OK    | R1 segunda apertura                                                                | duplicate key value violates unique constraint "r1_apertura"
+ OK    | R12 DELETE de movimiento                                                           | R12: movimiento es inmutable
+ OK    | R12 UPDATE de ajuste                                                               | R12: ajuste_obligacion es inmutable
+ OK    | R12 UPDATE de movimiento                                                           | R12: movimiento es inmutable
+ OK    | R13 ajuste de cero                                                                 | new row for relation "ajuste_obligacion" violates check constraint "aj
+ OK    | R13 correccion que deja el importe bajo lo abonado (100000 abonado, delta -250000) | R6/R13: importe vigente 50000.00 por debajo de lo abonado 100000.00
+ OK    | R13 correccion sin motivo                                                          | new row for relation "ajuste_obligacion" violates check constraint "aj
+ OK    | R15 mismo envio repetido (misma clave_solicitud)                                   | duplicate key value violates unique constraint "movimiento_clave_solic
+ OK    | R15 un solo abono de 1000 tras el reintento                                        | obtenido=1 esperado=1
+ OK    | R2 contiguo sin compartir dia es valido                                            | insertado
+ OK    | R2 contrato abierto sobre uno existente                                            | conflicting key value violates exclusion constraint "contrato_propieda
+ OK    | R2 solape de un dia compartido                                                     | conflicting key value violates exclusion constraint "contrato_propieda
+ OK    | R3 dia vencimiento 32                                                              | new row for relation "condicion_contrato" violates check constraint "c
+ OK    | R3 monto cero                                                                      | new row for relation "condicion_contrato" violates check constraint "c
+ OK    | R4 movimiento con dos destinos                                                     | new row for relation "movimiento" violates check constraint "movimient
+ OK    | R4 movimiento sin destino                                                          | new row for relation "movimiento" violates check constraint "movimient
+ OK    | R4 reversion sin motivo                                                            | new row for relation "movimiento" violates check constraint "movimient
+ OK    | R5 segunda reversion del mismo abono                                               | duplicate key value violates unique constraint "r5_una_reversion"
+ OK    | R6 sobrepago (abono de 200000 con saldo 150000)                                    | R6/R13: importe vigente 300000.00 por debajo de lo abonado 350000.00
+ OK    | R7 dos comprobantes del mismo movimiento                                           | duplicate key value violates unique constraint "comprobante_movimiento
+ OK    | R7 numeros consecutivos                                                            | obtenido=1,2 esperado=1,2
+ OK    | RN-12 dias cobrables 10 a 20 ene inclusive                                         | obtenido=11 esperado=11
+ OK    | RN-12 dias del periodo 10-ene a 9-feb inclusive                                    | obtenido=31 esperado=31
+ OK    | RN-12 prorrateo fin 20-ene en periodo 10-ene a 9-feb (11 dias de 31)               | obtenido=106452 esperado=106452
+ OK    | Saldo tras anular el abono de 50000                                                | obtenido=200000.00 esperado=200000.00
+ OK    | Saldo tras correccion valida                                                       | obtenido=100000.00 esperado=100000.00
+ OK    | Saldo tras dos abonos                                                              | obtenido=150000.00 esperado=150000.00
+(32 rows)
+
+ ok | fallas 
+----+--------
+ 32 |      0
+(1 row)
+

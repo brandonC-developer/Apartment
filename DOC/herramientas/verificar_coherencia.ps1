@@ -25,9 +25,11 @@ function Get-UltimaVersion([string]$carpeta, [string]$prefijo) {
 
 $ers = Get-UltimaVersion 'fase-1-ers' 'ERS_SGA_001'
 $das = Get-UltimaVersion 'fase-2-arquitectura' 'DAS_SGA_001'
+$mdd = Get-UltimaVersion 'fase-3-diseno-tecnico' 'MODELO_DATOS_SGA_001'
 if (-not $ers -or -not $das) { Write-Output 'ERROR: no se encontro la ERS o el DAS.'; exit 1 }
 Write-Output "ERS: $($ers.Name)"
 Write-Output "DAS: $($das.Name)"
+if ($mdd) { Write-Output "MDD: $($mdd.Name) (solo se comprueban sus citas)" }
 
 $archivos = @($ers, $das)
 $texto = @{}
@@ -43,6 +45,11 @@ foreach ($p in $prefijos) {
             if ($linea -match "^(\*\*|\| |### )$p-(\d+)\b") {
                 [void]$defs.Add("$p-$($Matches[2])")
             }
+            foreach ($m in [regex]::Matches($linea, "(?<![A-Z])$p-(\d+)")) { [void]$refs.Add($m.Value) }
+        }
+    }
+    if ($mdd) {
+        foreach ($linea in (Get-Content -Path $mdd.FullName -Encoding UTF8)) {
             foreach ($m in [regex]::Matches($linea, "(?<![A-Z])$p-(\d+)")) { [void]$refs.Add($m.Value) }
         }
     }

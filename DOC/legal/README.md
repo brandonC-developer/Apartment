@@ -2,7 +2,8 @@
 
 | Archivo | Contenido | Estado |
 |---|---|---|
-| `RESUMEN_PARA_ABOGADO_SGA_v1.md` | Preguntas para el abogado sobre la Ley 7527 y la Ley 8968 | Preparado; no enviado |
+| `RESUMEN_PARA_ABOGADO_SGA_v1.md` | Versión anterior | Reemplazado por la v2 |
+| `RESUMEN_PARA_ABOGADO_SGA_v2.md` | Preguntas para el abogado sobre la Ley 7527, la Ley 8968 y su reglamento (B8 a B10 nuevas) | Preparado; no enviado |
 
 Los dictámenes recibidos se guardan aquí con la fecha y el nombre del profesional, y se enlazan desde el `CAMBIOS.md` de la actualización que los incorpore.
 
