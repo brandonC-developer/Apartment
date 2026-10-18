@@ -1,5 +1,7 @@
 # Evaluación de la metodología de seis fases
 
+> **Nota de actualización (17-oct-2026, QA):** esta evaluación es de la fecha indicada y no se reescribe. Desde entonces, el DAS v0.6 incorporó la sección de restricciones, el árbol de calidad y el glosario (sección 5 y ajuste 1 quedan atendidos), y el modelo de datos de la fase 3 se inició con una prueba en PostgreSQL. Lo que dice sobre "DAS v0.4" se refiere a esa versión.
+
 **Fecha:** 17 de octubre de 2026
 **Pregunta:** ¿Es correcta, según buenas prácticas, la secuencia ERS → Arquitectura → Diseño técnico → Pruebas → Implementación → Despliegue y operación?
 

@@ -17,7 +17,7 @@ Este borrador incorpora el impacto arquitectónico de ERS-SGA-001 v1.8 (la v0.7 
 |---|---|
 | Propósito | Describir la estructura propuesta, responsabilidades, interacciones, riesgos y decisiones arquitectónicas. |
 | Estado | Borrador sujeto a validación y aprobación. |
-| Historial | v0.1 primera propuesta; v0.2 depósitos, prorrateo, privacidad e internacionalización; v0.3 abonos de alquiler, períodos contractuales, fechas retroactivas y reglas de actualización; **v0.4 modelo de movimientos con saldos derivados, estados derivados, procesos programados idempotentes, comprobantes, protección de datos personales (consentimiento, derechos del titular, retención), autenticación multifactor, zona horaria única y decisiones pendientes unificadas con la ERS.** v0.5 cierra DP-22, DP-24 y DP-25: el reajuste registra el tope digitado y su fuente, el vencimiento es configurable con el día de inicio por defecto y el saldo de apertura incluye todos los períodos iniciados. **v0.7 cierra DP-26 (hora local más zona), fija la serie global de comprobantes como decisión provisional (ADR-018, DP-20) y añade el ADR-021 (incidentes y documentación de seguridad).** v0.6 cierra DP-07 (respaldo) y DP-08 (VPS administrado por el solicitante), difiere DP-04, añade restricciones RE-01 a RE-11, árbol de calidad y glosario, y adopta ADR-014 a ADR-020 a partir del modelo de datos (condiciones del contrato, saldo de apertura como obligación, ajustes inmutables, auditoría sin valores personales, serie global de comprobantes, Argon2id, idempotencia por clave de solicitud).** |
+| Historial | v0.1 primera propuesta; v0.2 depósitos, prorrateo, privacidad e internacionalización; v0.3 abonos de alquiler, períodos contractuales, fechas retroactivas y reglas de actualización; **v0.4 modelo de movimientos con saldos derivados, estados derivados, procesos programados idempotentes, comprobantes, protección de datos personales (consentimiento, derechos del titular, retención), autenticación multifactor, zona horaria única y decisiones pendientes unificadas con la ERS.** v0.5 cierra DP-22, DP-24 y DP-25: el reajuste registra el tope digitado y su fuente, el vencimiento es configurable con el día de inicio por defecto y el saldo de apertura incluye todos los períodos iniciados. **v0.7 cierra DP-26 (hora local más zona), fija la serie global de comprobantes como decisión provisional (ADR-018, DP-20) y añade el ADR-021 (incidentes y documentación de seguridad).** v0.6 cierra DP-07 (respaldo) y DP-08 (VPS administrado por el solicitante), difiere DP-04, añade restricciones RE-01 a RE-11, árbol de calidad y glosario, y adopta ADR-014 a ADR-020 a partir del modelo de datos (condiciones del contrato, saldo de apertura como obligación, ajustes inmutables, auditoría sin valores personales, serie global de comprobantes, Argon2id, idempotencia por clave de solicitud).** Correcciones de QA del 17-oct-2026: módulo y entidad de incidentes en las secciones 5, 6 y 8 (ver actualización 2026-10-17e). |
 
 ## 1. Propósito y alcance
 
@@ -147,7 +147,7 @@ Módulos lógicos:
 5. Depósitos de garantía.
 6. Calendario y consultas.
 7. Notificaciones y configuración regional.
-8. Protección de datos: solicitudes del titular y retención.
+8. Protección de datos: solicitudes del titular, retención e incidentes de seguridad.
 9. Autenticación y sesiones.
 10. Auditoría y operación.
 
@@ -194,7 +194,7 @@ flowchart TB
 | Persistencia | Impone relaciones, unicidad y consistencia transaccional. |
 | Documentos | Verifica autorización y registra acceso antes de entregar un archivo; evita URL pública permanente. |
 | Notificaciones | Programa avisos, registra intentos y resultados; no cambia estados financieros. |
-| Protección de datos | Registra consentimientos y solicitudes del titular con su plazo; ejecuta retención y desasociación. |
+| Protección de datos | Registra consentimientos y solicitudes del titular con su plazo; ejecuta retención y desasociación; registra incidentes de seguridad con su fecha límite de aviso (ADR-021). |
 | Autenticación | Segundo factor, códigos de recuperación, sesión corta, notificación de recuperación. |
 | Auditoría | Registra actor, fecha, operación y cambios relevantes sin almacenar secretos ni imágenes. |
 
@@ -276,6 +276,7 @@ con ambos extremos inclusivos, redondeo único al final a la unidad entera (CRC)
 | Solicitud del titular | Inquilino, tipo, recepción, fecha límite, resolución. |
 | Auditoría | Actor, entidad, acción, fecha, campos modificados y valores anteriores y nuevos solo de campos no personales. |
 | Ejecución de proceso | Fecha local, inicio, fin, resultado y detalle; permite saber qué días corrió el proceso diario. |
+| Incidente de seguridad | Fechas de ocurrencia y conocimiento, naturaleza, datos comprometidos (descripción), acciones, fecha límite de aviso, estado y avisos emitidos (destinatario, fecha, contenido mínimo). |
 | Registro de acceso a documentos | Actor, inquilino, fecha/hora, tipo de acceso. |
 
 Invariantes propuestos:
@@ -394,7 +395,7 @@ Con un VPS administrado por el solicitante (DP-08), el respaldo diario debe sali
 ### ADR-002 — Persistencia relacional
 - **Estado:** Propuesto; motor pendiente.
 - **Justificación:** relaciones, transacciones, unicidad contrato-período, contador de comprobantes e integridad de movimientos.
-- **Evidencia:** una prueba desechable en PostgreSQL 18.4 (17-oct-2026, 32 de 32 comprobaciones) mostró que las restricciones del modelo MDD-SGA-001 v0.2 son expresables, incluida la exclusión de contratos solapados ([documentación de PostgreSQL](https://www.postgresql.org/docs/current/rangetypes.html)). No es una elección de motor ni cubre concurrencia real.
+- **Evidencia:** una prueba desechable en PostgreSQL 18.4 (17-oct-2026, 32 de 32 comprobaciones) mostró que las restricciones del modelo MDD-SGA-001 v0.2 (vigente en ese momento; la v0.3 solo cambia la hora de las notificaciones y añade incidentes) son expresables, incluida la exclusión de contratos solapados ([documentación de PostgreSQL](https://www.postgresql.org/docs/current/rangetypes.html)). No es una elección de motor ni cubre concurrencia real.
 - **Pendiente:** motor, migraciones y respaldos.
 
 ### ADR-003 — Documentos privados

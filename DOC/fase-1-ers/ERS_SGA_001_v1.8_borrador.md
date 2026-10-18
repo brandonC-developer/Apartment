@@ -37,7 +37,7 @@
 | **1.5** | **Período por aniversario; prorrateo limitado al último período; reajuste distinto de corrección; días de gracia; estados derivados y estado `anulada`; movimientos con anulación; moneda USD con tipo de cambio manual; saldo de apertura; MFA con códigos de recuperación; sección de obligaciones legales (Ley 7527 y Ley 8968); comprobante de pago; derechos del titular de datos y retención; decisiones pendientes unificadas con IDs únicos; correcciones documentales.** |
 | **1.6** | **Cierre de DP-22, DP-24 y DP-25 con las respuestas del solicitante: vencimiento configurable con día de inicio por defecto; saldo de apertura que incluye todos los períodos iniciados; tope de reajuste digitado en cada reajuste con su fuente. DP-23 parcialmente resuelta: el solicitante es propietario del producto y aprobador (falta registrar el nombre). Nuevo criterio CA-51.** |
 | **1.7** | **Cierre de DP-07 (respaldo: RPO y RTO de 24 h, retención de 35 días) y DP-08 (acceso por internet; servidor virtual administrado por el solicitante); DP-04 sigue abierta, ligada a un proyecto externo. Cambios que surgieron del modelo de datos (MDD-SGA-001 v0.2): el saldo de apertura es una obligación y no un movimiento (glosario); nuevas entidades Condición del contrato, Ajuste de obligación y Organización; los cambios de importe se registran como ajustes y no sobrescriben; comprobantes consecutivos sin huecos; registro de movimientos idempotente por clave de solicitud; la auditoría no guarda valores personales (reescritura de RF-28). Nuevos criterios CA-52 a CA-55 y DP-26.** |
-| **1.8** | **Cierre de DP-14 (P11 retirada por no recuperable), DP-23 (una sola persona ocupa los tres roles, identificada como brandonC-developer; el asesor legal sigue sin designar) y DP-26 (hora local más zona; el instante se calcula al ejecutar). H4: serie global de comprobantes, provisional hasta DP-20. Lectura del Reglamento 37554-JP (Archivo Nacional): nuevas obligaciones legales OL-19 a OL-21, requisito RF-46 (incidentes de seguridad) y RNF-18 (documentación de seguridad), criterios CA-56 y CA-57. Todo pendiente de abogado (DP-17).** |
+| **1.8** | **Cierre de DP-14 (P11 retirada por no recuperable), DP-23 (una sola persona ocupa los tres roles, identificada como brandonC-developer; el asesor legal sigue sin designar) y DP-26 (hora local más zona; el instante se calcula al ejecutar). H4: serie global de comprobantes, provisional hasta DP-20. Lectura del Reglamento 37554-JP (Archivo Nacional): nuevas obligaciones legales OL-19 a OL-21, requisito RF-46 (incidentes de seguridad) y RNF-18 (documentación de seguridad), criterios CA-56 y CA-57. Todo pendiente de abogado (DP-17).** Correcciones de QA del 17-oct-2026: entidad Incidente de seguridad en 7.1, alcance 2.3, lista de revisión y referencias; ver actualización 2026-10-17e.** |
 
 # 1. Propósito y organización
 
@@ -116,6 +116,7 @@ Permitir al administrador registrar inquilinos y sus documentos de identificaci�
 - Una única cuenta administradora con autenticación multifactor.
 - Atención de solicitudes del titular de datos; retención y eliminación de datos personales.
 - Registro de auditoría de operaciones críticas y del acceso a cédulas.
+- Registro de incidentes de seguridad con la fecha límite de aviso a titulares y a la Agencia (RF-46).
 
 ## 2.4 Fuera del alcance inicial
 
@@ -377,7 +378,8 @@ En ambos casos, las obligaciones pagadas no se modifican y el sistema deberá **
 | Depósito de garantía | id, contrato_id, importe_total, moneda, fecha límite acordada opcional, notas. |
 | Notificación | id, obligación o contrato, canal, tipo, destinatario, fecha programada, intentos, resultado, referencia del proveedor, estado web (nueva, leída, archivada). |
 | Solicitud del titular | id, inquilino_id, tipo, fecha de recepción, fecha límite, resolución. |
-| Auditoría | id, entidad, registro, actor, acción, fecha, valores/cambios. |
+| Auditoría | id, entidad, registro, actor, acción, fecha, campos modificados y valores anteriores y nuevos solo de campos no personales. |
+| Incidente de seguridad | id, fecha de ocurrencia y de conocimiento, naturaleza, datos comprometidos (descripción, sin copiarlos), acciones inmediatas, fecha límite de aviso, estado. Cada aviso emitido (a un titular o a la Agencia) se guarda con fecha, destinatario y contenido mínimo. |
 
 El saldo de una obligación y el de un depósito, el estado de una obligación, de un contrato y de una propiedad **se derivan** y no se almacenan como fuente de verdad.
 
@@ -595,6 +597,7 @@ Los criterios se formulan para ejecutarse como pruebas funcionales o revisiones 
 | Duplicación de obligaciones | Unicidad por contrato y período, y generación idempotente. |
 | Fallo de WhatsApp | Registro de resultados, reintentos y notificación web como canal interno. |
 | Proveedor de WhatsApp no elegido | Diferido: depende de un proyecto aparte del solicitante (DP-04). El SGA define una interfaz de canal de salida y opera con el canal web mientras tanto. Los términos de servicio de WhatsApp para consumidores prohíben mensajería masiva o automática; los términos de la plataforma empresarial no se leyeron. |
+| Vulneración de seguridad sin aviso a tiempo | Registro de incidentes con fecha límite de cinco días hábiles (RF-46) y procedimiento de respuesta en la fase 6; validación legal (DP-17, DP-19). |
 | Servidor propio con datos de cédulas | El solicitante administra el servidor (DP-08). Recomendado antes de cargar datos reales: servidor endurecido, prueba de restauración superada y revisión legal cerrada. Las guías de endurecimiento no se han investigado. |
 | Ejecución diaria interrumpida | Procesamiento independiente de la interfaz, idempotente; solo la alerta del día. |
 | Reglas de reajuste y gracia mal aplicadas | Casos de prueba para fechas efectivas, gracia y tope; validación legal. |
@@ -665,6 +668,9 @@ Antes de aprobar esta ERS, los revisores deben confirmar:
 ☐ Retención de datos y obligaciones de conservación contable conciliadas (DP-18).
 ☐ Moneda, tipo de cambio manual y zona horaria verificados.
 ☐ Canales de notificación y límites de WhatsApp comprendidos.
+☐ Documento de seguridad, protocolo de actuación y procedimiento de incidentes revisados (OL-19 a OL-21, RF-46, RNF-18).
+☐ Prueba de restauración de respaldos superada y servidor endurecido antes de cargar datos reales (RNF-09, DP-08).
+☐ Asesor legal designado.
 ☐ Protección de cédulas y datos personales aceptada.
 ☐ Criterios de aceptación suficientes; matriz de trazabilidad revisada.
 ☐ Dependencias, riesgos y decisiones pendientes asignados.
@@ -693,6 +699,7 @@ Las referencias orientan el método de documentación; no significan que el proy
 2. NASA Systems Engineering Handbook, apéndices C, D y E. https://www.nasa.gov/reference/system-engineering-handbook-appendix/
 3. Ley 7527, Ley General de Arrendamientos Urbanos y Suburbanos (SCIJ, norma 23655).
 4. Ley 8968, Protección de la Persona frente al Tratamiento de sus Datos Personales. https://www.sutel.go.cr/sites/default/files/normativas/ley_proteccion_de_la_persona_frente_al_tratamiento_de_sus_ley_8968.pdf
+4b. Reglamento a la Ley 8968, Decreto 37554-JP (copia del Archivo Nacional, con reformas del decreto 40008 de 2016; lectura parcial: arts. 3, 32, 34 a 39 y 44). https://www.archivonacional.go.cr/web/normativa/reglamento37554.docx
 5. NIST SP 800-63B-4, Digital Identity Guidelines (autenticación, sesiones, recuperación). https://pages.nist.gov/800-63-4/sp800-63b/aal/
 6. W3C, Working with Time and Timezones (Group Draft Note, 2025). https://www.w3.org/TR/timezone/
 7. OWASP File Upload Cheat Sheet. https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html

@@ -36,7 +36,7 @@ $texto = @{}
 foreach ($a in $archivos) { $texto[$a.Name] = Get-Content -Path $a.FullName -Encoding UTF8 }
 
 # Definiciones: el identificador abre una linea, una fila de tabla o un titulo.
-$prefijos = 'RNF', 'RF', 'RN', 'CA', 'OL', 'DP', 'ADR'
+$prefijos = 'RNF', 'RF', 'RN', 'CA', 'OL', 'DP', 'ADR', 'RE'
 foreach ($p in $prefijos) {
     $defs = New-Object 'System.Collections.Generic.HashSet[string]'
     $refs = New-Object 'System.Collections.Generic.HashSet[string]'
@@ -60,6 +60,34 @@ foreach ($p in $prefijos) {
     } else {
         Write-Output "[$p] ok ($($defs.Count) definidos)"
     }
+}
+
+# Vigencia: la ultima version de cada documento debe constar como vigente en su README y en DOC/README.md,
+# su encabezado debe llevar la misma version que el nombre del archivo, y las versiones anteriores no deben figurar como vigentes.
+$vigentes = @(
+    @{ Doc = $ers; Carpeta = 'fase-1-ers' },
+    @{ Doc = $das; Carpeta = 'fase-2-arquitectura' },
+    @{ Doc = $mdd; Carpeta = 'fase-3-diseno-tecnico' }
+)
+$readmeRaiz = Get-Content -Path (Join-Path $doc 'README.md') -Raw -Encoding UTF8
+foreach ($v in $vigentes) {
+    if (-not $v.Doc) { continue }
+    $nombre = $v.Doc.Name
+    $version = [regex]::Match($nombre, '_v(\d+\.\d+)').Groups[1].Value
+    $readme = Get-Content -Path (Join-Path $doc "$($v.Carpeta)\README.md") -Encoding UTF8
+    $marcada = @($readme | Where-Object { $_ -match [regex]::Escape($nombre) -and $_ -match 'Vigente' })
+    if ($marcada.Count -eq 0) { $problemas++; Write-Output "[vigencia] $($v.Carpeta)/README.md no marca $nombre como vigente." }
+    $otras = @($readme | Where-Object { $_ -match 'Vigente' -and $_ -notmatch [regex]::Escape($nombre) })
+    if ($otras.Count -gt 0) { $problemas++; Write-Output "[vigencia] $($v.Carpeta)/README.md marca como vigente otra version: $($otras[0].Trim())" }
+    if (-not $readmeRaiz.Contains($nombre)) { $problemas++; Write-Output "[vigencia] DOC/README.md no cita $nombre." }
+    $enc = (Get-Content -Path $v.Doc.FullName -Encoding UTF8 -TotalCount 12) -join "`n"
+    if ($enc -notmatch "Versi.n:\*\*\s*$([regex]::Escape($version))\b") { $problemas++; Write-Output "[vigencia] el encabezado de $nombre no declara la version $version." }
+}
+
+# Cada actualizacion lleva CAMBIOS.md; una carpeta EN-CURSO se avisa (no es error mientras haya trabajo abierto).
+Get-ChildItem -Path (Join-Path $doc 'actualizaciones') -Directory | ForEach-Object {
+    if (-not (Test-Path -LiteralPath (Join-Path $_.FullName 'CAMBIOS.md'))) { $problemas++; Write-Output "[actualizacion] $($_.Name) no tiene CAMBIOS.md." }
+    if ($_.Name -match 'EN-CURSO') { Write-Output "[aviso] la actualizacion $($_.Name) sigue en curso." }
 }
 
 # Enlaces relativos entre archivos .md.

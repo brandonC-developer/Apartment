@@ -13,6 +13,8 @@ Aplicación web de uso interno para **un único administrador** que gestiona el 
 - Emite comprobantes de pago numerados.
 - Envía recordatorios y alertas de atraso **solo al administrador**, por la aplicación y por WhatsApp. Los inquilinos no tienen acceso ni reciben mensajes.
 - Contratos en colones o dólares; el sistema **no cobra ni mueve dinero**, solo registra lo que el administrador confirma haber recibido.
+- Se aloja en un **servidor virtual administrado por el propio solicitante** y es accesible por internet (HTTPS y segundo factor). Proveedor y país del servidor aún no se han elegido (relevante para B6 y la transferencia de datos).
+- Los avisos por WhatsApp dependen de un proyecto aparte del solicitante, todavía inexistente; mientras tanto solo opera el canal web.
 
 ## 2. Qué se leyó y qué no
 

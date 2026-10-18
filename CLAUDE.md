@@ -19,7 +19,7 @@ Proyecto en fase de **documentación**. No hay código ni se ha autorizado imple
 3. **Toda actualización lleva su carpeta** en `actualizaciones/` con un `CAMBIOS.md`, y actualiza los README de la fase y `DOC/README.md`.
 4. **Trazabilidad desde el origen:** cada cambio de requisito indica la pregunta, la respuesta y la decisión que lo originó.
 5. **Las respuestas del solicitante no son aprobación del negocio.** Distingue lo que el solicitante decidió de lo que tú propones, y márcalo (por ejemplo, "regla propuesta").
-6. **Identificadores únicos y compartidos** entre ERS y DAS: RF, RN, RNF, CA, OL (obligación legal), DP (decisión pendiente), ADR. No reutilices ni cambies el significado de un ID.
+6. **Identificadores únicos y compartidos** entre ERS y DAS: RF, RN, RNF, CA, OL (obligación legal), DP (decisión pendiente), ADR, y RE (restricción, solo en el DAS). No reutilices ni cambies el significado de un ID.
 7. **Nada de asesoría legal.** Las obligaciones de las leyes 7527 y 8968 están pendientes de validación por un abogado (DP-17). Cita el artículo y distingue texto leído de interpretación.
 8. **Investigación:** cita la fuente con URL, indica cómo se validó (leída completa, por resumen, solo resultados de búsqueda) y sus limitaciones. No afirmes lo que no verificaste. Si una fuente no se pudo abrir, dilo.
 9. **No inventes** enunciados, respuestas ni datos. La pregunta P11 no tiene enunciado recuperable y fue cerrada por el solicitante (DP-14); si reaparece, se reabre con un ID nuevo.

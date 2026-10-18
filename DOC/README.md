@@ -37,7 +37,8 @@ Carpetas transversales:
 | 2026-10-17 (b) | `actualizaciones/2026-10-17b_ERS-v1.6_DAS-v0.5/` | ERS v1.6 y DAS v0.5; cierre de DP-22, DP-24 y DP-25 |
 | 2026-10-17 (c) | `actualizaciones/2026-10-17c_ERS-v1.7_DAS-v0.6/` | ERS v1.7 y DAS v0.6; cierre de DP-07 y DP-08, DP-04 diferida; modelo de datos v0.1 y v0.2 con prueba en PostgreSQL; hallazgos H1 a H13 |
 | 2026-10-17 (d) | `actualizaciones/2026-10-17d_ERS-v1.8_DAS-v0.7/` | ERS v1.8 y DAS v0.7; cierre de DP-14, DP-23 y DP-26; H4 provisional; lectura del Reglamento 37554-JP (OL-19 a OL-21); resumen para el abogado v2 |
+| 2026-10-17 (e) | `actualizaciones/2026-10-17e_QA-documentos/` | QA de vigencia de todos los documentos: 16 hallazgos corregidos, script ampliado |
 
-## Pendiente de recomendar
+## Control de versiones
 
-El proyecto ya tiene un repositorio Git en la raíz creado por el solicitante (verificado antes; ningún cambio de esta documentación se ha confirmado ni subido todavía). Las fuentes consultadas (`metodologia/EVALUACION_METODOLOGIA_v1.md`, ajuste 5) recomiendan mantener la documentación bajo control de versiones con revisión de cambios. Hasta entonces, las versiones se distinguen por nombre de archivo.
+El proyecto tiene un repositorio Git en la raíz creado por el solicitante; al 17-oct-2026 el árbol de trabajo estaba limpio y sincronizado con `origin/main`. La visibilidad del repositorio remoto no está verificada: confirmar que no sea público, pues contiene análisis legal y decisiones del negocio. Las fuentes consultadas (`metodologia/EVALUACION_METODOLOGIA_v1.md`, ajuste 5) recomiendan mantener la documentación bajo control de versiones con revisión de cambios. Hasta entonces, las versiones se distinguen por nombre de archivo.
