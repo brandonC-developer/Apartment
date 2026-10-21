@@ -8,8 +8,8 @@
 |---|---|---|---|
 | 1. Especificación de requisitos (ERS) | `fase-1-ers/` | `ERS_SGA_001_v1.9_borrador.md` | Borrador; pendiente de validación legal y aprobación |
 | 2. Arquitectura de software | `fase-2-arquitectura/` | `DAS_SGA_001_v0.11_borrador.md` | Borrador; depende de la ERS |
-| 3. Diseño técnico | `fase-3-diseno-tecnico/` | `MODELO_DATOS_SGA_001_v0.3_borrador.md`; `DISENO_TECNICO_SGA_001_v0.6_borrador.md` | Iniciada; modelo de datos y diseño técnico, en borrador sin revisar |
-| 4. Estrategia y plan de pruebas | `fase-4-pruebas/` | `ESTRATEGIA_PRUEBAS_SGA_001_v0.2_borrador.md` | Iniciada; estrategia en borrador sin revisar |
+| 3. Diseño técnico | `fase-3-diseno-tecnico/` | `MODELO_DATOS_SGA_001_v0.4_borrador.md`; `DISENO_TECNICO_SGA_001_v0.7_borrador.md` | Iniciada; modelo de datos y diseño técnico, en borrador sin revisar |
+| 4. Estrategia y plan de pruebas | `fase-4-pruebas/` | `ESTRATEGIA_PRUEBAS_SGA_001_v0.3_borrador.md` | Iniciada; estrategia en borrador sin revisar |
 | 5. Plan de implementación | `fase-5-implementacion/` | — | No iniciada |
 | 6. Despliegue y operación | `fase-6-despliegue-operacion/` | — | No iniciada |
 
@@ -53,6 +53,7 @@ Carpetas transversales:
 | 2026-10-21 (e) | `actualizaciones/2026-10-21e_ERS-v1.9/` | ERS v1.9: reúne las decisiones de HT-01, 02, 03, 05 y 08 (notificaciones por correo, avisos de seguridad, restablecimiento de contraseña, exportación del titular, recibo de papel antes del comprobante), nuevos RF-47 y CA-58 a CA-61; difiere RF-37 (Alta) |
 | 2026-10-21 (f) | `actualizaciones/2026-10-21f_DAS-v0.11/` | DAS v0.11: alinea la arquitectura con la ERS v1.9 (ADR-008, 010, 013, 018 y 026; RE-05; correo en lugar de WhatsApp; recibo físico; restablecimiento de contraseña) |
 | 2026-10-21 (g) | `actualizaciones/2026-10-21g_auditoria-coherencia/` | Auditoría de enlaces, vigencia y coherencia: 4 correcciones en ERS v1.9 y DAS v0.11; lista de documentos desalineados (modelo de datos, estrategia de pruebas, diseño técnico, resumen para el abogado y el script) |
+| 2026-10-21 (h) | `actualizaciones/2026-10-21h_alineacion-MDD-EPP-DTE/` | Modelo de datos v0.4, diseño técnico v0.7 y estrategia de pruebas v0.3: alineados con la ERS v1.9 y el DAS v0.11 (recibo físico, correo, avisos de seguridad, restablecimiento de contraseña); sin decisiones nuevas |
 
 ## Control de versiones
 
