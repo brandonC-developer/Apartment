@@ -10,7 +10,7 @@
 | 2. Arquitectura de software | `fase-2-arquitectura/` | `DAS_SGA_001_v0.11_borrador.md` | Borrador; depende de la ERS |
 | 3. Diseño técnico | `fase-3-diseno-tecnico/` | `MODELO_DATOS_SGA_001_v0.4_borrador.md`; `DISENO_TECNICO_SGA_001_v0.7_borrador.md` | Iniciada; modelo de datos y diseño técnico, en borrador sin revisar |
 | 4. Estrategia y plan de pruebas | `fase-4-pruebas/` | `ESTRATEGIA_PRUEBAS_SGA_001_v0.3_borrador.md` | Iniciada; estrategia en borrador sin revisar |
-| 5. Plan de implementación | `fase-5-implementacion/` | `PLAN_IMPLEMENTACION_SGA_001_v0.1_borrador.md` | Iniciada; plan en borrador sin revisar |
+| 5. Plan de implementación | `fase-5-implementacion/` | `PLAN_IMPLEMENTACION_SGA_001_v0.1_borrador.md`; `LISTA_REVISION_CRITICA_SGA_001_v0.1_borrador.md` | Iniciada; plan en borrador sin revisar |
 | 6. Despliegue y operación | `fase-6-despliegue-operacion/` | — | No iniciada |
 
 Carpetas transversales:
@@ -71,6 +71,10 @@ Carpetas transversales:
 | 2026-10-21 (w) | `actualizaciones/2026-10-21w_etapa-local-gratuita/` | Plan de implementación y ADR-023: primero despliegue local y gratuito (WSL 2 con Ubuntu-26.04, sin contenedores) y después los servicios de pago; se descarta Docker por paridad con producción |
 | 2026-10-21 (x) | `actualizaciones/2026-10-21x_versiones-python-django/` | Versiones: Django 5.2 LTS con el Python 3.14 del sistema de Ubuntu 26.04 (ADR-022 y plan de implementación) |
 | 2026-10-21 (y) | `actualizaciones/2026-10-21y_registro-de-avance/` | Registro de avance de la implementación (una entrega a la vez; bloqueo si falta una prueba Alta); script ampliado para comprobarlo |
+| 2026-10-21 (z) | `actualizaciones/2026-10-21z_revision-por-otra-persona/` | Plan de implementación: revisión por una persona distinta, obligatoria para lo crítico antes de datos reales; el resto con autorevisión y herramientas; persona sin designar (DP-23) |
+| 2026-10-21 (aa) | `actualizaciones/2026-10-21aa_lista-revision-critica/` | Lista de verificación de la revisión por otra persona (LRC-SGA-001 v0.1): 47 puntos en nueve áreas; script ampliado |
+| 2026-10-21 (ab) | `actualizaciones/2026-10-21ab_revision-por-modulos/` | Revisión guiada de la documentación por módulos (los diez módulos): RF-48 y RF-49 nuevos, CA-62 a CA-72 nuevos, formato de números, reglas de seguridad de la cuenta, privacidad y auditoría |
+| 2026-10-21 (ac) | `actualizaciones/2026-10-21ac_repaso-final-y-limpieza/` | Repaso final de coherencia global (11 correcciones) y limpieza: se elimina un borrador huérfano y la carpeta temporal de la sesión |
 
 ## Control de versiones
 

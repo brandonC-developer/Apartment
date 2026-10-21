@@ -17,12 +17,12 @@ Este archivo registra el avance real de las entregas del plan. **La implementaci
 ## Entregas
 | Entrega | Estado | Inicio | Fin | Condiciones de terminado cumplidas (de 9) | CA aprobados / asignados | Desviaciones y enlace a su CAMBIOS |
 |---|---|---|---|---|---|---|
-| E0 Esqueleto | no iniciada | — | — | 0 | 0 / 4 | — |
+| E0 Esqueleto | no iniciada | — | — | 0 | 0 / 8 | — |
 | E1 Inquilinos | no iniciada | — | — | 0 | 0 / 5 | — |
-| E2 Contratos y obligaciones | no iniciada | — | — | 0 | 0 / 17 | — |
+| E2 Contratos y obligaciones | no iniciada | — | — | 0 | 0 / 20 | — |
 | E3 Movimientos y depósitos | no iniciada | — | — | 0 | 0 / 17 | — |
-| E4 Notificaciones y cuenta | no iniciada | — | — | 0 | 0 / 10 | — |
-| E5 Calendario y privacidad | no iniciada | — | — | 0 | 0 / 6 | — |
+| E4 Notificaciones y cuenta | no iniciada | — | — | 0 | 0 / 12 | — |
+| E5 Calendario y privacidad | no iniciada | — | — | 0 | 0 / 8 | — |
 | E6 Etapa B y salida | no iniciada | — | — | 0 | sin CA | — |
 
 ## Historial de cambios de estado

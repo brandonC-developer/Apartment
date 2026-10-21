@@ -13,7 +13,7 @@ Este documento propone cómo demostrar que cada requisito del SGA funciona. **No
 
 | Incluido | Fuera de alcance de este documento |
 |---|---|
-| Pruebas de los 61 criterios de aceptación (CA-01 a CA-61; CA-37 y CA-54 pertenecen a la fase posterior del comprobante y no se ejecutan en la v1) | Casos de prueba detallados (se escriben con la implementación) |
+| Pruebas de los 72 criterios de aceptación (CA-01 a CA-72; CA-37 y CA-54 pertenecen a la fase posterior del comprobante y no se ejecutan en la v1) | Casos de prueba detallados (se escriben con la implementación) |
 | Verificación de los RNF sin criterio de aceptación (RNF-05, 07, 08, 09, 10, 11) | Pruebas de penetración por un tercero |
 | Pruebas de operación: restauración, temporizador, HTTPS y respaldos | Pruebas del canal de WhatsApp (DP-04, futuro, fuera de la v1): solo se prueba la interfaz de canal de salida con el correo y un canal simulado |
 | Datos de prueba y entornos | Cualquier dato personal real |
@@ -73,9 +73,12 @@ Prioridad (propuesta): **Alta** = dinero, plazos legales, datos personales o seg
 | Área (ERS sección 9) | CA | Nivel principal | Prioridad |
 |---|---|---|---|
 | Inquilinos y datos personales | CA-01, 25, 29 | Integración | Media |
+| | CA-67 | Integración (texto de cada versión del consentimiento, aviso y bloqueo al revocar, solicitud de oficio) | Alta |
 | | CA-11, 26 | Vistas y permisos; integración (auditoría) | Alta |
 | | CA-27, 28 (L) | Unitarias (plazo de cinco días hábiles); integración (retención y registro de auditoría de la exportación del titular) | Alta |
+| | CA-65, 66 (L) | Integración (desasociar a petición y sus bloqueos; retención de quien no tiene contrato o los tiene anulados) | Alta |
 | Contratos y obligaciones | CA-02, 24, 32 | Integración (solape de contratos) | Media |
+| | CA-62, 63 | Integración (anular contrato sin movimientos, rechazo con movimientos; propiedad inactiva y alias único) | Media |
 | | CA-03, 30, 14, 31 | Unitarias (fechas, mes corto, prorrateo); integración (unicidad) | Alta |
 | Movimientos y estados | CA-04, 19, 20, 21, 33, 34, 35 | Unitarias; integración | Alta |
 | | CA-50, 51, 36 | Unitarias (vencimiento, tope, gracia) | Alta |
@@ -83,11 +86,15 @@ Prioridad (propuesta): **Alta** = dinero, plazos legales, datos personales o seg
 | | CA-58 (L) | Unitarias (regla de período futuro) e integración de la operación de registro | Alta |
 | | CA-61 | Integración (número de recibo físico único; movimiento sin número) | Media |
 | Cambios de condiciones | CA-12, 39, 22, 40 | Unitarias (fecha efectiva, tope, bloqueo por abonos); integración | Alta |
-| Calendario | CA-06, 07 | Vistas | Baja |
+| Calendario | CA-06, 07 | Vistas (incluye eventos informativos de fin de contrato y de fecha límite del depósito, y el filtro por propiedad) | Baja |
 | Notificaciones | CA-08, 41, 05, 42, 43, 44 | Integración (buzón de correo en memoria de Django, comando diario) | Media |
 | | CA-09 | Integración (canal de correo simulado que falla) | Media |
 | Depósito | CA-15, 16, 17, 23, 45, 46 | Unitarias; integración | Media |
 | Seguridad y configuración | CA-13, 47, 48 | Vistas y permisos | Alta |
+| | CA-71 | Integración (eventos de autenticación en la auditoría sin secretos, con IP; consulta de solo lectura que no se audita) | Alta |
+| | CA-72 | Integración (reintentador con un proceso diario omitido o fallido; alerta web y correo simulado; sin correo repetido) | Media |
+| | CA-68, 69, 70 | Integración (espera creciente y reinicio del contador; TOTP repetido, tolerancia de 30 s y códigos nuevos con contraseña; comandos de creación y rescate) | Alta |
+| | CA-64 | Vistas y permisos; integración (contraseña actual, confirmación en la dirección nueva, aviso a las dos anteriores, enlace usado o vencido; buzón en memoria) | Alta |
 | | CA-59 | Vistas y permisos; integración (enlace de un solo uso y 15 minutos; no inicia sesión; respuesta idéntica exista o no la cuenta; límite de 3 solicitudes por hora; invalidación de los demás enlaces y de las sesiones; buzón en memoria) | Alta |
 | | CA-60 (L) | Integración (correo simulado que falla en el aviso de seguridad; reintentos; alerta persistente) | Alta |
 | | CA-18 | Unitarias; operación (zona horaria del temporizador) | Media |
@@ -97,7 +104,7 @@ Prioridad (propuesta): **Alta** = dinero, plazos legales, datos personales o seg
 | | CA-53 | Integración (auditoría) | Alta |
 | | CA-55, 49 | Unitarias; integración | Alta |
 
-Recuento: 61 de 61 CA asignados (los 57 de la v0.2 más CA-58 a CA-61); CA-37 y CA-54 quedan asignados pero se ejecutan solo en la fase posterior del comprobante. No se recalculó el desglose por área de la v0.2, porque los CA nuevos no siguen las áreas de la sección 9 de la ERS.
+Recuento: 72 de 72 CA asignados (los 57 de la v0.2 más CA-58 a CA-72); CA-37 y CA-54 quedan asignados pero se ejecutan solo en la fase posterior del comprobante. No se recalculó el desglose por área de la v0.2, porque los CA nuevos no siguen las áreas de la sección 9 de la ERS.
 
 ## 6. Requisitos sin criterio de aceptación
 
@@ -136,7 +143,7 @@ Entradas que cada prueba debe cubrir. Los resultados esperados salen de los CA d
 | Prorrateo del último período | Meses de 28, 29, 30 y 31 días; redondeo (DP-01 sin validar) | CA-14 |
 | Gracia de 7 días | Pago el día 7, el día 8; vencimiento dentro del período | CA-36, CA-50 |
 | Reajuste | Fecha efectiva normalizada, tope digitado, moneda extranjera, importe por debajo de lo abonado | CA-12, CA-39, CA-40, CA-51 |
-| Importes | Aritmética decimal exacta, CRC y USD, tipo de cambio manual (RNF-17) | CA-38, CA-55 |
+| Importes | Presentación ₡180.000,50 y 3,2 % con formato propio (no el del idioma por defecto); aritmética decimal exacta, CRC y USD, tipo de cambio manual (RNF-17); equivalente redondeado a dos decimales con empate hacia arriba (₡100.000 a ₡512,35 = $195,18); abono que excede el saldo, rechazado | CA-38, CA-55, CA-20 |
 | Comprobantes | Numeración consecutiva sin huecos, aun si una transacción falla; serie global provisional (DP-20) | CA-37, CA-54 |
 | Idempotencia | Mismo envío con la misma clave; proceso diario ejecutado dos veces | CA-52, RNF-16 |
 | Zona horaria | Hora local más zona (DP-26); temporizador del servidor | CA-18, RNF-12 |
@@ -171,7 +178,7 @@ Decididas el 20-oct-2026, tras una investigación y una recomendación del asist
 | 3 | Medición de rendimiento (RNF-08) | Locust, en Python |
 | 4 | Umbral de cobertura | Ninguno; Coverage.py informativa y revisión de módulos críticos |
 | 5 | Restauración | El solicitante, trimestral a mano más comprobación automática mensual; registro en el repositorio |
-| 6 | Segunda mitad de RN-15 | Prueba ahora sin CA; CA en la próxima ERS |
+| 6 | Segunda mitad de RN-15 | Prueba ahora sin CA; CA en la próxima ERS (hecho: CA-58 en la ERS v1.9) |
 | 7 | Qué puede quedar sin probar | Nada de prioridad alta; media con aceptación escrita; baja diferible |
 
 **Pendientes:**

@@ -113,7 +113,7 @@ Detalle de la decisión y de sus fuentes en el ADR-026 del DAS v0.11.
 
 | Aspecto | Contenido |
 |---|---|
-| Eventos | Uso de un código de recuperación; emisión de nuevos códigos (ambos exigidos por RF-27); registro o cambio del segundo factor; cambio o restablecimiento de la contraseña (los dos últimos ampliaron RF-27; incorporados en la ERS v1.9) |
+| Eventos | Uso de un código de recuperación; emisión de nuevos códigos (ambos exigidos por RF-27); registro o cambio del segundo factor; cambio o restablecimiento de la contraseña (los dos últimos ampliaron RF-27; incorporados en la ERS v1.9); cambio de una dirección de correo, llegar a cinco intentos fallidos seguidos y rescate por el servidor (eventos quinto a séptimo, añadidos el 21-oct-2026 en la revisión por módulos) |
 | Destinatarios | Dos direcciones de correo del propio solicitante, en proveedores distintos (decisión del 21-oct-2026); no constan en los documentos, solo en la configuración. WhatsApp se añadirá como segundo canal cuando exista (DP-04) |
 | Contenido | Qué ocurrió, fecha y hora local (`America/Costa_Rica`) y qué hacer si no fue el administrador. **Sin códigos, contraseñas ni enlaces de acceso** |
 | Envío | Servicio Resend por API HTTPS con django-anymail; requiere dominio propio verificado |
@@ -175,6 +175,9 @@ Cambios que esto exigía en la ERS y el DAS (hechos en la ERS v1.9 y el DAS v0.1
 | Registrar propiedad | 06 | Estado derivado (disponible u ocupada); *inactiva* la marca el administrador | Sí (RF-28) |
 | Crear contrato | 07, 08 | Rechazo por solapamiento con otro contrato de la propiedad; advertencia (sin bloqueo) si la vigencia pactada es menor de tres años | Sí |
 | Finalizar contrato | 09 | Anula obligaciones futuras sin movimientos; prorratea el último período; ajuste manual con motivo; advertencia si faltan menos de tres meses | Sí |
+| Consultar la auditoría | 28 | Pantalla de solo lectura con filtros por fecha, tipo de evento, entidad y actor; la consulta no se audita | No |
+| Anular contrato | 48 | Solo sin movimientos válidos; motivo obligatorio; anula sus obligaciones y su depósito sin abonos | Sí |
+| Marcar propiedad inactiva o reactivarla | 06 | Se bloquea con contrato vigente, futuro o por decidir; una inactiva no admite contratos nuevos | Sí |
 | Sustituir inquilino | 36 | Cierra el contrato anterior y crea uno nuevo; el depósito no se traslada | Sí |
 | Reajuste | 10 | Fecha efectiva normalizada al inicio del período siguiente; tope y fuente digitados; advierte si supera el tope; rechaza vivienda con precio en moneda extranjera; bloquea si deja el importe bajo lo abonado | Sí: valor anterior, nuevo, fecha efectiva y motivo |
 | Corrección | 10 | **Motivo obligatorio**; retroactiva; no modifica obligaciones pagadas; bloquea si deja el importe bajo lo abonado | Sí |
@@ -191,6 +194,8 @@ Cambios que esto exigía en la ERS y el DAS (hechos en la ERS v1.9 y el DAS v0.1
 | Iniciar sesión, usar o regenerar códigos de recuperación | 26, 27 | Aviso por correo a las dos direcciones ante cada recuperación y cada emisión de códigos (sección 3.5) | Por definir |
 | Registrar o cambiar el segundo factor | 27 | Aviso por correo (sección 3.5, evento ampliado respecto de RF-27); exige la contraseña actual (sección 3.6); el procedimiento está en la ERS v1.9 (RF-27, CA-59) | Por definir |
 | Cambiar o restablecer la contraseña | 27 | Aviso por correo (sección 3.5, evento ampliado); con sesión exige la contraseña actual, sin sesión un enlace por correo de 15 minutos (sección 3.6); en la ERS v1.9 (RF-27, CA-59) | Por definir |
+| Desasociar a petición del titular | 40 | Se bloquea con contrato vigente, futuro o por decidir, o con saldos; si se niega, motivo escrito | Sí |
+| Registrar revocación de consentimiento | 39 | Aviso en la ficha; no se crean contratos nuevos; se abre una solicitud de supresión de oficio | Sí |
 | Registrar y resolver solicitud del titular; exportar datos | 40 | Fecha límite de cinco días hábiles; la supresión se atiende salvo obligación legal (DP-18) | Sí; la exportación se audita también (RF-45) |
 | Retención: avisar y eliminar o desasociar datos | 41 | Aviso al administrador antes de ejecutar; conserva movimientos financieros sin datos de identificación | Sí; la ejecuta el proceso diario |
 | Registrar incidente de seguridad y avisos | 46 | Calcula el plazo de cinco días hábiles; deja constancia de cada aviso y de la revisión | Sí |
@@ -257,7 +262,7 @@ Los flujos 10.1 (proceso diario), 10.2 (abono), 10.3 (anulación), 10.4 (reajust
 | HT-02 | **Resuelto a nivel de diseño el 21-oct-2026** (sección 3.4.2): comprobantes de papel fuera del sistema primero, con un campo opcional de número de recibo físico; el comprobante generado por el sistema, después. Siguen pendientes con el abogado o contador (DP-20): contenido legal, si el recibo de papel basta y si Hacienda exige factura electrónica | Cambio de alcance que difiere un requisito Alta (RF-37, CA-37); reescrito en la ERS v1.9 (RF-37, RF-47, CA-61) y el modelo de datos v0.4 |
 | HT-03 | **Resuelto a nivel de diseño el 21-oct-2026** (sección 3.4.1): todo el registro del titular, incluida la fotografía de la cédula, en un informe web imprimible (el solicitante rectificó su primera elección, PDF generado por el sistema, y adoptó la recomendación) | El abogado valida alcance y exclusiones (DP-17); ERS: RF-40 y CA-27 |
 | HT-04 | La ERS (sección 15) menciona una "especificación de API", anterior al ADR-022 | **Resuelto en la ERS v1.9 (21-oct-2026):** sección 15 ajustada |
-| HT-05 | **Resuelto el 20-oct-2026** (ver sección 3.5 y ADR-026): aviso por correo a dos direcciones, cuatro eventos, recuperación que procede ante fallo del envío. Quedan pendientes el dominio y las dos direcciones. Los cambios de la ERS se hicieron en la v1.9 | Incorporado |
+| HT-05 | **Resuelto el 20-oct-2026** (ver sección 3.5 y ADR-026): aviso por correo a dos direcciones, cuatro eventos (siete desde la revisión por módulos del 21-oct-2026), recuperación que procede ante fallo del envío. Quedan pendientes el dominio y las dos direcciones. Los cambios de la ERS se hicieron en la v1.9 | Incorporado |
 | HT-06 | **Resuelto el 21-oct-2026:** la auditoría registra actor = sistema, tipo de actor = proceso y el `ejecucion_id` cuando lo hace el proceso diario. El solicitante preguntó por dos cuentas o un sistema aparte tipo CMS; no se adoptaron (ver actualización 2026-10-21l) | Incorporado en la ERS v1.9 (RF-28), el DAS v0.11 y el modelo de datos v0.4 (R19) |
 | HT-07 | **Resuelto el 21-oct-2026:** la técnica es `select_for_update()` de Django dentro de `transaction.atomic()` (`SELECT ... FOR UPDATE` en PostgreSQL), verificada en la documentación de Django (leída por resumen, primera mitad) y de PostgreSQL (bloqueos de fila). Sin `nowait`: la segunda operación espera. Bloquear varias filas siempre en el mismo orden. Sin efecto en SQLite | Incorporado en el DAS v0.11 (10.2); la prueba de concurrencia usa `TransactionTestCase` y PostgreSQL (estrategia de pruebas) |
 | HT-08 | **Resuelto a nivel de diseño el 21-oct-2026** (sección 3.6): contraseña actual para cambiar la contraseña y reemplazar el TOTP; enlace por correo de 15 minutos para restablecer. Las dos primeras decisiones van contra la recomendación | Incorporado en la ERS v1.9 (RF-27, CA-59), el DAS v0.11 (ADR-026) y el modelo de datos v0.4 (`TOKEN_RESTABLECIMIENTO`) |
@@ -267,7 +272,7 @@ HT-nn es un identificador local de este documento, no de la lista compartida del
 
 ## 7. Decisiones y pendientes
 
-**Decidido el 20-oct-2026 (HT-05):** canal de correo con dos direcciones y WhatsApp después; Resend por API; cuatro eventos; la recuperación procede ante un fallo del envío. Detalle y fuentes en la [actualización 2026-10-20 (h)](../actualizaciones/2026-10-20h_ht-05-recuperacion-acceso/CAMBIOS.md).
+**Decidido el 20-oct-2026 (HT-05):** canal de correo con dos direcciones y WhatsApp después; Resend por API; cuatro eventos (después ampliados a siete); la recuperación procede ante un fallo del envío. Detalle y fuentes en la [actualización 2026-10-20 (h)](../actualizaciones/2026-10-20h_ht-05-recuperacion-acceso/CAMBIOS.md).
 
 **Decidido el 21-oct-2026 (HT-08):** contraseña actual para cambiar la contraseña y para reemplazar el segundo factor (TOTP en el futuro); restablecimiento sin sesión con enlace por correo de un solo uso y 15 minutos. Detalle en la [actualización 2026-10-21](../actualizaciones/2026-10-21_ht-08-contrasena-segundo-factor/CAMBIOS.md).
 
@@ -278,11 +283,11 @@ HT-nn es un identificador local de este documento, no de la lista compartida del
 **Decidido el 21-oct-2026 (HT-01):** en la v1 los recordatorios y alertas al administrador salen por notificación web y correo; WhatsApp queda para el futuro y no se define punto de recepción de estados. Detalle en la [actualización 2026-10-21b](../actualizaciones/2026-10-21b_ht-01-canal-correo/CAMBIOS.md).
 
 **Pendientes del solicitante:**
-1. HT-01: resuelto (sección 3.7). Queda confirmar, para la ERS v1.9, la dirección de destino, los límites de contenido del correo y su validación legal.
-2. HT-03: resuelto (sección 3.4.1). Quedan la validación del abogado y la entrega y auditoría de la exportación.
+1. HT-01: resuelto (sección 3.7) y recogido en la ERS v1.9. Queda la validación legal de los límites de contenido del correo (DP-17).
+2. HT-03: resuelto (sección 3.4.1), con la exportación auditada (RF-45). Queda la validación del abogado, declarada por el solicitante sin dictamen.
 3. HT-02: resuelto (sección 3.4.2). Queda DP-20 con el abogado o contador y la fecha o versión de la fase A.
 4. Auditoría de lecturas: decidido el 21-oct-2026 (fotos de cédula y exportación del titular; no las lecturas ordinarias). La reimpresión del comprobante se decide en la fase A.
-5. HT-08: resuelto en la sección 3.6; queda decidir si se añade el TOTP al reemplazo del segundo factor (fecha o versión) y las tres propuestas de endurecimiento sin decidir.
+5. HT-08: resuelto en la sección 3.6, con las protecciones del enlace de restablecimiento decididas el 21-oct-2026; queda decidir si se añade el TOTP al reemplazo del segundo factor y al cambio de correo (fecha o versión).
 6. Decidido el 21-oct-2026: dominio `.com` en Cloudflare Registrar (nombre y precio por confirmar al comprarlo); dos direcciones del solicitante en proveedores distintos; reintentador cada 1 minuto; protecciones del enlace de restablecimiento. Detalle en la actualización 2026-10-21k.
 ## 8. Condiciones para aprobar este documento
 

@@ -34,7 +34,7 @@ Regla general: **los movimientos y los ajustes de importe no se editan ni se bor
 
 | Rol | Nombre | Decisión | Fecha |
 |---|---|---|---|
-| Responsable técnico | Por designar (DP-23) | Pendiente | Pendiente |
+| Responsable técnico | brandonC-developer (DP-23: ocupa los tres roles) | Pendiente | Pendiente |
 
 ### 1.2 Fuentes de las prácticas de diseño
 
@@ -55,6 +55,7 @@ erDiagram
     ADMINISTRADOR ||--o{ CODIGO_RECUPERACION : tiene
     ADMINISTRADOR ||--o{ TOKEN_RESTABLECIMIENTO : solicita
     INQUILINO ||--o{ CONSENTIMIENTO : otorga
+    TEXTO_CONSENTIMIENTO ||--o{ CONSENTIMIENTO : "versión mostrada"
     INQUILINO ||--o{ DOCUMENTO_IDENTIDAD : tiene
     DOCUMENTO_IDENTIDAD ||--o{ ACCESO_DOCUMENTO : "se consulta"
     INQUILINO ||--o{ SOLICITUD_TITULAR : presenta
@@ -95,6 +96,7 @@ erDiagram
 | aceptacion_whatsapp_admin | instante, nulo | **Futuro:** fecha de aceptación de recibir mensajes de WhatsApp. |
 | anticipaciones_recordatorio | lista de enteros (máx. 3) | Días antes del vencimiento; por defecto `[3]` (RF-21). |
 | retencion_fotos_anios | entero | 5 por defecto; no mayor que 10 (RF-41). |
+| retencion_sin_contrato_meses | entero | 12 por defecto (propuesta); para inquilinos sin contrato o con todos anulados (RF-41, CA-66). |
 | dias_gracia_defecto | entero | 7 (RN-06). |
 
 **ADMINISTRADOR** (una sola fila en v1) — *RF-26, RF-27, RN-25*
@@ -106,9 +108,12 @@ erDiagram
 | hash_contrasena | texto | Nunca la contraseña. Propuesta: Argon2id con al menos los parámetros mínimos de OWASP (sección 1.2), con sal única por contraseña. |
 | secreto_segundo_factor | texto cifrado | TOTP. |
 | segundo_factor_activo | lógico | Obligatorio para operar (RNF-01). |
+| fallos_consecutivos | entero | Contador de intentos fallidos de la cuenta; se reinicia con un inicio de sesión correcto (RF-27, CA-68). |
+| espera_hasta | instante, nulo | Hasta cuándo se exige esperar tras 5 o más fallos seguidos (1 minuto, duplicándose hasta 1 hora). |
+| ultimo_intervalo_totp | entero, nulo | Último intervalo de 30 s aceptado, para no reutilizar un TOTP (CA-69). |
 | creado_en, actualizado_en | instante | |
 
-**CODIGO_RECUPERACION** — *RF-27*: `id`, `administrador_id`, `hash_codigo`, `usado_en` (instante, nulo si disponible), `creado_en`. Un código se usa una sola vez; no se guarda en claro.
+**CODIGO_RECUPERACION** — *RF-27* (10 por emisión; emitir nuevos invalida los anteriores): `id`, `administrador_id`, `hash_codigo`, `usado_en` (instante, nulo si disponible), `creado_en`. Un código se usa una sola vez; no se guarda en claro.
 
 **TOKEN_RESTABLECIMIENTO** — *RF-27, CA-59* (propuesta de estructura): `id`, `administrador_id`, `hash_token` (nunca el token en claro), `creado_en` (instante), `expira_en` (instante; `creado_en` más 15 minutos, valor propuesto), `usado_en` (instante, nulo si no usado). Un token se usa una sola vez y no sirve vencido (R17). El enlace se envía solo a `correo_admin`. Los `creado_en` de las últimas 24 horas sirven para limitar a 3 solicitudes por hora (R18).
 
@@ -119,25 +124,27 @@ erDiagram
 | Atributo | Tipo | Notas |
 |---|---|---|
 | id | id | |
-| nombre_completo | texto | Se anula al desasociar (ver sección 6). |
+| nombre_completo | texto | Obligatorio. Se anula al desasociar (ver sección 6). |
 | tipo_documento | texto | `cedula`, `dimex`, `pasaporte` u `otro`. |
 | numero_documento | texto | Se anula al desasociar. Único junto con `tipo_documento` entre inquilinos activos; duplicado → advertencia (RF-01), no bloqueo. |
-| telefono, correo | texto | Se anulan al desasociar. |
+| telefono, correo | texto, nulo | Opcionales (ERS RF-01, revisión del 21-oct-2026): contacto manual del administrador, sin uso automático. Se anulan al desasociar. |
 | activo | lógico | No se puede poner en falso con contrato vigente o saldos (RF-04). |
 | desasociado_en | instante | No nulo si ya se eliminaron los datos personales (RF-41). |
 | creado_en, actualizado_en | instante | |
 
-**CONSENTIMIENTO** — *RF-39, OL-13*: `id`, `inquilino_id`, `version_texto`, `medio` (`fisico` o `electronico`), `otorgado_en`, `revocado_en` (nulo si vigente).
+**TEXTO_CONSENTIMIENTO** — *RF-39, OL-13* (propuesta de estructura): `id`, `version` (única), `contenido` (el texto informativo completo mostrado), `vigente_desde`. Inmutable: una versión nueva es una fila nueva.
+
+**CONSENTIMIENTO** — *RF-39, OL-13*: `id`, `inquilino_id`, `texto_id` (referencia a `TEXTO_CONSENTIMIENTO`; reemplaza al campo `version_texto`), `medio` (`fisico` o `electronico`), `otorgado_en`, `revocado_en` (nulo si vigente).
 
 **DOCUMENTO_IDENTIDAD** — *RF-01, RF-02, ADR-003*: `id`, `inquilino_id`, `cara` (`frente` o `reverso`), `referencia_archivo` (referencia protegida al almacenamiento privado, nunca una URL pública), `tipo_real_archivo`, `tamano_bytes`, `creado_en`, `eliminado_en`. El frente es obligatorio; el reverso, opcional.
 
 **ACCESO_DOCUMENTO** — *RF-45*: `id`, `documento_id`, `actor` (administrador), `accion` (`consulta` o `descarga`), `ocurrido_en`. No guarda la imagen.
 
-**SOLICITUD_TITULAR** — *RF-40, OL-15*: `id`, `inquilino_id`, `tipo` (`acceso`, `rectificacion`, `actualizacion`, `supresion`), `recibida_el` (fecha), `fecha_limite` (cinco días hábiles), `resuelta_el` (nulo si abierta), `resolucion` (texto).
+**SOLICITUD_TITULAR** — *RF-40, OL-15*: `id`, `inquilino_id`, `tipo` (`acceso`, `rectificacion`, `actualizacion`, `supresion`), `origen` (`titular` o `revocacion`: la abre de oficio el sistema al revocar un consentimiento, RF-39), `recibida_el` (fecha), `fecha_limite` (cinco días hábiles), `resuelta_el` (nulo si abierta), `resolucion` (texto).
 
 ### 3.3 Propiedades y contratos
 
-**PROPIEDAD** — *RF-06*: `id`, `descripcion`, `direccion`, `inactiva` (lógico), `creado_en`. El estado *disponible* u *ocupada* se deriva del contrato vigente (sección 5).
+**PROPIEDAD** — *RF-06*: `id`, `alias` (texto corto, obligatorio y único; R20), `descripcion`, `direccion`, `inactiva` (lógico; no puede ponerse en verdadero con un contrato vigente, futuro o por decidir), `creado_en`. El estado *disponible* u *ocupada* se deriva del contrato vigente (sección 5).
 
 **CONTRATO** — *RF-07 a RF-10, RF-36, RF-42*
 
@@ -150,7 +157,8 @@ erDiagram
 | fecha_inicio | fecha | Fecha de entrega del bien; ancla el período (RN-03). |
 | fecha_fin | fecha, nulo | Inclusive (RN-02). |
 | moneda | moneda | |
-| anulado | lógico | Contrato dado de baja (RN-30). |
+| anulado_en | instante, nulo | Contrato dado de baja (RN-30, RF-48). Solo si no tiene movimientos válidos; se completa una sola vez. |
+| motivo_anulacion | texto, nulo | Obligatorio si `anulado_en` no es nulo (R21). |
 | creado_en | instante | |
 
 El monto, el día de vencimiento y los días de gracia **no viven en el contrato**: están en `CONDICION_CONTRATO`, para conservar el historial.
@@ -175,7 +183,7 @@ El monto, el día de vencimiento y los días de gracia **no viven en el contrato
 
 La condición aplicable a un período es la de mayor `vigente_desde` que no supere el inicio del período. Las correcciones retroactivas **no sustituyen** filas: la nueva fila queda registrada y cada obligación afectada recibe una fila de `AJUSTE_OBLIGACION` que apunta a esa condición.
 
-**DEPOSITO** — *RF-29 a RF-32*: `id`, `contrato_id` (único: un depósito por contrato), `importe_total`, `moneda`, `fecha_limite_acordada` (nulo), `notas`, `creado_en`. Si se corrige `importe_total`, se registra en auditoría y nunca puede quedar por debajo de lo abonado.
+**DEPOSITO** — *RF-29 a RF-32*: `id`, `contrato_id` (único: un depósito por contrato), `importe_total` (en la moneda del contrato; no hay campo propio de moneda, revisión del 21-oct-2026), `fecha_limite_acordada` (nulo), `notas`, `creado_en`. Si se corrige `importe_total`, se registra en auditoría y nunca puede quedar por debajo de lo abonado.
 
 ### 3.4 Obligaciones y movimientos
 
@@ -188,8 +196,8 @@ La condición aplicable a un período es la de mayor `vigente_desde` que no supe
 | tipo | texto | `regular` o `apertura` (CA-49, ERS 7.1). |
 | periodo_inicio | fecha, nulo | Nulo solo en `apertura`. |
 | periodo_fin | fecha, nulo | Idem. |
-| fecha_vencimiento | fecha | Regla RN-05. |
-| fecha_limite | fecha | `fecha_vencimiento` + días de gracia (RN-06). |
+| fecha_vencimiento | fecha | Regla RN-05; en `apertura`, la digita el administrador (por defecto, la fecha de apertura más los días de gracia del contrato; RF-43). |
+| fecha_limite | fecha | `fecha_vencimiento` + días de gracia (RN-06); en `apertura`, igual a `fecha_vencimiento`. |
 | importe_inicial | dinero | Importe con el que se creó la obligación. **No se modifica nunca**; los cambios posteriores son filas de `AJUSTE_OBLIGACION`. |
 | moneda | moneda | La del contrato. |
 | condicion_id | id, nulo | Condición aplicada al crearla (nulo en `apertura`). |
@@ -223,7 +231,7 @@ Cada fila conserva el importe anterior y el nuevo implícitos: anterior = import
 | importe_aplicado | dinero | Siempre positivo; en la moneda de la obligación o del depósito. |
 | moneda_recibida | moneda | |
 | importe_recibido | dinero | En `moneda_recibida`. Igual a `importe_aplicado` si la moneda coincide. |
-| tipo_cambio | decimal, nulo | Ingresado a mano; obligatorio si las monedas difieren (RF-38). |
+| tipo_cambio | decimal, nulo | Ingresado a mano, en colones por dólar; obligatorio si las monedas difieren (RF-38). El `importe_aplicado` lo calcula el sistema a partir de `importe_recibido` y este valor, a dos decimales con empate hacia arriba. |
 | fecha_real | fecha | No futura ni anterior al inicio del contrato (RN-29). |
 | registrado_en | instante | Siempre se conserva (RN-29). |
 | medio_pago | texto | `efectivo`, `transferencia`, `cheque` u `otro`. |
@@ -246,8 +254,8 @@ Un movimiento `abono` es **válido** si ninguna `reversion` apunta a él (RN-22)
 |---|---|---|
 | id | id | |
 | obligacion_id, contrato_id | id, nulo | Una u otra, según el tipo; ninguna en los avisos de seguridad. |
-| tipo | texto | `recordatorio`, `alerta_atraso`, `vencimiento_contrato`, `aviso_seguridad`. |
-| evento_seguridad | texto, nulo | Solo en `aviso_seguridad`: `uso_codigo_recuperacion`, `nuevos_codigos`, `cambio_segundo_factor`, `cambio_contrasena` o `restablecimiento_contrasena` (RF-27; ADR-026). |
+| tipo | texto | `recordatorio`, `alerta_atraso`, `vencimiento_contrato`, `contrato_por_decidir` (notificación web persistente hasta el cierre o la renovación; RF-42), `aviso_seguridad`, `proceso_diario_fallido` (RF-49). |
+| evento_seguridad | texto, nulo | Solo en `aviso_seguridad`: `uso_codigo_recuperacion`, `nuevos_codigos`, `cambio_segundo_factor`, `cambio_contrasena`, `restablecimiento_contrasena`, `cambio_correo`, `intentos_fallidos` o `rescate_servidor` (RF-27; ADR-026). |
 | canal | texto | `web` o `correo`; `whatsapp` queda para el futuro (DP-04). |
 | destinatario_tipo | texto | `administrador` o `secundaria` (solo avisos de seguridad). Se guarda el tipo y no la dirección, para no copiar datos personales a cada fila (propuesta). |
 | clave_unica | texto | Obligación + tipo + anticipación + fecha (idempotencia, RF-21). Única. |
@@ -264,7 +272,7 @@ Un movimiento `abono` es **válido** si ninguna `reversion` apunta a él (RN-22)
 
 **EJECUCION_PROCESO** — *RNF-16, DAS 10.1* (propuesta): `id`, `fecha_local`, `iniciada_en`, `terminada_en`, `resultado`, `detalle`. Sirve para saber qué días corrió el proceso y emitir solo la alerta del día actual (RF-22).
 
-**AUDITORIA** — *RF-28, RNF-06*: `id`, `entidad`, `registro_id`, `actor` (el usuario o `sistema`), `tipo_actor` (`administrador` o `proceso`), `ejecucion_id` (nulo, salvo si lo hizo el proceso diario), `accion`, `ocurrido_en`, `campos_modificados` (lista de nombres de campo), `valor_anterior` y `valor_nuevo` (solo para campos **no personales**: estados, importes, fechas, motivos). Para campos personales (`nombre_completo`, `numero_documento`, `telefono`, `correo`, imagen de cédula) se registra únicamente **que cambiaron**, nunca su valor. No guarda secretos ni documentos completos. Así la auditoría no retiene datos personales que la desasociación debe eliminar (sección 6).
+**AUDITORIA** — *RF-28, RNF-06*: `id`, `entidad`, `registro_id`, `actor` (el usuario o `sistema`), `tipo_actor` (`administrador` o `proceso`), `ejecucion_id` (nulo, salvo si lo hizo el proceso diario), `ip_origen` (texto, nulo; solo en eventos de autenticación y de seguridad de la cuenta; RF-28), `accion` (incluye `inicio_sesion`, `inicio_sesion_fallido` y `cierre_sesion`), `ocurrido_en`, `campos_modificados` (lista de nombres de campo), `valor_anterior` y `valor_nuevo` (solo para campos **no personales**: estados, importes, fechas, motivos). Para campos personales (`nombre_completo`, `numero_documento`, `telefono`, `correo`, imagen de cédula) se registra únicamente **que cambiaron**, nunca su valor. No guarda secretos ni documentos completos. Así la auditoría no retiene datos personales que la desasociación debe eliminar (sección 6).
 
 ## 4. Claves y restricciones
 
@@ -285,6 +293,8 @@ Un movimiento `abono` es **válido** si ninguna `reversion` apunta a él (RN-22)
 | R13 | `AJUSTE_OBLIGACION`: `importe_delta` ≠ 0; `motivo` obligatorio en `correccion` y `ajuste_manual`; el importe vigente resultante nunca queda por debajo de la suma de movimientos válidos, con la obligación bloqueada al insertar. | RF-10, RN-14 |
 | R14 | `AUDITORIA` no almacena valores de campos personales ni secretos (ver su definición). | RF-28, RF-41, RNF-06 |
 | R19 | `AUDITORIA`: si `tipo_actor` = `proceso`, `actor` = `sistema` y `ejecucion_id` es obligatorio; si es `administrador`, `ejecucion_id` es nulo. No existe una cuenta `sistema` en `ADMINISTRADOR` (RF-27). | RF-28, HT-06 |
+| R20 | `PROPIEDAD`: `alias` único y no vacío. | RF-06, CA-63 |
+| R21 | `CONTRATO`: `anulado_en` solo si no existe ningún movimiento válido de sus obligaciones ni de su depósito, y `motivo_anulacion` obligatorio; se completa una sola vez. Los contratos anulados no cuentan para R2. | RF-48, CA-62 |
 | R15 | `MOVIMIENTO`: `clave_solicitud` única. Un reintento con la misma clave no crea otro movimiento; la aplicación devuelve el ya registrado. | H13 |
 | R16 | `MOVIMIENTO`: `numero_recibo_fisico` único cuando no es nulo (índice único parcial o equivalente). | RF-47, CA-61 |
 | R17 | `TOKEN_RESTABLECIMIENTO`: se acepta solo si `usado_en` es nulo y la hora actual es anterior a `expira_en`; al usarlo se completa `usado_en` en la misma transacción que fija la contraseña nueva, se invalidan los demás tokens pendientes y las sesiones abiertas, y se avisa a las dos direcciones. | RF-27, CA-59 |
@@ -311,7 +321,7 @@ Cuando vence el plazo de retención del último contrato del inquilino (RF-41):
 | Entidad | Acción |
 |---|---|
 | `DOCUMENTO_IDENTIDAD` | Se elimina el archivo del almacenamiento privado; la fila conserva `eliminado_en`. |
-| `INQUILINO` | `nombre_completo`, `numero_documento`, `telefono` y `correo` se anulan; `desasociado_en` se completa. La fila y su `id` permanecen. |
+| `INQUILINO` | `nombre_completo`, `numero_documento`, `telefono` y `correo` se anulan; `desasociado_en` se completa. La fila y su `id` permanecen. La misma desasociación se ejecuta a petición del titular (RF-40, CA-65) y para quien no tiene contrato o los tiene todos anulados, con el plazo de `retencion_sin_contrato_meses` (RF-41, CA-66). |
 | `CONSENTIMIENTO`, `SOLICITUD_TITULAR` | Se evalúa con asesoría legal (pueden requerirse como evidencia de cumplimiento). **Pendiente** (DP-18). |
 | `CONTRATO`, `OBLIGACION`, `MOVIMIENTO`, `COMPROBANTE` (fase posterior) | Se conservan sin datos de identificación; el comprobante impreso se regenera sin nombre. El `numero_recibo_fisico` se conserva con el movimiento. **Pendiente** de confirmar con DP-18 y DP-20. |
 | `ORGANIZACION.correo_aviso_secundario` | Dirección del propio solicitante; se conserva mientras esté configurada. |
@@ -336,7 +346,7 @@ Cuando vence el plazo de retención del último contrato del inquilino (RF-41):
 |---|---|
 | ORGANIZACION, ADMINISTRADOR, CODIGO_RECUPERACION, TOKEN_RESTABLECIMIENTO | RF-26, RF-27, RF-33, RN-25 |
 | INQUILINO, DOCUMENTO_IDENTIDAD, ACCESO_DOCUMENTO | RF-01 a RF-05, RF-45 |
-| CONSENTIMIENTO, SOLICITUD_TITULAR | RF-39, RF-40, RF-41 |
+| TEXTO_CONSENTIMIENTO, CONSENTIMIENTO, SOLICITUD_TITULAR | RF-39, RF-40, RF-41 |
 | PROPIEDAD, CONTRATO, CONDICION_CONTRATO | RF-06 a RF-10, RF-36, RF-42 |
 | OBLIGACION, AJUSTE_OBLIGACION | RF-09 a RF-15, RF-43 |
 | MOVIMIENTO, COMPROBANTE (fase posterior) | RF-13, RF-16, RF-34, RF-35, RF-37, RF-38, RF-47 |

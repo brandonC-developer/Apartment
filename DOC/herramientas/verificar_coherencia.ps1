@@ -41,18 +41,20 @@ $mdd = Get-UltimaVersion 'fase-3-diseno-tecnico' 'MODELO_DATOS_SGA_001'
 $dte = Get-UltimaVersion 'fase-3-diseno-tecnico' 'DISENO_TECNICO_SGA_001'
 $epp = Get-UltimaVersion 'fase-4-pruebas' 'ESTRATEGIA_PRUEBAS_SGA_001'
 $pim = Get-UltimaVersion 'fase-5-implementacion' 'PLAN_IMPLEMENTACION_SGA_001'
+$lrc = Get-UltimaVersion 'fase-5-implementacion' 'LISTA_REVISION_CRITICA_SGA_001'
 if (-not $ers -or -not $das) { Write-Output 'ERROR: no se encontro la ERS o el DAS.'; exit 1 }
 Write-Output "ERS: $($ers.Name)"
 Write-Output "DAS: $($das.Name)"
 if ($mdd) { Write-Output "MDD: $($mdd.Name) (se comprueban sus citas y su base)" }
 if ($dte) { Write-Output "DTE: $($dte.Name) (se comprueban sus citas y su base)" }
 if ($epp) { Write-Output "EPP: $($epp.Name) (se comprueban sus citas, su base y la cobertura de CA)" }
+if ($lrc) { Write-Output "LRC: $($lrc.Name) (se comprueban sus citas, su base y su vigencia)" }
 if ($pim) { Write-Output "PIM: $($pim.Name) (se comprueban sus citas, su base y que cada RF y CA conste una vez en sus entregas)" }
 
 $archivos = @($ers, $das)
 $texto = @{}
 foreach ($a in $archivos) { $texto[$a.Name] = Get-Content -Path $a.FullName -Encoding UTF8 }
-$otros = @($mdd, $dte, $epp, $pim) | Where-Object { $_ }
+$otros = @($mdd, $dte, $epp, $pim, $lrc) | Where-Object { $_ }
 $textoOtros = @{}
 foreach ($o in $otros) { $textoOtros[$o.Name] = Get-Content -Path $o.FullName -Encoding UTF8 }
 
@@ -94,7 +96,8 @@ $vigentes = @(
     @{ Doc = $mdd; Carpeta = 'fase-3-diseno-tecnico'; Prefijo = 'MODELO_DATOS_SGA_001' },
     @{ Doc = $dte; Carpeta = 'fase-3-diseno-tecnico'; Prefijo = 'DISENO_TECNICO_SGA_001' },
     @{ Doc = $epp; Carpeta = 'fase-4-pruebas'; Prefijo = 'ESTRATEGIA_PRUEBAS_SGA_001' },
-    @{ Doc = $pim; Carpeta = 'fase-5-implementacion'; Prefijo = 'PLAN_IMPLEMENTACION_SGA_001' }
+    @{ Doc = $pim; Carpeta = 'fase-5-implementacion'; Prefijo = 'PLAN_IMPLEMENTACION_SGA_001' },
+    @{ Doc = $lrc; Carpeta = 'fase-5-implementacion'; Prefijo = 'LISTA_REVISION_CRITICA_SGA_001' }
 )
 $readmeRaiz = Get-Content -Path (Join-Path $doc 'README.md') -Raw -Encoding UTF8
 foreach ($v in $vigentes) {
@@ -117,7 +120,8 @@ $bases = @(
     @{ Doc = $mdd; Cita = @('ERS', 'DAS') },
     @{ Doc = $dte; Cita = @('ERS', 'DAS', 'MDD') },
     @{ Doc = $epp; Cita = @('ERS', 'DAS') },
-    @{ Doc = $pim; Cita = @('ERS', 'DAS', 'MDD') }
+    @{ Doc = $pim; Cita = @('ERS', 'DAS', 'MDD') },
+    @{ Doc = $lrc; Cita = @('ERS', 'DAS', 'MDD') }
 )
 $ultimas = @{ ERS = Get-Version $ers; DAS = Get-Version $das }
 if ($mdd) { $ultimas['MDD'] = Get-Version $mdd }

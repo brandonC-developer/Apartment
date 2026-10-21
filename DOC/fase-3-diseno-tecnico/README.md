@@ -15,7 +15,7 @@
 
 **Hallazgos del modelado que afectan a la ERS y al DAS:** ver la sección 9 del modelo (H1 a H14; H14 es propuesta del asistente, no decidida por el solicitante). El más importante: el saldo de apertura se define como movimiento en los glosarios y como obligación en el resto de la ERS.
 
-**Bloqueos:** ninguno para continuar con el modelo; la integración con WhatsApp espera a DP-04.
+**Bloqueos:** ninguno. WhatsApp queda fuera de la v1 (DP-04); la persona revisora de lo crítico y los datos de la carga inicial siguen sin designar o definir (ver la fase 5).
 
 **Incorporado en la ERS v1.8 y el DAS v0.7:** H1 a H3, H9 a H13 y H4 (provisional). **Siguen abiertos:** DP-20 (comprobantes) y la revisión por otra persona.
 
