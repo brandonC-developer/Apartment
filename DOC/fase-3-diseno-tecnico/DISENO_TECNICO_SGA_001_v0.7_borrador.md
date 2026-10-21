@@ -104,7 +104,7 @@ Fundamento: Ley 8968, art. 7.1 y Reglamento 37554-JP, arts. 21 y 22, leídos por
 | Contenido | Informe "completo, claro y exento de codificaciones", con explicación de los términos técnicos y de la finalidad y el uso (art. 7.1.b); estados con su nombre y no con códigos internos | Texto de la ley |
 | Formato | **Informe web imprimible**, con la foto de la cédula incrustada; el administrador lo imprime o lo guarda como PDF desde el navegador | Decisión del solicitante, a favor de la recomendación (rectificó su primera elección, PDF generado por el sistema, el 21-oct-2026) |
 | Consecuencias | Sin dependencias nuevas ni paquetes del servidor. El PDF depende del navegador del administrador y su aspecto no se controla desde el sistema. Si luego se quiere un PDF generado por el sistema, requiere un ADR con biblioteca y prueba. El comprobante (HT-02) podría usar el mismo mecanismo; no está decidido | Propuesta |
-| Entrega | El archivo contiene datos sensibles: no se envía por correo ni por WhatsApp; entrega en mano o por un medio seguro (propuesta). Cada exportación debe auditarse (RF-28/RF-45; propuesta) | Propuesta |
+| Entrega | El archivo contiene datos sensibles: no se envía por correo ni por WhatsApp; entrega en mano o por un medio seguro (propuesta). Cada exportación se audita (RF-45): decisión del solicitante del 21-oct-2026, siguiendo la recomendación | Entrega: propuesta; auditoría: decidido |
 | Plazo y costo | Gratuita, cinco días hábiles desde la recepción (art. 7; RF-40) | Texto de la ley |
 | Frecuencia | El Reglamento fija un intervalo mínimo de seis meses entre consultas, salvo motivo fundamentado; el sistema no lo hace cumplir hoy (propuesta: solo informar al administrador de la consulta anterior) | Texto del art. 21; la solución, propuesta |
 
@@ -114,13 +114,13 @@ Detalle de la decisión y de sus fuentes en el ADR-026 del DAS v0.11.
 | Aspecto | Contenido |
 |---|---|
 | Eventos | Uso de un código de recuperación; emisión de nuevos códigos (ambos exigidos por RF-27); registro o cambio del segundo factor; cambio o restablecimiento de la contraseña (los dos últimos ampliaron RF-27; incorporados en la ERS v1.9) |
-| Destinatarios | Dos direcciones de correo: la del administrador y la de una persona de confianza. WhatsApp se añadirá como segundo canal cuando exista (DP-04) |
+| Destinatarios | Dos direcciones de correo del propio solicitante, en proveedores distintos (decisión del 21-oct-2026); no constan en los documentos, solo en la configuración. WhatsApp se añadirá como segundo canal cuando exista (DP-04) |
 | Contenido | Qué ocurrió, fecha y hora local (`America/Costa_Rica`) y qué hacer si no fue el administrador. **Sin códigos, contraseñas ni enlaces de acceso** |
 | Envío | Servicio Resend por API HTTPS con django-anymail; requiere dominio propio verificado |
 | Persistencia | El aviso se guarda en la misma transacción que el evento (propuesta del asistente, aceptada) |
-| Reintentos | Inmediato y hasta cinco reintentos con espera creciente y aleatoria, mediante un temporizador de systemd de intervalo corto (propuesta, aceptada); el intervalo no está definido |
+| Reintentos | Inmediato y hasta cinco reintentos con espera creciente y aleatoria, mediante un temporizador de systemd que corre cada 1 minuto (decisión del solicitante del 21-oct-2026; la espera entre intentos la fija cada envío) |
 | Si falla | La recuperación **procede**. El aviso queda *fallido*, se muestra una alerta persistente en cada inicio de sesión y se registra en la auditoría |
-| Datos | Solo las direcciones de correo y el texto del aviso; ningún dato de inquilinos. La dirección de la segunda persona es un dato personal de un tercero (DP-19, abogado) |
+| Datos | Solo las direcciones de correo y el texto del aviso; ningún dato de inquilinos. Las dos direcciones son del solicitante: no hay dato de un tercero |
 
 Cambios que esto exigía en la ERS: hechos en la ERS v1.9 (sección 2.4, RF-27, CA-47, CA-59 y CA-60).
 
@@ -139,14 +139,16 @@ Riesgos asumidos por el solicitante:
 - El correo del administrador pasa a ser llave para restablecer la contraseña; si lo controlan terceros, solo falta superar el TOTP. El inicio de sesión depende de que funcionen Resend y el dominio (ADR-023, ADR-026).
 - Un correo con enlace es de otro tipo que los avisos del ADR-026, que no llevan enlaces de acceso; el ADR-026 no cambia, pero el DAS debe describir este correo en una versión próxima.
 
-Condiciones que se siguen recomendando: añadir el TOTP (o un código de recuperación) como requisito para el reemplazo del segundo factor; respuesta idéntica y sin revelar si la dirección existe; invalidar los enlaces anteriores y las sesiones abiertas al cambiar la contraseña; limitar la frecuencia de solicitudes. Estas tres últimas son propuestas del asistente aún no decididas ni verificadas contra la guía OWASP Forgot Password en esta sesión.
+Condición que se sigue recomendando: añadir el TOTP (o un código de recuperación) como requisito para el reemplazo del segundo factor (futuro).
+
+Protecciones del enlace adoptadas por el solicitante el 21-oct-2026, siguiendo la recomendación (OWASP, Forgot Password Cheat Sheet, leída por resumen ese día): respuesta y tiempo idénticos exista o no la cuenta; al fijar la contraseña nueva se invalidan los demás enlaces y se cierran las sesiones abiertas (cierre automático: propuesta del asistente); y un máximo de 3 solicitudes por hora para la cuenta (número propuesto por el asistente; la fuente no lo fija).
 
 ### 3.7 Notificaciones al administrador por correo en la v1 (HT-01, decidido el 21-oct-2026)
 Decisión del solicitante (cambio de alcance): en la v1, los recordatorios y alertas de las obligaciones (RF-21, RF-22) se entregan al administrador por **notificación web persistente y correo**. WhatsApp queda para una versión futura.
 
 | Aspecto | Contenido |
 |---|---|
-| Destinatario | La dirección de correo del administrador (propuesta: la misma de los avisos de seguridad; no la segunda persona del ADR-026) |
+| Destinatario | La dirección de correo del administrador (propuesta: la misma de los avisos de seguridad; no la segunda dirección) |
 | Envío | El mismo servicio que los avisos de seguridad: Resend por API HTTPS con django-anymail y dominio propio verificado (ADR-026). No hay proveedor nuevo |
 | Contenido | Propuesta: aplicar a los correos los mismos límites de RF-44: sin número de documento ni imágenes, solo alias de la propiedad e importe |
 | Reintentos y registro | Propuesta: los de RF-24 (hasta cinco intentos con espera creciente y aleatoria; después *fallido* y la notificación web persiste) |
@@ -189,7 +191,7 @@ Cambios que esto exigía en la ERS y el DAS (hechos en la ERS v1.9 y el DAS v0.1
 | Iniciar sesión, usar o regenerar códigos de recuperación | 26, 27 | Aviso por correo a las dos direcciones ante cada recuperación y cada emisión de códigos (sección 3.5) | Por definir |
 | Registrar o cambiar el segundo factor | 27 | Aviso por correo (sección 3.5, evento ampliado respecto de RF-27); exige la contraseña actual (sección 3.6); el procedimiento está en la ERS v1.9 (RF-27, CA-59) | Por definir |
 | Cambiar o restablecer la contraseña | 27 | Aviso por correo (sección 3.5, evento ampliado); con sesión exige la contraseña actual, sin sesión un enlace por correo de 15 minutos (sección 3.6); en la ERS v1.9 (RF-27, CA-59) | Por definir |
-| Registrar y resolver solicitud del titular; exportar datos | 40 | Fecha límite de cinco días hábiles; la supresión se atiende salvo obligación legal (DP-18) | Sí |
+| Registrar y resolver solicitud del titular; exportar datos | 40 | Fecha límite de cinco días hábiles; la supresión se atiende salvo obligación legal (DP-18) | Sí; la exportación se audita también (RF-45) |
 | Retención: avisar y eliminar o desasociar datos | 41 | Aviso al administrador antes de ejecutar; conserva movimientos financieros sin datos de identificación | Sí; la ejecuta el proceso diario |
 | Registrar incidente de seguridad y avisos | 46 | Calcula el plazo de cinco días hábiles; deja constancia de cada aviso y de la revisión | Sí |
 | Configurar moneda y zona horaria | 33 | La zona se configura solo a nivel de organización | Sí (RF-28) |
@@ -256,8 +258,8 @@ Los flujos 10.1 (proceso diario), 10.2 (abono), 10.3 (anulación), 10.4 (reajust
 | HT-03 | **Resuelto a nivel de diseño el 21-oct-2026** (sección 3.4.1): todo el registro del titular, incluida la fotografía de la cédula, en un informe web imprimible (el solicitante rectificó su primera elección, PDF generado por el sistema, y adoptó la recomendación) | El abogado valida alcance y exclusiones (DP-17); ERS: RF-40 y CA-27 |
 | HT-04 | La ERS (sección 15) menciona una "especificación de API", anterior al ADR-022 | **Resuelto en la ERS v1.9 (21-oct-2026):** sección 15 ajustada |
 | HT-05 | **Resuelto el 20-oct-2026** (ver sección 3.5 y ADR-026): aviso por correo a dos direcciones, cuatro eventos, recuperación que procede ante fallo del envío. Quedan pendientes el dominio y las dos direcciones. Los cambios de la ERS se hicieron en la v1.9 | Incorporado |
-| HT-06 | La auditoría exige "actor" (RF-28) y no dice quién es el actor del proceso diario | Registrar "sistema" y la ejecución que lo originó |
-| HT-07 | DAS 10.2 dice que se "bloquea la obligación" dentro de una transacción; la técnica exacta (bloqueo de fila de la base de datos) no se verificó en la documentación de Django | Verificar al escribir el código, junto con la prueba de concurrencia de la estrategia de pruebas |
+| HT-06 | **Resuelto el 21-oct-2026:** la auditoría registra actor = sistema, tipo de actor = proceso y el `ejecucion_id` cuando lo hace el proceso diario. El solicitante preguntó por dos cuentas o un sistema aparte tipo CMS; no se adoptaron (ver actualización 2026-10-21l) | Incorporado en la ERS v1.9 (RF-28), el DAS v0.11 y el modelo de datos v0.4 (R19) |
+| HT-07 | **Resuelto el 21-oct-2026:** la técnica es `select_for_update()` de Django dentro de `transaction.atomic()` (`SELECT ... FOR UPDATE` en PostgreSQL), verificada en la documentación de Django (leída por resumen, primera mitad) y de PostgreSQL (bloqueos de fila). Sin `nowait`: la segunda operación espera. Bloquear varias filas siempre en el mismo orden. Sin efecto en SQLite | Incorporado en el DAS v0.11 (10.2); la prueba de concurrencia usa `TransactionTestCase` y PostgreSQL (estrategia de pruebas) |
 | HT-08 | **Resuelto a nivel de diseño el 21-oct-2026** (sección 3.6): contraseña actual para cambiar la contraseña y reemplazar el TOTP; enlace por correo de 15 minutos para restablecer. Las dos primeras decisiones van contra la recomendación | Incorporado en la ERS v1.9 (RF-27, CA-59), el DAS v0.11 (ADR-026) y el modelo de datos v0.4 (`TOKEN_RESTABLECIMIENTO`) |
 | HT-09 | La ERS 2.4 excluye el correo como canal de notificación; el ADR-026 lo usa solo para alertas de seguridad | **Resuelto en la ERS v1.9 (21-oct-2026):** sección 2.4 y RF-23 |
 
@@ -279,9 +281,9 @@ HT-nn es un identificador local de este documento, no de la lista compartida del
 1. HT-01: resuelto (sección 3.7). Queda confirmar, para la ERS v1.9, la dirección de destino, los límites de contenido del correo y su validación legal.
 2. HT-03: resuelto (sección 3.4.1). Quedan la validación del abogado y la entrega y auditoría de la exportación.
 3. HT-02: resuelto (sección 3.4.2). Queda DP-20 con el abogado o contador y la fecha o versión de la fase A.
-4. Si las consultas de lectura deben auditarse (la reimpresión se decide en la fase A).
+4. Auditoría de lecturas: decidido el 21-oct-2026 (fotos de cédula y exportación del titular; no las lecturas ordinarias). La reimpresión del comprobante se decide en la fase A.
 5. HT-08: resuelto en la sección 3.6; queda decidir si se añade el TOTP al reemplazo del segundo factor (fecha o versión) y las tres propuestas de endurecimiento sin decidir.
-6. Nombre de dominio, cuáles son las dos direcciones de correo y el intervalo del temporizador de reintentos.
+6. Decidido el 21-oct-2026: dominio `.com` en Cloudflare Registrar (nombre y precio por confirmar al comprarlo); dos direcciones del solicitante en proveedores distintos; reintentador cada 1 minuto; protecciones del enlace de restablecimiento. Detalle en la actualización 2026-10-21k.
 ## 8. Condiciones para aprobar este documento
 
 - Aprobar la ERS v1.9, el DAS v0.11 y el modelo de datos v0.4.

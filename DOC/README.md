@@ -18,7 +18,7 @@ Carpetas transversales:
 - `metodologia/` — evaluación de la metodología de seis fases y la plantilla de registro de cambios.
 - `actualizaciones/` — un registro por cada actualización, con el motivo, los cambios, las decisiones y la evidencia.
 - `.claude/skills/recomendacion-buenas-practicas/` (en la raíz del proyecto, fuera de `DOC/`) — skill con el modo de trabajo para recomendaciones.
-- `herramientas/` — `verificar_coherencia.ps1`: comprueba que los identificadores citados en la ERS, el DAS y el modelo de datos estén definidos y que los enlaces entre archivos existan. Ejecutar con `powershell -File DOC\herramientas\verificar_coherencia.ps1`.
+- `herramientas/` — `verificar_coherencia.ps1`: comprueba identificadores, enlaces, vigencia, versión de la base de cada documento, cobertura de la matriz de la ERS y de los CA en la estrategia de pruebas, y que los README listen sus archivos. Ejecutar con `powershell -File DOC\herramientas\verificar_coherencia.ps1`.
 
 ## Convenciones
 
@@ -54,6 +54,15 @@ Carpetas transversales:
 | 2026-10-21 (f) | `actualizaciones/2026-10-21f_DAS-v0.11/` | DAS v0.11: alinea la arquitectura con la ERS v1.9 (ADR-008, 010, 013, 018 y 026; RE-05; correo en lugar de WhatsApp; recibo físico; restablecimiento de contraseña) |
 | 2026-10-21 (g) | `actualizaciones/2026-10-21g_auditoria-coherencia/` | Auditoría de enlaces, vigencia y coherencia: 4 correcciones en ERS v1.9 y DAS v0.11; lista de documentos desalineados (modelo de datos, estrategia de pruebas, diseño técnico, resumen para el abogado y el script) |
 | 2026-10-21 (h) | `actualizaciones/2026-10-21h_alineacion-MDD-EPP-DTE/` | Modelo de datos v0.4, diseño técnico v0.7 y estrategia de pruebas v0.3: alineados con la ERS v1.9 y el DAS v0.11 (recibo físico, correo, avisos de seguridad, restablecimiento de contraseña); sin decisiones nuevas |
+| 2026-10-21 (i) | `actualizaciones/2026-10-21i_registro-validacion-legal/` | Registro de la declaración del solicitante de que el abogado verificó todo; sin dictamen, nombre ni fecha aportados |
+| 2026-10-21 (j) | `actualizaciones/2026-10-21j_script-coherencia/` | Script de coherencia ampliado: citas en diseño técnico y pruebas, base declarada, cobertura de la matriz y de CA, README de fase |
+| 2026-10-21 (k) | `actualizaciones/2026-10-21k_decisiones-tecnicas-abiertas/` | Cierre de cinco decisiones técnicas: dominio .com en Cloudflare, dos direcciones del solicitante, reintentador cada 1 minuto, protecciones del enlace de restablecimiento y auditoría de cédulas y exportaciones |
+| 2026-10-21 (l) | `actualizaciones/2026-10-21l_ht-06-ht-07/` | HT-06 y HT-07 resueltos: actor sistema (tipo proceso) con su ejecución en la auditoría; bloqueo de fila con select_for_update sin nowait; ideas de dos cuentas y sistema tipo CMS registradas |
+| 2026-10-21 (m) | `actualizaciones/2026-10-21m_adr-027-roles-base-de-datos/` | ADR-027: dos roles de base de datos (dueño solo para migraciones; aplicación sin UPDATE ni DELETE sobre el historial) más guardas en Django; aplica R12 |
+| 2026-10-21 (n) | `actualizaciones/2026-10-21n_adr-028-identificadores/` | ADR-028: identificadores internos enteros de 64 bits autoincrementales (BigAutoField); H7 resuelto |
+| 2026-10-21 (o) | `actualizaciones/2026-10-21o_roles-peer-respaldos/` | Punto 3: tres roles de base de datos (dueño, aplicación, respaldos de solo lectura) con autenticación peer por socket local, sin contraseñas; ajuste de ADR-027 y ADR-024 |
+| 2026-10-21 (p) | `actualizaciones/2026-10-21p_adr-029-conexiones/` | ADR-029: una conexión por petición (CONN_MAX_AGE = 0), sin pool, por socket local; se revisa con la prueba de carga |
+| 2026-10-21 (q) | `actualizaciones/2026-10-21q_adr-030-aplicaciones-django/` | ADR-030: seis aplicaciones de Django, servicios y selectores, claves foráneas solo hacia abajo; propuesta del asistente con la elección delegada |
 
 ## Control de versiones
 

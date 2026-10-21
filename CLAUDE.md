@@ -31,7 +31,7 @@ Proyecto en fase de **documentación**. No hay código ni se ha autorizado imple
 powershell -File DOC\herramientas\verificar_coherencia.ps1
 ```
 
-Comprueba que cada RF, RN, RNF, CA, OL, DP y ADR citado en la ERS, el DAS o el modelo de datos esté definido en la última versión de la ERS o del DAS, y que los enlaces relativos entre `.md` existan. No comprueba el contenido ni la lógica; tras cambios de reglas, relee los documentos y recalcula a mano los ejemplos numéricos.
+Comprueba, sobre la última versión de cada documento: que cada RF, RN, RNF, CA, OL, DP, ADR y RE citado en la ERS, el DAS, el modelo de datos, el diseño técnico y la estrategia de pruebas esté definido en la ERS o el DAS; que los enlaces relativos entre `.md` existan; la vigencia en los README; que la base que cada documento declara (ERS, DAS, modelo de datos) sea la última versión; que cada RF, RN, RNF y CA esté en la matriz de la ERS y cada CA asignado en la estrategia de pruebas; y que cada archivo de una fase conste en su README. No comprueba el contenido ni la lógica; tras cambios de reglas, relee los documentos y recalcula a mano los ejemplos numéricos.
 
 ## Convenciones de contenido
 

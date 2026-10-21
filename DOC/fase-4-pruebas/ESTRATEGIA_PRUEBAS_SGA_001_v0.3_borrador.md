@@ -41,8 +41,8 @@ La proporción de la pirámide es una orientación del autor, no una regla medid
 | Nivel | Qué prueba | Herramienta (propuesta) | Base de datos |
 |---|---|---|---|
 | Unitarias | Reglas puras: períodos por aniversario, prorrateo, reajuste, saldos, estados derivados, plazos de cinco días hábiles | Ejecutor de Django (`unittest`), decisión del solicitante | Ninguna |
-| Integración | Restricciones de PostgreSQL (contratos solapados, unicidad contrato-período, comprobantes sin huecos, clave de solicitud), transacciones y el comando diario | `TestCase` de Django | **PostgreSQL 18**, no SQLite: `ExclusionConstraint` es de PostgreSQL |
-| Concurrencia | Contador de comprobantes y envío repetido de un abono | `TransactionTestCase` (confirma de verdad) | PostgreSQL 18 |
+| Integración | Restricciones de PostgreSQL (contratos solapados, unicidad contrato-período, comprobantes sin huecos, clave de solicitud), transacciones y el comando diario; con el rol de la aplicación, un `UPDATE` o `DELETE` sobre un movimiento, un ajuste, la auditoría o un acceso a documento es rechazado por PostgreSQL (R12, ADR-027) | `TestCase` de Django | **PostgreSQL 18**, no SQLite: `ExclusionConstraint` es de PostgreSQL |
+| Concurrencia | Contador de comprobantes (fase posterior), envío repetido de un abono y dos abonos simultáneos sobre la misma obligación (bloqueo de fila con `select_for_update()`: el segundo espera y ve el saldo actualizado; ver diseño técnico, HT-07) | `TransactionTestCase` (confirma de verdad) | PostgreSQL 18 |
 | Vistas y permisos | Acceso denegado, CSRF, sesión, descarga de documentos privados | Cliente de pruebas con `enforce_csrf_checks=True` | PostgreSQL 18 |
 | Extremo a extremo | Pocos recorridos críticos en navegador (registrar pago y emitir comprobante; alta de contrato) | Selenium con `StaticLiveServerTestCase` de Django, decisión del solicitante | PostgreSQL 18 |
 | No funcionales y de operación | Rendimiento, compatibilidad, restauración, temporizador, HTTPS | Locust para el rendimiento (decisión del solicitante); ver secciones 6 y 7 | Entorno de prueba |
@@ -73,7 +73,7 @@ Prioridad (propuesta): **Alta** = dinero, plazos legales, datos personales o seg
 |---|---|---|---|
 | Inquilinos y datos personales | CA-01, 25, 29 | Integración | Media |
 | | CA-11, 26 | Vistas y permisos; integración (auditoría) | Alta |
-| | CA-27, 28 (L) | Unitarias (plazo de cinco días hábiles); integración (retención) | Alta |
+| | CA-27, 28 (L) | Unitarias (plazo de cinco días hábiles); integración (retención y registro de auditoría de la exportación del titular) | Alta |
 | Contratos y obligaciones | CA-02, 24, 32 | Integración (solape de contratos) | Media |
 | | CA-03, 30, 14, 31 | Unitarias (fechas, mes corto, prorrateo); integración (unicidad) | Alta |
 | Movimientos y estados | CA-04, 19, 20, 21, 33, 34, 35 | Unitarias; integración | Alta |
@@ -87,7 +87,7 @@ Prioridad (propuesta): **Alta** = dinero, plazos legales, datos personales o seg
 | | CA-09 | Integración (canal de correo simulado que falla) | Media |
 | Depósito | CA-15, 16, 17, 23, 45, 46 | Unitarias; integración | Media |
 | Seguridad y configuración | CA-13, 47, 48 | Vistas y permisos | Alta |
-| | CA-59 | Vistas y permisos; integración (enlace de un solo uso y 15 minutos; no inicia sesión; buzón en memoria) | Alta |
+| | CA-59 | Vistas y permisos; integración (enlace de un solo uso y 15 minutos; no inicia sesión; respuesta idéntica exista o no la cuenta; límite de 3 solicitudes por hora; invalidación de los demás enlaces y de las sesiones; buzón en memoria) | Alta |
 | | CA-60 (L) | Integración (correo simulado que falla en el aviso de seguridad; reintentos; alerta persistente) | Alta |
 | | CA-18 | Unitarias; operación (zona horaria del temporizador) | Media |
 | | CA-10 | Integración | Alta |
@@ -154,7 +154,7 @@ Entradas que cada prueba debe cubrir. Los resultados esperados salen de los CA d
 |---|---|---|
 | HP-01 | **Resuelto en la ERS v1.9 con CA-58 (21-oct-2026).** La segunda mitad de RN-15 no tenía criterio de aceptación. La redacción de CA-58 es propuesta del asistente, no revisada por el solicitante, y su resultado esperado queda provisional (L) hasta el dictamen sobre OL-11. Propuesta registrada en la v0.2 (abajo): | **Decidido (20-oct-2026):** caso de prueba ahora, marcado "sin CA" y de prioridad alta (L); el CA se añade en la próxima versión de la ERS junto con el dictamen del abogado sobre OL-11. Inferencia del asistente, no verificada con datos: por RF-11 y por el rechazo de saldo negativo, la regla es difícil de violar en uso normal |
 | HP-02 | Los CA no citan los requisitos que verifican; la trazabilidad solo está en la matriz de la ERS | Al escribir los casos de prueba, cada uno cita su CA y sus RF, RN y RNF |
-| HP-03 | El script de coherencia no revisa este documento ni que cada requisito esté en la matriz. La auditoría del 21-oct-2026 mostró que esto dejó pasar tres documentos desalineados con la ERS v1.9 | Ampliar el script: la decisión sobre ampliarlo sigue pendiente del solicitante |
+| HP-03 | El script de coherencia no revisaba este documento ni que cada requisito estuviera en la matriz; la auditoría del 21-oct-2026 mostró que esto dejó pasar tres documentos desalineados con la ERS v1.9 | **Resuelto el 21-oct-2026:** el script ya revisa este documento (citas, base y cobertura de CA); ver la actualización 2026-10-21 (j) |
 | HP-04 | Los CA marcados (L) tienen resultado esperado provisional | Revisar con el dictamen del abogado |
 
 HP-nn es un identificador local de este documento, no de la lista compartida del proyecto.
@@ -174,7 +174,7 @@ Decididas el 20-oct-2026, tras una investigación y una recomendación del asist
 | 7 | Qué puede quedar sin probar | Nada de prioridad alta; media con aceptación escrita; baja diferible |
 
 **Pendientes:**
-- Probar que Locust reporta el percentil 95 o calcularlo en Python.
+- Probar que Locust reporta el percentil 95 o calcularlo en Python, y medir con él si abrir una conexión por petición (`CONN_MAX_AGE = 0`, ADR-029) afecta el objetivo de RNF-08.
 - Escribir y probar el script de comprobación mensual de restauración.
 - Elegir la herramienta de cifrado de los respaldos (ADR-024).
 - Compatibilidad de Selenium con los navegadores y la versión de Python elegidos.

@@ -1,4 +1,4 @@
-﻿# Modelo lógico de datos
+# Modelo lógico de datos
 
 **Sistema de Gestión de Alquileres**
 
@@ -14,7 +14,7 @@ Este documento es un **modelo lógico**: entidades, atributos, claves, restricci
 
 | Tipo lógico | Significado |
 |---|---|
-| `id` | Identificador único e inmutable (formato por decidir: UUID o secuencia). |
+| `id` | Identificador único e inmutable: entero de 64 bits autoincremental (`BigAutoField` de Django; ADR-028, decisión del 21-oct-2026). Los UUID se mantienen en `clave_solicitud` y en los nombres de archivo de las cédulas. |
 | `fecha` | Fecha de calendario sin hora (vencimientos, períodos, fecha real de recepción). |
 | `instante` | Marca de tiempo almacenada en UTC (registro, auditoría). Se presenta en la zona de la organización. |
 | `dinero` | Decimal exacto (nunca flotante), con la moneda en una columna aparte. Escala: 2 decimales almacenados; el redondeo a la unidad entera aplica solo al prorrateo de CRC (ERS RN-12). |
@@ -30,7 +30,7 @@ Regla general: **los movimientos y los ajustes de importe no se editan ni se bor
 | 0.1 | 17-oct-2026 | Primer borrador | "empieza el modelo de datos" | Ninguna |
 | 0.2 | 17-oct-2026 | Ajustes de importe como filas nuevas (`AJUSTE_OBLIGACION`); auditoría sin valores personales; algoritmo de contraseña; fuentes; ADR propuestos; prueba en PostgreSQL (sección 12), hallazgo H11; fuentes de dinero, UTC e idempotencia; H12 y H13 (H13 aceptada, con `clave_solicitud` y R15) | Verificación de buenas prácticas de la fase 3; decisión del solicitante "procede con las dos recomendaciones" | Ninguna |
 | 0.3 | 17-oct-2026 | Hora de notificación como fecha local, hora local y zona (DP-26); entidad `INCIDENTE_SEGURIDAD` (RF-46); H4 y H12 resueltas | DP-26 y H4 respondidas por el solicitante; ERS v1.8 | Ninguna |
-| 0.4 | 21-oct-2026 | `MOVIMIENTO.numero_recibo_fisico` (RF-47, R16); `COMPROBANTE` como fase posterior; `ORGANIZACION` con correos; `NOTIFICACION` con canal correo, avisos de seguridad y reintentos; entidad `TOKEN_RESTABLECIMIENTO`; H14; transacciones y trazabilidad ajustadas | ERS v1.9 y DAS v0.11 (decisiones del solicitante del 20 y 21-oct-2026) | Ninguna |
+| 0.4 | 21-oct-2026 | `MOVIMIENTO.numero_recibo_fisico` (RF-47, R16); `COMPROBANTE` como fase posterior; `ORGANIZACION` con correos (la segunda, del solicitante); `NOTIFICACION` con canal correo, avisos de seguridad y reintentos; entidad `TOKEN_RESTABLECIMIENTO`; H14; transacciones y trazabilidad ajustadas | ERS v1.9 y DAS v0.11 (decisiones del solicitante del 20 y 21-oct-2026) | Ninguna |
 
 | Rol | Nombre | Decisión | Fecha |
 |---|---|---|---|
@@ -90,7 +90,7 @@ erDiagram
 | zona_horaria | texto | Identificador IANA; `America/Costa_Rica` por defecto (RF-33). |
 | hora_proceso_diario | hora local | 07:00 por defecto (DP-02). |
 | correo_admin | texto | Destinatario de las notificaciones, los avisos de seguridad y el enlace de restablecimiento (RF-23, RF-27, RF-44). Dato personal del administrador. |
-| correo_aviso_persona_confianza | texto, nulo | Segunda dirección de los avisos de seguridad (RF-27). **Dato personal de un tercero**; tratamiento por validar (DP-19). Nunca recibe el enlace de restablecimiento. |
+| correo_aviso_secundario | texto, nulo | Segunda dirección de los avisos de seguridad (RF-27): del propio solicitante, en otro proveedor (decisión del 21-oct-2026); no es dato de un tercero. Nunca recibe el enlace de restablecimiento. |
 | telefono_whatsapp_admin | texto, nulo | **Futuro, fuera de la v1** (DP-04): destinatario de avisos por WhatsApp (RF-44). |
 | aceptacion_whatsapp_admin | instante, nulo | **Futuro:** fecha de aceptación de recibir mensajes de WhatsApp. |
 | anticipaciones_recordatorio | lista de enteros (máx. 3) | Días antes del vencimiento; por defecto `[3]` (RF-21). |
@@ -110,7 +110,7 @@ erDiagram
 
 **CODIGO_RECUPERACION** — *RF-27*: `id`, `administrador_id`, `hash_codigo`, `usado_en` (instante, nulo si disponible), `creado_en`. Un código se usa una sola vez; no se guarda en claro.
 
-**TOKEN_RESTABLECIMIENTO** — *RF-27, CA-59* (propuesta de estructura): `id`, `administrador_id`, `hash_token` (nunca el token en claro), `creado_en` (instante), `expira_en` (instante; `creado_en` más 15 minutos, valor propuesto), `usado_en` (instante, nulo si no usado). Un token se usa una sola vez y no sirve vencido (R17). El enlace se envía solo a `correo_admin`.
+**TOKEN_RESTABLECIMIENTO** — *RF-27, CA-59* (propuesta de estructura): `id`, `administrador_id`, `hash_token` (nunca el token en claro), `creado_en` (instante), `expira_en` (instante; `creado_en` más 15 minutos, valor propuesto), `usado_en` (instante, nulo si no usado). Un token se usa una sola vez y no sirve vencido (R17). El enlace se envía solo a `correo_admin`. Los `creado_en` de las últimas 24 horas sirven para limitar a 3 solicitudes por hora (R18).
 
 ### 3.2 Inquilinos y datos personales
 
@@ -249,7 +249,7 @@ Un movimiento `abono` es **válido** si ninguna `reversion` apunta a él (RN-22)
 | tipo | texto | `recordatorio`, `alerta_atraso`, `vencimiento_contrato`, `aviso_seguridad`. |
 | evento_seguridad | texto, nulo | Solo en `aviso_seguridad`: `uso_codigo_recuperacion`, `nuevos_codigos`, `cambio_segundo_factor`, `cambio_contrasena` o `restablecimiento_contrasena` (RF-27; ADR-026). |
 | canal | texto | `web` o `correo`; `whatsapp` queda para el futuro (DP-04). |
-| destinatario_tipo | texto | `administrador` o `persona_confianza` (solo avisos de seguridad). Se guarda el tipo y no la dirección, para no copiar datos personales a cada fila (propuesta). |
+| destinatario_tipo | texto | `administrador` o `secundaria` (solo avisos de seguridad). Se guarda el tipo y no la dirección, para no copiar datos personales a cada fila (propuesta). |
 | clave_unica | texto | Obligación + tipo + anticipación + fecha (idempotencia, RF-21). Única. |
 | fecha_programada | fecha | Fecha local según la zona de la organización (DP-26). |
 | hora_programada | hora local | Hora local; el instante exacto se calcula al ejecutar con la zona de `ORGANIZACION` (DP-26). |
@@ -264,7 +264,7 @@ Un movimiento `abono` es **válido** si ninguna `reversion` apunta a él (RN-22)
 
 **EJECUCION_PROCESO** — *RNF-16, DAS 10.1* (propuesta): `id`, `fecha_local`, `iniciada_en`, `terminada_en`, `resultado`, `detalle`. Sirve para saber qué días corrió el proceso y emitir solo la alerta del día actual (RF-22).
 
-**AUDITORIA** — *RF-28, RNF-06*: `id`, `entidad`, `registro_id`, `actor`, `accion`, `ocurrido_en`, `campos_modificados` (lista de nombres de campo), `valor_anterior` y `valor_nuevo` (solo para campos **no personales**: estados, importes, fechas, motivos). Para campos personales (`nombre_completo`, `numero_documento`, `telefono`, `correo`, imagen de cédula) se registra únicamente **que cambiaron**, nunca su valor. No guarda secretos ni documentos completos. Así la auditoría no retiene datos personales que la desasociación debe eliminar (sección 6).
+**AUDITORIA** — *RF-28, RNF-06*: `id`, `entidad`, `registro_id`, `actor` (el usuario o `sistema`), `tipo_actor` (`administrador` o `proceso`), `ejecucion_id` (nulo, salvo si lo hizo el proceso diario), `accion`, `ocurrido_en`, `campos_modificados` (lista de nombres de campo), `valor_anterior` y `valor_nuevo` (solo para campos **no personales**: estados, importes, fechas, motivos). Para campos personales (`nombre_completo`, `numero_documento`, `telefono`, `correo`, imagen de cédula) se registra únicamente **que cambiaron**, nunca su valor. No guarda secretos ni documentos completos. Así la auditoría no retiene datos personales que la desasociación debe eliminar (sección 6).
 
 ## 4. Claves y restricciones
 
@@ -281,12 +281,14 @@ Un movimiento `abono` es **válido** si ninguna `reversion` apunta a él (RN-22)
 | R9 | `NOTIFICACION`: `clave_unica` única. | RF-21, RNF-16 |
 | R10 | `INQUILINO`: único (`tipo_documento`, `numero_documento`) solo entre activos, como **advertencia**, no como restricción dura. | RF-01 |
 | R11 | `DOCUMENTO_IDENTIDAD`: nunca una URL pública; el nombre del archivo almacenado es aleatorio. | RNF-14 |
-| R12 | Las filas de `MOVIMIENTO`, `AJUSTE_OBLIGACION`, `COMPROBANTE`, `AUDITORIA` y `ACCESO_DOCUMENTO` no admiten `UPDATE` ni `DELETE` por la aplicación (salvo el estado del comprobante). `OBLIGACION.importe_inicial` tampoco se actualiza; `anulada_en` se completa una sola vez. | ERS 7.3, DAS 2 |
+| R12 | Las filas de `MOVIMIENTO`, `AJUSTE_OBLIGACION`, `COMPROBANTE`, `AUDITORIA` y `ACCESO_DOCUMENTO` no admiten `UPDATE` ni `DELETE` por la aplicación (salvo el estado del comprobante). **Se aplica con el rol de base de datos de la aplicación, que solo tiene `SELECT` e `INSERT` en esas tablas, más guardas en Django (ADR-027, decisión del 21-oct-2026).** `OBLIGACION.importe_inicial` tampoco se actualiza; `anulada_en` se completa una sola vez. | ERS 7.3, DAS 2, ADR-027 |
 | R13 | `AJUSTE_OBLIGACION`: `importe_delta` ≠ 0; `motivo` obligatorio en `correccion` y `ajuste_manual`; el importe vigente resultante nunca queda por debajo de la suma de movimientos válidos, con la obligación bloqueada al insertar. | RF-10, RN-14 |
 | R14 | `AUDITORIA` no almacena valores de campos personales ni secretos (ver su definición). | RF-28, RF-41, RNF-06 |
+| R19 | `AUDITORIA`: si `tipo_actor` = `proceso`, `actor` = `sistema` y `ejecucion_id` es obligatorio; si es `administrador`, `ejecucion_id` es nulo. No existe una cuenta `sistema` en `ADMINISTRADOR` (RF-27). | RF-28, HT-06 |
 | R15 | `MOVIMIENTO`: `clave_solicitud` única. Un reintento con la misma clave no crea otro movimiento; la aplicación devuelve el ya registrado. | H13 |
 | R16 | `MOVIMIENTO`: `numero_recibo_fisico` único cuando no es nulo (índice único parcial o equivalente). | RF-47, CA-61 |
-| R17 | `TOKEN_RESTABLECIMIENTO`: se acepta solo si `usado_en` es nulo y la hora actual es anterior a `expira_en`; al usarlo se completa `usado_en` en la misma transacción que fija la contraseña nueva y se avisa a las dos direcciones. | RF-27, CA-59 |
+| R17 | `TOKEN_RESTABLECIMIENTO`: se acepta solo si `usado_en` es nulo y la hora actual es anterior a `expira_en`; al usarlo se completa `usado_en` en la misma transacción que fija la contraseña nueva, se invalidan los demás tokens pendientes y las sesiones abiertas, y se avisa a las dos direcciones. | RF-27, CA-59 |
+| R18 | `TOKEN_RESTABLECIMIENTO`: a lo sumo 3 solicitudes (filas creadas) por hora para la cuenta; la solicitud siguiente se rechaza con la misma respuesta externa que una aceptada (sin revelar el estado). El límite numérico es propuesta del asistente. | RF-27, CA-59 |
 
 ## 5. Valores derivados (no se almacenan)
 
@@ -312,7 +314,7 @@ Cuando vence el plazo de retención del último contrato del inquilino (RF-41):
 | `INQUILINO` | `nombre_completo`, `numero_documento`, `telefono` y `correo` se anulan; `desasociado_en` se completa. La fila y su `id` permanecen. |
 | `CONSENTIMIENTO`, `SOLICITUD_TITULAR` | Se evalúa con asesoría legal (pueden requerirse como evidencia de cumplimiento). **Pendiente** (DP-18). |
 | `CONTRATO`, `OBLIGACION`, `MOVIMIENTO`, `COMPROBANTE` (fase posterior) | Se conservan sin datos de identificación; el comprobante impreso se regenera sin nombre. El `numero_recibo_fisico` se conserva con el movimiento. **Pendiente** de confirmar con DP-18 y DP-20. |
-| `ORGANIZACION.correo_aviso_persona_confianza` | Dato personal de un tercero; plazo y fundamento de su conservación por definir. **Pendiente** (DP-19). |
+| `ORGANIZACION.correo_aviso_secundario` | Dirección del propio solicitante; se conserva mientras esté configurada. |
 | `AUDITORIA` | No contiene valores personales (R14), por lo que no requiere depuración. Las filas anteriores a una regla de este tipo no existen: se aplica desde el inicio. |
 | Respaldos | 35 días de retención; la foto eliminada desaparece de ellos en ese plazo (DP-07). |
 
@@ -353,14 +355,14 @@ Cuando vence el plazo de retención del último contrato del inquilino (RF-41):
 | H4 | **Numeración de comprobantes:** ¿una serie global o una por año? La ERS solo pide "consecutiva" (RF-37). | Serie global. **Decisión provisional del solicitante (17-oct-2026)**, sujeta a DP-20; un abogado o contador puede exigir otra cosa. |
 | H5 | El `importe_aplicado` de un pago en otra moneda requiere una **regla de redondeo** del equivalente. | Redondear a 2 decimales (USD) o a la unidad entera (CRC) con empate hacia arriba, igual que RN-12. **Propuesta**; confirmar. Probado en PostgreSQL (sección 12); sigue pendiente de confirmar por el solicitante. |
 | H6 | La restricción de **no solapamiento de contratos** (R2) depende del motor elegido. | Decidir con ADR-002; PostgreSQL lo impone con una restricción de exclusión (sección 1.2). Mientras tanto se valida en la aplicación. |
-| H7 | **Identificadores:** ¿UUID o secuencia? Los comprobantes ya necesitan secuencia propia. | Decidir con la base de datos. **Abierta** (depende de ADR-002). |
+| H7 | **Identificadores:** ¿UUID o secuencia? Los comprobantes ya necesitan secuencia propia. | **Resuelta el 21-oct-2026 (ADR-028):** entero de 64 bits autoincremental para todas las entidades; UUID solo en `clave_solicitud` y nombres de archivo. El número de comprobante (fase posterior) sigue con su contador en tabla, no con la secuencia del identificador (R7, H11). |
 | H8 | Qué ocurre con `CONSENTIMIENTO` y `SOLICITUD_TITULAR` al desasociar (¿evidencia legal?). | DP-18; pendiente de abogado. **Abierta** (DP-18). |
 | H9 | **Importe modificable (v0.1).** Las correcciones sobrescribían `importe_exigible` y el valor anterior solo quedaba en la auditoría. Decisión del solicitante: registrar los ajustes como filas nuevas. | Entidad `AJUSTE_OBLIGACION`; importe vigente derivado. **Incorporado en la ERS v1.7 (7.1 y RF-10) y el DAS v0.6 (ADR-016).** |
 | H10 | **RF-28 vs Ley 8968.** RF-28 exige guardar "valores anteriores y nuevos"; si incluyen nombre, documento o teléfono, la auditoría retendría datos que RF-41 manda desasociar. | Auditar valores solo de campos no personales y, para los personales, solo que cambiaron (R14). **Requiere ajustar la redacción de RF-28 en la ERS v1.7** (incorporado); validar con abogado (DP-18). |
 | H11 | **Huecos en la numeración.** La prueba mostró que una secuencia de PostgreSQL entrega números que se pierden si la transacción falla (el comprobante real era el 2 y la secuencia ya iba en 4); la documentación lo confirma. RF-37 exige consecutivos. | Contador en tabla con bloqueo de fila (R7). Revisar el texto de ADR-010 en el DAS v0.6. |
 | H12 | **UTC y eventos futuros.** `NOTIFICACION.programada_para` es un instante UTC calculado de antemano a partir de la hora local 07:00; si cambiaran las reglas de la zona, quedaría desfasado (W3C). Costa Rica no tiene horario de verano, pero la regla puede cambiar. | **Resuelta (DP-26, 17-oct-2026):** guardar fecha y hora locales; el instante se calcula al ejecutar. |
 | H13 | **Registro duplicado de abonos.** El modelo no protegía contra el mismo abono enviado dos veces (doble clic o reintento de red): R6 solo evita el sobrepago. | **Aceptada por el solicitante (17-oct-2026).** `clave_solicitud` única en `MOVIMIENTO` (R15), según el patrón de Stripe. Probada en PostgreSQL. |
-| H14 | **Avisos de seguridad y restablecimiento de contraseña sin entidad (v0.4).** El modelo no tenía dónde guardar el aviso de un evento de la cuenta (sin obligación asociada), la segunda dirección ni el enlace de restablecimiento. | Propuesta del asistente derivada de ERS v1.9 y ADR-026: tipo `aviso_seguridad` con `evento_seguridad` y `destinatario_tipo` en `NOTIFICACION`; `proximo_intento_en` para el reintentador; entidad `TOKEN_RESTABLECIMIENTO` con hash, vencimiento y un solo uso (R17); `correo_admin` y `correo_aviso_persona_confianza` en `ORGANIZACION`. **No decidida por el solicitante.** |
+| H14 | **Avisos de seguridad y restablecimiento de contraseña sin entidad (v0.4).** El modelo no tenía dónde guardar el aviso de un evento de la cuenta (sin obligación asociada), la segunda dirección ni el enlace de restablecimiento. | Propuesta del asistente derivada de ERS v1.9 y ADR-026: tipo `aviso_seguridad` con `evento_seguridad` y `destinatario_tipo` en `NOTIFICACION`; `proximo_intento_en` para el reintentador; entidad `TOKEN_RESTABLECIMIENTO` con hash, vencimiento y un solo uso (R17); `correo_admin` y `correo_aviso_secundario` en `ORGANIZACION`. **No decidida por el solicitante.** |
 
 ## 10. Decisiones de diseño que requieren ADR (propuestas)
 

@@ -7,7 +7,7 @@
 | Producto | Archivo | Estado |
 |---|---|---|
 | Modelo lógico de datos | `MODELO_DATOS_SGA_001_v0.4_borrador.md` (vigente); `MODELO_DATOS_SGA_001_v0.1_borrador.md`, `MODELO_DATOS_SGA_001_v0.2_borrador.md` y `MODELO_DATOS_SGA_001_v0.3_borrador.md` se conservan | Borrador v0.4, sin revisar |
-| Interfaces (no hay API pública en la v1, ADR-022), permisos por operación y flujos de negocio | `DISENO_TECNICO_SGA_001_v0.7_borrador.md` (se conservan `DISENO_TECNICO_SGA_001_v0.1_borrador.md`, `DISENO_TECNICO_SGA_001_v0.2_borrador.md`, `DISENO_TECNICO_SGA_001_v0.3_borrador.md`, `DISENO_TECNICO_SGA_001_v0.4_borrador.md`, `DISENO_TECNICO_SGA_001_v0.5_borrador.md` y `DISENO_TECNICO_SGA_001_v0.6_borrador.md`) | Borrador v0.7; no aprobado |
+| Interfaces (no hay API pública en la v1, ADR-022), permisos por operación y flujos de negocio | `DISENO_TECNICO_SGA_001_v0.7_borrador.md` (vigente; se conservan `DISENO_TECNICO_SGA_001_v0.1_borrador.md`, `DISENO_TECNICO_SGA_001_v0.2_borrador.md`, `DISENO_TECNICO_SGA_001_v0.3_borrador.md`, `DISENO_TECNICO_SGA_001_v0.4_borrador.md`, `DISENO_TECNICO_SGA_001_v0.5_borrador.md` y `DISENO_TECNICO_SGA_001_v0.6_borrador.md`) | Borrador v0.7; no aprobado |
 
 **Entradas:**
 - [ERS v1.9](../fase-1-ers/ERS_SGA_001_v1.9_borrador.md) (secciones 5, 6 y 7) y [DAS v0.11](../fase-2-arquitectura/DAS_SGA_001_v0.11_borrador.md) (secciones 7, 8 y 10; lenguaje y framework en ADR-022).
