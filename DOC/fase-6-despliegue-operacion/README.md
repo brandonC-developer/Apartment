@@ -4,7 +4,7 @@
 
 **Qué documentará:** entornos, despliegues, copias de seguridad, recuperación, monitoreo, mantenimiento y procedimientos operativos.
 
-**Entradas:** DAS v0.7 (secciones 10 y 11, RE-03, RE-09 y ADR-021) y las decisiones ya tomadas: DP-07 (RPO y RTO de 24 h, retención de 35 días) y DP-08 (VPS administrado por el solicitante, acceso por internet).
+**Entradas:** DAS v0.9 (secciones 10 y 11, RE-03, RE-09, ADR-021 y ADR-023 a ADR-025) y las decisiones ya tomadas: DP-07 (RPO y RTO de 24 h, retención de 35 días) y DP-08 (VPS administrado por el solicitante, acceso por internet).
 
 **Requisitos de la ERS que se verifican aquí:** RNF-09 (recuperación), RNF-14 (seguridad de los datos), RNF-18 (documentación de seguridad), RF-41 (retención y eliminación), RF-46 (incidentes), RNF-16 (idempotencia del proceso diario).
 

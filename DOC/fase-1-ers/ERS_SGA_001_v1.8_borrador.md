@@ -37,7 +37,7 @@
 | **1.5** | **Período por aniversario; prorrateo limitado al último período; reajuste distinto de corrección; días de gracia; estados derivados y estado `anulada`; movimientos con anulación; moneda USD con tipo de cambio manual; saldo de apertura; MFA con códigos de recuperación; sección de obligaciones legales (Ley 7527 y Ley 8968); comprobante de pago; derechos del titular de datos y retención; decisiones pendientes unificadas con IDs únicos; correcciones documentales.** |
 | **1.6** | **Cierre de DP-22, DP-24 y DP-25 con las respuestas del solicitante: vencimiento configurable con día de inicio por defecto; saldo de apertura que incluye todos los períodos iniciados; tope de reajuste digitado en cada reajuste con su fuente. DP-23 parcialmente resuelta: el solicitante es propietario del producto y aprobador (falta registrar el nombre). Nuevo criterio CA-51.** |
 | **1.7** | **Cierre de DP-07 (respaldo: RPO y RTO de 24 h, retención de 35 días) y DP-08 (acceso por internet; servidor virtual administrado por el solicitante); DP-04 sigue abierta, ligada a un proyecto externo. Cambios que surgieron del modelo de datos (MDD-SGA-001 v0.2): el saldo de apertura es una obligación y no un movimiento (glosario); nuevas entidades Condición del contrato, Ajuste de obligación y Organización; los cambios de importe se registran como ajustes y no sobrescriben; comprobantes consecutivos sin huecos; registro de movimientos idempotente por clave de solicitud; la auditoría no guarda valores personales (reescritura de RF-28). Nuevos criterios CA-52 a CA-55 y DP-26.** |
-| **1.8** | **Cierre de DP-14 (P11 retirada por no recuperable), DP-23 (una sola persona ocupa los tres roles, identificada como brandonC-developer; el asesor legal sigue sin designar) y DP-26 (hora local más zona; el instante se calcula al ejecutar). H4: serie global de comprobantes, provisional hasta DP-20. Lectura del Reglamento 37554-JP (Archivo Nacional): nuevas obligaciones legales OL-19 a OL-21, requisito RF-46 (incidentes de seguridad) y RNF-18 (documentación de seguridad), criterios CA-56 y CA-57. Todo pendiente de abogado (DP-17).** Correcciones de QA del 17-oct-2026: entidad Incidente de seguridad en 7.1, alcance 2.3, lista de revisión y referencias; ver actualización 2026-10-17e.** |
+| **1.8** | **Cierre de DP-14 (P11 retirada por no recuperable), DP-23 (una sola persona ocupa los tres roles, identificada como brandonC-developer; el asesor legal sigue sin designar) y DP-26 (hora local más zona; el instante se calcula al ejecutar). H4: serie global de comprobantes, provisional hasta DP-20. Lectura del Reglamento 37554-JP (Archivo Nacional): nuevas obligaciones legales OL-19 a OL-21, requisito RF-46 (incidentes de seguridad) y RNF-18 (documentación de seguridad), criterios CA-56 y CA-57. Todo pendiente de abogado (DP-17).** Correcciones de QA del 17-oct-2026: entidad Incidente de seguridad en 7.1, alcance 2.3, lista de revisión y referencias; ver actualización 2026-10-17e. Corrección de la matriz de trazabilidad del 20-oct-2026 (RN-10, RN-15, RN-25 y seis RNF sin criterio); ver actualización 2026-10-20b.** |
 
 # 1. Propósito y organización
 
@@ -574,19 +574,20 @@ Los criterios se formulan para ejecutarse como pruebas funcionales o revisiones 
 | Necesidad / objetivo | Requisitos | Criterios |
 |---|---|---|
 | Registrar inquilinos y cédulas | RF-01–RF-05, RF-39, RF-45, RNF-02, RNF-03 | CA-01, CA-11, CA-25, CA-26, CA-29 |
-| Administrar propiedades y contratos | RF-06–RF-10, RF-36, RF-42, RN-01–RN-05, RN-16, RN-28, RN-30 | CA-02, CA-10, CA-24, CA-31, CA-32 |
-| Generar obligaciones sin duplicados | RF-11, RF-12, RF-43, RN-04, RN-05, RN-13, RNF-04, RNF-16 | CA-03, CA-30, CA-49, CA-50 |
+| Administrar propiedades y contratos | RF-06–RF-10, RF-36, RF-42, RN-01–RN-05, RN-10, RN-16, RN-28, RN-30 | CA-02, CA-10, CA-24, CA-31, CA-32 |
+| Generar obligaciones sin duplicados | RF-11, RF-12, RF-43, RN-04, RN-05, RN-13, RN-15 (solo la generación a 30 días; el rechazo de movimientos sobre períodos futuros no tiene CA), RNF-04, RNF-16 | CA-03, CA-30, CA-49, CA-50 |
 | Reajustes y correcciones | RF-10, RN-14, OL-06, OL-07 | CA-12, CA-22, CA-39, CA-40, CA-51, CA-55 |
 | Prorratear el último período | RF-09, RN-12 | CA-14 |
 | Movimientos, saldos y estados | RF-13–RF-16, RF-34, RF-35, RN-06–RN-09, RN-11, RN-17, RN-18, RN-21, RN-22, RN-29 | CA-04, CA-19–CA-21, CA-33–CA-36, CA-52 |
 | Comprobantes y moneda | RF-37, RF-38, RN-23, OL-03, OL-05 | CA-37, CA-38, CA-54 |
 | Calendario y filtros | RF-17–RF-20 | CA-06, CA-07 |
 | Recordatorios y alertas | RF-21–RF-25, RF-44, RN-07, RN-08 | CA-05, CA-08, CA-09, CA-41–CA-44 |
-| Restringir acceso y auditar | RF-26–RF-28, RF-45, RNF-01, RNF-02, RNF-06, RNF-14 | CA-11, CA-13, CA-26, CA-47, CA-48, CA-53 |
+| Restringir acceso y auditar | RF-26–RF-28, RF-45, RN-25, RNF-01, RNF-02, RNF-06, RNF-14 | CA-11, CA-13, CA-26, CA-47, CA-48, CA-53 |
 | Depósito de garantía | RF-29–RF-32, RN-19, RN-20, RN-26, RN-27 | CA-15–CA-17, CA-23, CA-45, CA-46 |
 | Derechos del titular y retención | RF-39–RF-41, RN-24, RNF-13–RNF-15 | CA-27, CA-28 |
 | Incidentes y documentación de seguridad | RF-46, RNF-14, RNF-18, OL-19–OL-21 | CA-56, CA-57 |
 | Operar en varias regiones | RF-33, RN-23, RNF-12, RNF-17 | CA-18 |
+| Requisitos no funcionales sin criterio de aceptación | RNF-05, RNF-07, RNF-08, RNF-09, RNF-10, RNF-11 | Ninguno; se verifican en la estrategia de pruebas (fase 4) |
 
 # 11. Riesgos y dependencias
 

@@ -7,7 +7,7 @@
 | Fase | Carpeta | Documento vigente | Estado |
 |---|---|---|---|
 | 1. Especificación de requisitos (ERS) | `fase-1-ers/` | `ERS_SGA_001_v1.8_borrador.md` | Borrador; pendiente de validación legal y aprobación |
-| 2. Arquitectura de software | `fase-2-arquitectura/` | `DAS_SGA_001_v0.7_borrador.md` | Borrador; depende de la ERS |
+| 2. Arquitectura de software | `fase-2-arquitectura/` | `DAS_SGA_001_v0.9_borrador.md` | Borrador; depende de la ERS |
 | 3. Diseño técnico | `fase-3-diseno-tecnico/` | `MODELO_DATOS_SGA_001_v0.3_borrador.md` | Iniciada; solo el modelo de datos, en borrador sin revisar |
 | 4. Estrategia y plan de pruebas | `fase-4-pruebas/` | — | No iniciada |
 | 5. Plan de implementación | `fase-5-implementacion/` | — | No iniciada |
@@ -38,6 +38,10 @@ Carpetas transversales:
 | 2026-10-17 (c) | `actualizaciones/2026-10-17c_ERS-v1.7_DAS-v0.6/` | ERS v1.7 y DAS v0.6; cierre de DP-07 y DP-08, DP-04 diferida; modelo de datos v0.1 y v0.2 con prueba en PostgreSQL; hallazgos H1 a H13 |
 | 2026-10-17 (d) | `actualizaciones/2026-10-17d_ERS-v1.8_DAS-v0.7/` | ERS v1.8 y DAS v0.7; cierre de DP-14, DP-23 y DP-26; H4 provisional; lectura del Reglamento 37554-JP (OL-19 a OL-21); resumen para el abogado v2 |
 | 2026-10-17 (e) | `actualizaciones/2026-10-17e_QA-documentos/` | QA de vigencia de todos los documentos: 16 hallazgos corregidos, script ampliado |
+| 2026-10-20 | `actualizaciones/2026-10-20_README-fase-3/` | Corrección del README de la fase 3 (entradas ERS v1.8 y DAS v0.7; ADR-002) |
+| 2026-10-20 (b) | `actualizaciones/2026-10-20b_ERS-v1.8-matriz/` | Matriz de trazabilidad de la ERS v1.8: RN-10, RN-15, RN-25 y seis RNF sin criterio |
+| 2026-10-20 (c) | `actualizaciones/2026-10-20c_DAS-v0.8-Django/` | DAS v0.8: Python y Django con interfaz renderizada por el servidor (ADR-022); RE-04 actualizada |
+| 2026-10-20 (d) | `actualizaciones/2026-10-20d_stack-decisiones/` | DAS v0.9: PostgreSQL 18, systemd, documentos en disco, DigitalOcean con Ubuntu 26.04, Nginx y Gunicorn, respaldos a Spaces e integración continua (ADR-002, 003, 013, 023 a 025) |
 
 ## Control de versiones
 
