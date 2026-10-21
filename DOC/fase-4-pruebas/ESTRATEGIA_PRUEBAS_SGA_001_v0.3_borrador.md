@@ -41,7 +41,7 @@ La proporción de la pirámide es una orientación del autor, no una regla medid
 | Nivel | Qué prueba | Herramienta (propuesta) | Base de datos |
 |---|---|---|---|
 | Unitarias | Reglas puras: períodos por aniversario, prorrateo, reajuste, saldos, estados derivados, plazos de cinco días hábiles | Ejecutor de Django (`unittest`), decisión del solicitante | Ninguna |
-| Integración | Restricciones de PostgreSQL (contratos solapados, unicidad contrato-período, comprobantes sin huecos, clave de solicitud), transacciones y el comando diario; con el rol de la aplicación, un `UPDATE` o `DELETE` sobre un movimiento, un ajuste, la auditoría o un acceso a documento es rechazado por PostgreSQL (R12, ADR-027) | `TestCase` de Django | **PostgreSQL 18**, no SQLite: `ExclusionConstraint` es de PostgreSQL |
+| Integración | Restricciones de PostgreSQL (contratos solapados, unicidad contrato-período, comprobantes sin huecos, clave de solicitud), transacciones y el comando diario; con el rol de la aplicación, un `UPDATE` o `DELETE` sobre un movimiento, un ajuste, la auditoría o un acceso a documento es rechazado por PostgreSQL (R12, ADR-027); dos contratos de una propiedad que comparten un día son rechazados por la restricción de exclusión, y uno anulado no cuenta para el solape (R2, RN-02, CA-02, ADR-031); una prueba compara las tablas reales con el archivo de privilegios y exige una entrada por tabla (ADR-031) | `TestCase` de Django | **PostgreSQL 18**, no SQLite: `ExclusionConstraint` es de PostgreSQL |
 | Concurrencia | Contador de comprobantes (fase posterior), envío repetido de un abono y dos abonos simultáneos sobre la misma obligación (bloqueo de fila con `select_for_update()`: el segundo espera y ve el saldo actualizado; ver diseño técnico, HT-07) | `TransactionTestCase` (confirma de verdad) | PostgreSQL 18 |
 | Vistas y permisos | Acceso denegado, CSRF, sesión, descarga de documentos privados | Cliente de pruebas con `enforce_csrf_checks=True` | PostgreSQL 18 |
 | Extremo a extremo | Pocos recorridos críticos en navegador (registrar pago y emitir comprobante; alta de contrato) | Selenium con `StaticLiveServerTestCase` de Django, decisión del solicitante | PostgreSQL 18 |
@@ -60,6 +60,7 @@ Notas de diseño:
 | Entorno | Uso | Datos |
 |---|---|---|
 | Local del desarrollador | Unitarias, integración, vistas | Sintéticos |
+| Etapa A: WSL 2 con Ubuntu-26.04, sin contenedores (decisión del 21-oct-2026) | Despliegue de cada entrega con los mismos servicios que producción: systemd, Nginx, Gunicorn, PostgreSQL 18 con roles y `peer`, temporizadores, respaldo local cifrado | Sintéticos |
 | Integración continua (GitHub Actions, ADR-025) | Todo lo automatizable en cada cambio: pruebas, `check --deploy`, migraciones, contra PostgreSQL 18 | Sintéticos |
 | Droplet de prueba temporal (DigitalOcean, ADR-023) | Restauración, temporizador con zona horaria, HTTPS con `certbot renew --dry-run`, prueba de borrado a los 35 días de Spaces | Sintéticos |
 
@@ -177,7 +178,7 @@ Decididas el 20-oct-2026, tras una investigación y una recomendación del asist
 - Probar que Locust reporta el percentil 95 o calcularlo en Python, y medir con él si abrir una conexión por petición (`CONN_MAX_AGE = 0`, ADR-029) afecta el objetivo de RNF-08.
 - Escribir y probar el script de comprobación mensual de restauración.
 - Elegir la herramienta de cifrado de los respaldos (ADR-024).
-- Compatibilidad de Selenium con los navegadores y la versión de Python elegidos.
+- Compatibilidad de Selenium con los navegadores y con Python 3.14, la versión elegida (ADR-022).
 - Quién revisa estas pruebas: hoy el solicitante ocupa los tres roles (DP-23).
 ## 12. Condiciones para aprobar esta estrategia
 

@@ -10,7 +10,7 @@
 | 2. Arquitectura de software | `fase-2-arquitectura/` | `DAS_SGA_001_v0.11_borrador.md` | Borrador; depende de la ERS |
 | 3. Diseño técnico | `fase-3-diseno-tecnico/` | `MODELO_DATOS_SGA_001_v0.4_borrador.md`; `DISENO_TECNICO_SGA_001_v0.7_borrador.md` | Iniciada; modelo de datos y diseño técnico, en borrador sin revisar |
 | 4. Estrategia y plan de pruebas | `fase-4-pruebas/` | `ESTRATEGIA_PRUEBAS_SGA_001_v0.3_borrador.md` | Iniciada; estrategia en borrador sin revisar |
-| 5. Plan de implementación | `fase-5-implementacion/` | — | No iniciada |
+| 5. Plan de implementación | `fase-5-implementacion/` | `PLAN_IMPLEMENTACION_SGA_001_v0.1_borrador.md` | Iniciada; plan en borrador sin revisar |
 | 6. Despliegue y operación | `fase-6-despliegue-operacion/` | — | No iniciada |
 
 Carpetas transversales:
@@ -63,6 +63,14 @@ Carpetas transversales:
 | 2026-10-21 (o) | `actualizaciones/2026-10-21o_roles-peer-respaldos/` | Punto 3: tres roles de base de datos (dueño, aplicación, respaldos de solo lectura) con autenticación peer por socket local, sin contraseñas; ajuste de ADR-027 y ADR-024 |
 | 2026-10-21 (p) | `actualizaciones/2026-10-21p_adr-029-conexiones/` | ADR-029: una conexión por petición (CONN_MAX_AGE = 0), sin pool, por socket local; se revisa con la prueba de carga |
 | 2026-10-21 (q) | `actualizaciones/2026-10-21q_adr-030-aplicaciones-django/` | ADR-030: seis aplicaciones de Django, servicios y selectores, claves foráneas solo hacia abajo; propuesta del asistente con la elección delegada |
+| 2026-10-21 (r) | `actualizaciones/2026-10-21r_adr-031-esquema-fisico/` | ADR-031: restricción de exclusión con btree_gist para el solape de contratos, importes en DecimalField(14, 2), archivo de privilegios tras cada migración; corrección de ADR-027 (DELETE en django_session) |
+| 2026-10-21 (s) | `actualizaciones/2026-10-21s_fase-5-plan-implementacion/` | Fase 5 iniciada: plan de implementación v0.1 (entregas E0 a E6 con trazabilidad completa a RF y CA); regla de negocio: el contrato anulado no cuenta para el solape |
+| 2026-10-21 (t) | `actualizaciones/2026-10-21t_definicion-de-terminado/` | Plan de implementación: definición de terminado (nueve condiciones comunes más el criterio de salida de cada entrega) |
+| 2026-10-21 (u) | `actualizaciones/2026-10-21u_carga-inicial-de-datos/` | Plan de implementación: carga inicial de datos por digitación en las pantallas, con conciliación contra los registros actuales |
+| 2026-10-21 (v) | `actualizaciones/2026-10-21v_entornos-region-tamano/` | Plan de implementación y ADR-023: región NYC3, Droplet de producción de 2 GiB y 1 vCPU y Droplet de pruebas temporal; unos US$19,40 al mes en producción |
+| 2026-10-21 (w) | `actualizaciones/2026-10-21w_etapa-local-gratuita/` | Plan de implementación y ADR-023: primero despliegue local y gratuito (WSL 2 con Ubuntu-26.04, sin contenedores) y después los servicios de pago; se descarta Docker por paridad con producción |
+| 2026-10-21 (x) | `actualizaciones/2026-10-21x_versiones-python-django/` | Versiones: Django 5.2 LTS con el Python 3.14 del sistema de Ubuntu 26.04 (ADR-022 y plan de implementación) |
+| 2026-10-21 (y) | `actualizaciones/2026-10-21y_registro-de-avance/` | Registro de avance de la implementación (una entrega a la vez; bloqueo si falta una prueba Alta); script ampliado para comprobarlo |
 
 ## Control de versiones
 

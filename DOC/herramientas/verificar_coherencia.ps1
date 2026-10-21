@@ -40,17 +40,19 @@ $das = Get-UltimaVersion 'fase-2-arquitectura' 'DAS_SGA_001'
 $mdd = Get-UltimaVersion 'fase-3-diseno-tecnico' 'MODELO_DATOS_SGA_001'
 $dte = Get-UltimaVersion 'fase-3-diseno-tecnico' 'DISENO_TECNICO_SGA_001'
 $epp = Get-UltimaVersion 'fase-4-pruebas' 'ESTRATEGIA_PRUEBAS_SGA_001'
+$pim = Get-UltimaVersion 'fase-5-implementacion' 'PLAN_IMPLEMENTACION_SGA_001'
 if (-not $ers -or -not $das) { Write-Output 'ERROR: no se encontro la ERS o el DAS.'; exit 1 }
 Write-Output "ERS: $($ers.Name)"
 Write-Output "DAS: $($das.Name)"
 if ($mdd) { Write-Output "MDD: $($mdd.Name) (se comprueban sus citas y su base)" }
 if ($dte) { Write-Output "DTE: $($dte.Name) (se comprueban sus citas y su base)" }
 if ($epp) { Write-Output "EPP: $($epp.Name) (se comprueban sus citas, su base y la cobertura de CA)" }
+if ($pim) { Write-Output "PIM: $($pim.Name) (se comprueban sus citas, su base y que cada RF y CA conste una vez en sus entregas)" }
 
 $archivos = @($ers, $das)
 $texto = @{}
 foreach ($a in $archivos) { $texto[$a.Name] = Get-Content -Path $a.FullName -Encoding UTF8 }
-$otros = @($mdd, $dte, $epp) | Where-Object { $_ }
+$otros = @($mdd, $dte, $epp, $pim) | Where-Object { $_ }
 $textoOtros = @{}
 foreach ($o in $otros) { $textoOtros[$o.Name] = Get-Content -Path $o.FullName -Encoding UTF8 }
 
@@ -91,7 +93,8 @@ $vigentes = @(
     @{ Doc = $das; Carpeta = 'fase-2-arquitectura'; Prefijo = 'DAS_SGA_001' },
     @{ Doc = $mdd; Carpeta = 'fase-3-diseno-tecnico'; Prefijo = 'MODELO_DATOS_SGA_001' },
     @{ Doc = $dte; Carpeta = 'fase-3-diseno-tecnico'; Prefijo = 'DISENO_TECNICO_SGA_001' },
-    @{ Doc = $epp; Carpeta = 'fase-4-pruebas'; Prefijo = 'ESTRATEGIA_PRUEBAS_SGA_001' }
+    @{ Doc = $epp; Carpeta = 'fase-4-pruebas'; Prefijo = 'ESTRATEGIA_PRUEBAS_SGA_001' },
+    @{ Doc = $pim; Carpeta = 'fase-5-implementacion'; Prefijo = 'PLAN_IMPLEMENTACION_SGA_001' }
 )
 $readmeRaiz = Get-Content -Path (Join-Path $doc 'README.md') -Raw -Encoding UTF8
 foreach ($v in $vigentes) {
@@ -113,7 +116,8 @@ $bases = @(
     @{ Doc = $das; Cita = @('ERS') },
     @{ Doc = $mdd; Cita = @('ERS', 'DAS') },
     @{ Doc = $dte; Cita = @('ERS', 'DAS', 'MDD') },
-    @{ Doc = $epp; Cita = @('ERS', 'DAS') }
+    @{ Doc = $epp; Cita = @('ERS', 'DAS') },
+    @{ Doc = $pim; Cita = @('ERS', 'DAS', 'MDD') }
 )
 $ultimas = @{ ERS = Get-Version $ers; DAS = Get-Version $das }
 if ($mdd) { $ultimas['MDD'] = Get-Version $mdd }
@@ -182,8 +186,53 @@ if ($epp) {
     }
 }
 
+# 8. Plan de implementacion: cada RF y cada CA definido consta exactamente una vez en la tabla de entregas
+# (filas "| E0 ... |" y "| Posterior ... |", con las columnas de RF en la quinta celda y de CA en la septima).
+if ($pim) {
+    $rfPlan = @{}; $caPlan = @{}
+    foreach ($l in $textoOtros[$pim.Name]) {
+        if ($l -match '^\| (E\d|Posterior) ') {
+            $celdas = $l.Split('|')
+            if ($celdas.Count -lt 8) { continue }
+            foreach ($m in [regex]::Matches($celdas[4], '\d+')) { $k = [int]$m.Value; $rfPlan[$k] = 1 + [int]$rfPlan[$k] }
+            foreach ($m in [regex]::Matches($celdas[6], '\d+')) { $k = [int]$m.Value; $caPlan[$k] = 1 + [int]$caPlan[$k] }
+        }
+    }
+    foreach ($par in @(@('RF', $rfPlan), @('CA', $caPlan))) {
+        $p = $par[0]; $mapa = $par[1]
+        $faltan = @($definidos[$p] | Where-Object { -not $mapa.ContainsKey([int]($_ -replace '^[A-Z]+-', '')) } | Sort-Object)
+        $repetidos = @($mapa.Keys | Where-Object { $mapa[$_] -gt 1 } | Sort-Object | ForEach-Object { "$p-$_" })
+        if ($faltan.Count -gt 0) { $problemas += $faltan.Count; Write-Output "[plan] $p sin entrega en $($pim.Name): $($faltan -join ', ')" }
+        if ($repetidos.Count -gt 0) { $problemas += $repetidos.Count; Write-Output "[plan] $p en mas de una entrega: $($repetidos -join ', ')" }
+        if ($faltan.Count -eq 0 -and $repetidos.Count -eq 0) { Write-Output "[plan] $p ok ($($definidos[$p].Count) con una entrega)" }
+    }
+}
+
+# 9. Registro de avance: cada entrega del plan consta con un estado valido y, como maximo, una esta en curso o bloqueada.
+$avance = Join-Path (Join-Path $doc 'fase-5-implementacion') 'AVANCE_IMPLEMENTACION.md'
+if ($pim -and (Test-Path -LiteralPath $avance)) {
+    $estadosValidos = 'no iniciada', 'en curso', 'terminada', 'bloqueada'
+    $entregasPlan = @()
+    foreach ($l in $textoOtros[$pim.Name]) { if ($l -match '^\| (E\d) ') { $entregasPlan += $Matches[1] } }
+    $entregasAvance = @{}
+    foreach ($l in (Get-Content -Path $avance -Encoding UTF8)) {
+        if ($l -match '^\| (E\d) ') {
+            $clave = $Matches[1]
+            $estado = ($l.Split('|')[2]).Trim()
+            $entregasAvance[$clave] = $estado
+        }
+    }
+    foreach ($e in $entregasPlan) {
+        if (-not $entregasAvance.ContainsKey($e)) { $problemas++; Write-Output "[avance] $e no consta en AVANCE_IMPLEMENTACION.md." }
+        elseif ($estadosValidos -notcontains $entregasAvance[$e]) { $problemas++; Write-Output "[avance] $e tiene un estado no valido: '$($entregasAvance[$e])'." }
+    }
+    $activas = @($entregasAvance.Keys | Where-Object { $entregasAvance[$_] -eq 'en curso' -or $entregasAvance[$_] -eq 'bloqueada' })
+    if ($activas.Count -gt 1) { $problemas++; Write-Output "[avance] mas de una entrega en curso o bloqueada: $($activas -join ', ')." }
+    if (($entregasAvance.Count -gt 0) -and ($problemas -eq 0 -or $true)) { Write-Output "[avance] $($entregasAvance.Count) entregas registradas, $($activas.Count) en curso o bloqueada" }
+}
+
 # 7. Cada archivo .md de una carpeta de fase consta por nombre en el README de la carpeta.
-foreach ($carpeta in 'fase-1-ers', 'fase-2-arquitectura', 'fase-3-diseno-tecnico', 'fase-4-pruebas') {
+foreach ($carpeta in 'fase-1-ers', 'fase-2-arquitectura', 'fase-3-diseno-tecnico', 'fase-4-pruebas', 'fase-5-implementacion') {
     $ruta = Join-Path $doc $carpeta
     $textoReadme = Get-Content -Path (Join-Path $ruta 'README.md') -Raw -Encoding UTF8
     foreach ($f in (Get-ChildItem -Path $ruta -Filter '*.md' | Where-Object { $_.Name -ne 'README.md' })) {

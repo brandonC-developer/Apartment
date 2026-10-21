@@ -271,7 +271,7 @@ Un movimiento `abono` es **válido** si ninguna `reversion` apunta a él (RN-22)
 | # | Restricción | Origen |
 |---|---|---|
 | R1 | `OBLIGACION`: único (`contrato_id`, `periodo_inicio`) para `regular`; a lo sumo una `apertura` por contrato. | RF-12, RN-04, RNF-04 |
-| R2 | `CONTRATO`: dos contratos de una misma propiedad no comparten ningún día (`fecha_inicio` a `fecha_fin` inclusive; sin fin = abierto). **Depende del motor:** algunos lo imponen con una restricción de exclusión; si no, se valida en la aplicación dentro de una transacción bloqueando la propiedad. | RF-08, RN-02 |
+| R2 | `CONTRATO`: dos contratos de una misma propiedad no comparten ningún día (`fecha_inicio` a `fecha_fin` inclusive; sin fin = abierto). **Se impone con una restricción de exclusión de PostgreSQL con `btree_gist` (ADR-031); no cuentan los contratos anulados (decisión del solicitante, 21-oct-2026).** | RF-08, RN-02 |
 | R3 | `CONDICION_CONTRATO`: `monto_mensual` > 0; `dia_vencimiento` entre 1 y 31; `dias_gracia` ≥ 0; `vigente_desde` no puede preceder a `fecha_inicio`. | ERS 7.3 |
 | R4 | `MOVIMIENTO`: exactamente uno de `obligacion_id` y `deposito_id`; `importe_aplicado` > 0; `tipo_cambio` obligatorio si `moneda_recibida` ≠ moneda destino; `anula_a` y `motivo` obligatorios si `tipo` = `reversion`. | RF-16, RF-38 |
 | R5 | `MOVIMIENTO`: una `reversion` apunta a un único `abono` que no tenga ya otra reversión. | RN-22 |
@@ -380,7 +380,7 @@ Incorporadas al DAS v0.6 con los números indicados.
 
 ## 11. Qué no cubre este borrador
 
-- Tipos físicos, índices concretos, particiones, migraciones y nombres de tablas.
+- Índices concretos adicionales, particiones, orden de las migraciones y nombres de tablas. Los tipos físicos principales y la restricción de solape de contratos constan en la sección 13 y en el ADR-031 del DAS.
 - Contratos de API (siguiente producto de la fase 3), permisos por operación y flujos detallados.
 - Datos de prueba.
 - Revisión por otra persona. La prueba en PostgreSQL (sección 12) es autoverificación mía, no revisión de pares.
@@ -398,3 +398,15 @@ Se montó una base desechable en un servidor PostgreSQL 18.4 aparte (puerto 5432
 
 **No probado:** R3 `vigente_desde` ≥ `fecha_inicio` (requiere otra tabla), R8 (tope de abonos de depósito), R9 a R11, R14, concurrencia real (dos abonos simultáneos), carga con 50 propiedades y el tiempo de respuesta de RNF-08.
 **Fuente:** [PostgreSQL, funciones de secuencia](https://www.postgresql.org/docs/current/functions-sequence.html), leída por resumen: las secuencias "cannot be used to obtain gapless sequences".
+
+## 13. Tipos físicos decididos (21-oct-2026, ADR-031)
+
+| Dato | Tipo físico en PostgreSQL (por confirmar con `sqlmigrate`) | Notas |
+|---|---|---|
+| Identificadores | `bigint` autoincremental (`BigAutoField`) | ADR-028 |
+| Importes (`importe_inicial`, `importe_delta`, `importe_aplicado`, `importe_recibido`, depósito) | `numeric(14,2)` | Tamaño propuesto por el asistente; colones redondeados a unidad entera por el servicio |
+| `tipo_cambio` | `numeric(12,4)` | Propuesta; ingresado a mano (RF-38) |
+| Moneda | texto de 3 letras con `CHECK` (`CRC` o `USD`) | RF-33 |
+| Fechas de calendario (vencimiento, período, fecha real, inicio y fin de contrato) | `date` | Sin hora ni zona |
+| Instantes (`registrado_en`, `ocurrido_en`, `creado_en`, `expira_en`) | `timestamp with time zone`, guardado en UTC (`USE_TZ = True`) | W3C; ver sección 1.2 |
+| Solape de contratos (R2) | Restricción de exclusión con `btree_gist` sobre propiedad y rango de fechas `[inicio, fin]`, sin límite superior si el contrato es abierto | Los contratos anulados no cuentan (decisión del solicitante, 21-oct-2026; ADR-031) |
