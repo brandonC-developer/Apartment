@@ -4,7 +4,7 @@
 
 **Qué documentará:** entornos, despliegues, copias de seguridad, recuperación, monitoreo, mantenimiento y procedimientos operativos.
 
-**Entradas:** DAS v0.9 (secciones 10 y 11, RE-03, RE-09, ADR-021 y ADR-023 a ADR-025) y las decisiones ya tomadas: DP-07 (RPO y RTO de 24 h, retención de 35 días) y DP-08 (VPS administrado por el solicitante, acceso por internet).
+**Entradas:** DAS v0.11 (secciones 10 y 11, RE-03, RE-09, ADR-021 y ADR-023 a ADR-026) y las decisiones ya tomadas: DP-07 (RPO y RTO de 24 h, retención de 35 días) y DP-08 (VPS administrado por el solicitante, acceso por internet).
 
 **Requisitos de la ERS que se verifican aquí:** RNF-09 (recuperación), RNF-14 (seguridad de los datos), RNF-18 (documentación de seguridad), RF-41 (retención y eliminación), RF-46 (incidentes), RNF-16 (idempotencia del proceso diario).
 
@@ -15,3 +15,5 @@
 - Endurecimiento del servidor (VPS administrado por el solicitante): las guías reconocidas (por ejemplo, CIS Benchmarks, OWASP) **aún no se han investigado**.
 - Condiciones recomendadas antes de cargar datos reales: servidor endurecido, prueba de restauración superada y revisión legal cerrada.
 - Documento de seguridad y protocolo de actuación (OL-20, OL-21) y procedimiento de respuesta a incidentes con aviso en cinco días hábiles (OL-19), todo pendiente de abogado.
+
+**Decidido en la fase 4 (20-oct-2026):** la restauración trimestral la ejecuta el solicitante a mano, con una comprobación automática mensual, y los resultados se registran en esta carpeta, sin datos personales. El registro y el script no existen todavía.

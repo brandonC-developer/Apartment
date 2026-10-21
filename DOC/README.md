@@ -6,10 +6,10 @@
 
 | Fase | Carpeta | Documento vigente | Estado |
 |---|---|---|---|
-| 1. Especificación de requisitos (ERS) | `fase-1-ers/` | `ERS_SGA_001_v1.8_borrador.md` | Borrador; pendiente de validación legal y aprobación |
-| 2. Arquitectura de software | `fase-2-arquitectura/` | `DAS_SGA_001_v0.9_borrador.md` | Borrador; depende de la ERS |
-| 3. Diseño técnico | `fase-3-diseno-tecnico/` | `MODELO_DATOS_SGA_001_v0.3_borrador.md` | Iniciada; solo el modelo de datos, en borrador sin revisar |
-| 4. Estrategia y plan de pruebas | `fase-4-pruebas/` | — | No iniciada |
+| 1. Especificación de requisitos (ERS) | `fase-1-ers/` | `ERS_SGA_001_v1.9_borrador.md` | Borrador; pendiente de validación legal y aprobación |
+| 2. Arquitectura de software | `fase-2-arquitectura/` | `DAS_SGA_001_v0.11_borrador.md` | Borrador; depende de la ERS |
+| 3. Diseño técnico | `fase-3-diseno-tecnico/` | `MODELO_DATOS_SGA_001_v0.3_borrador.md`; `DISENO_TECNICO_SGA_001_v0.6_borrador.md` | Iniciada; modelo de datos y diseño técnico, en borrador sin revisar |
+| 4. Estrategia y plan de pruebas | `fase-4-pruebas/` | `ESTRATEGIA_PRUEBAS_SGA_001_v0.2_borrador.md` | Iniciada; estrategia en borrador sin revisar |
 | 5. Plan de implementación | `fase-5-implementacion/` | — | No iniciada |
 | 6. Despliegue y operación | `fase-6-despliegue-operacion/` | — | No iniciada |
 
@@ -42,6 +42,17 @@ Carpetas transversales:
 | 2026-10-20 (b) | `actualizaciones/2026-10-20b_ERS-v1.8-matriz/` | Matriz de trazabilidad de la ERS v1.8: RN-10, RN-15, RN-25 y seis RNF sin criterio |
 | 2026-10-20 (c) | `actualizaciones/2026-10-20c_DAS-v0.8-Django/` | DAS v0.8: Python y Django con interfaz renderizada por el servidor (ADR-022); RE-04 actualizada |
 | 2026-10-20 (d) | `actualizaciones/2026-10-20d_stack-decisiones/` | DAS v0.9: PostgreSQL 18, systemd, documentos en disco, DigitalOcean con Ubuntu 26.04, Nginx y Gunicorn, respaldos a Spaces e integración continua (ADR-002, 003, 013, 023 a 025) |
+| 2026-10-20 (e) | `actualizaciones/2026-10-20e_fase-4-estrategia-pruebas/` | Fase 4 iniciada: estrategia de pruebas v0.1 (niveles, cobertura de los 57 CA, RNF sin criterio, pruebas de operación; hallazgos HP-01 a HP-04) |
+| 2026-10-20 (f) | `actualizaciones/2026-10-20f_fase-4-decisiones/` | Estrategia de pruebas v0.2: ejecutor de Django, Selenium, Locust, cobertura sin umbral, restauración trimestral y mensual, RN-15 y prioridades diferibles |
+| 2026-10-20 (g) | `actualizaciones/2026-10-20g_fase-3-diseno-tecnico/` | Diseño técnico v0.1: la API no es pública en la v1; interfaces, permisos por operación y flujos F-01 a F-09; hallazgos HT-01 a HT-07 |
+| 2026-10-20 (h) | `actualizaciones/2026-10-20h_ht-05-recuperacion-acceso/` | DAS v0.10 y diseño técnico v0.2: avisos de seguridad de la cuenta por correo (ADR-026); HT-05 resuelto; hallazgos HT-08 y HT-09 |
+| 2026-10-21 | `actualizaciones/2026-10-21_ht-08-contrasena-segundo-factor/` | Diseño técnico v0.3: HT-08 resuelto (cambio con contraseña actual; restablecimiento con enlace por correo de 15 minutos); dos decisiones contra la recomendación |
+| 2026-10-21 (b) | `actualizaciones/2026-10-21b_ht-01-canal-correo/` | Diseño técnico v0.4: HT-01 resuelto como cambio de alcance (v1 con notificación web y correo; WhatsApp futuro); corrección del destinatario de WhatsApp |
+| 2026-10-21 (c) | `actualizaciones/2026-10-21c_ht-03-exportacion-titular/` | Diseño técnico v0.5: HT-03 resuelto (exportación del titular con todo su registro y la foto de la cédula, en informe web imprimible); lectura de Ley 8968 art. 7 y Reglamento arts. 21 y 22 |
+| 2026-10-21 (d) | `actualizaciones/2026-10-21d_ht-02-comprobante-fisico/` | Diseño técnico v0.6: HT-02 resuelto como cambio de alcance (recibo de papel fuera del sistema primero; comprobante del sistema después); difiere RF-37 y CA-37 |
+| 2026-10-21 (e) | `actualizaciones/2026-10-21e_ERS-v1.9/` | ERS v1.9: reúne las decisiones de HT-01, 02, 03, 05 y 08 (notificaciones por correo, avisos de seguridad, restablecimiento de contraseña, exportación del titular, recibo de papel antes del comprobante), nuevos RF-47 y CA-58 a CA-61; difiere RF-37 (Alta) |
+| 2026-10-21 (f) | `actualizaciones/2026-10-21f_DAS-v0.11/` | DAS v0.11: alinea la arquitectura con la ERS v1.9 (ADR-008, 010, 013, 018 y 026; RE-05; correo en lugar de WhatsApp; recibo físico; restablecimiento de contraseña) |
+| 2026-10-21 (g) | `actualizaciones/2026-10-21g_auditoria-coherencia/` | Auditoría de enlaces, vigencia y coherencia: 4 correcciones en ERS v1.9 y DAS v0.11; lista de documentos desalineados (modelo de datos, estrategia de pruebas, diseño técnico, resumen para el abogado y el script) |
 
 ## Control de versiones
 
