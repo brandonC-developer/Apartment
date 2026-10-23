@@ -9,11 +9,17 @@
 | Estrategia y plan de pruebas | `ESTRATEGIA_PRUEBAS_SGA_001_v0.3_borrador.md` (vigente); `ESTRATEGIA_PRUEBAS_SGA_001_v0.1_borrador.md` y `ESTRATEGIA_PRUEBAS_SGA_001_v0.2_borrador.md` se conservan | Borrador v0.3; no aprobado |
 | Casos de prueba detallados | — | No iniciado; se escriben con la implementación |
 
-**Entradas:** los criterios de aceptación CA-01 a CA-72 de la ERS v1.9 y su matriz de trazabilidad (sección 10); la estrategia v0.3 cubre los 72 (CA-37 y CA-54 asignados a la fase posterior del comprobante), y las decisiones del DAS v0.11 (PostgreSQL 18, DigitalOcean, respaldos e integración continua, correo en lugar de WhatsApp).
+**Entradas:** los criterios de aceptación CA-01 a CA-83 de la ERS v1.16 y su matriz de trazabilidad (sección 10); la estrategia v0.3 cubre los 83 (CA-37 y CA-54 asignados a la fase posterior del comprobante), y las decisiones del DAS v0.11 (PostgreSQL 18, DigitalOcean, respaldos e integración continua, correo en lugar de WhatsApp).
 
 **Observación de la evaluación metodológica:** esta fase podía empezar en cuanto la ERS tuviera línea base, sin esperar al diseño técnico. Es una inferencia nuestra a partir de la estructura de ISO/IEC/IEEE 29119-3, no un texto de la norma, que no se pudo abrir (ver `../metodologia/EVALUACION_METODOLOGIA_v1.md`, ajuste 2).
 
 **Qué cambió en la v0.3 (21-oct-2026):** alineación con la ERS v1.9 y el DAS v0.11: CA-58 a CA-72 asignados, pruebas del canal de correo, CA-37 y CA-54 como fase posterior, HP-01 resuelto. **Qué contiene la v0.2:** niveles de prueba, entornos y datos, cobertura de los 57 CA, verificación de los RNF sin criterio de aceptación (RNF-05, 07, 08, 09, 10 y 11), pruebas de operación (restauración, temporizador, HTTPS), casos límite, criterios de entrada y salida, hallazgos HP-01 a HP-04 y las siete decisiones del solicitante del 20-oct-2026 (ejecutor de Django, Selenium, Locust, cobertura sin umbral, restauración, RN-15 y prioridades diferibles).
+
+**Ajuste del 22-oct-2026 (sin versión nueva):** la estrategia v0.3 asigna CA-73 y CA-74 de la ERS v1.10 (reducción de la fotografía y envío sin reducción); niveles y prioridades propuestos por el asistente.
+
+**Ajuste del 22-oct-2026 (segundo, sin versión nueva):** la estrategia v0.3 asigna CA-75, CA-76 y CA-77 de la ERS v1.11 (cédula desde el perfil de la propiedad y fotografía del contrato); niveles y prioridades propuestos por el asistente.
+
+**Ajuste del 23-oct-2026 (tercero, sin versión nueva):** la estrategia v0.3 asigna CA-78 de la ERS v1.12 (registro en dos pasos y contrato rechazado sin frente) y fija el tope en 5 MiB con prueba del límite; sin zona temporal ya no hay pruebas de identificador de un solo uso ni de caducidad. Nivel y prioridad propuestos por el asistente.
 
 **Cobertura que la fase debe resolver:** la segunda mitad de RN-15 (rechazar movimientos sobre períodos futuros, salvo el inmediato siguiente) no tenía CA (HP-01); la ERS v1.9 la cubre con CA-58. Ver `../actualizaciones/2026-10-20b_ERS-v1.8-matriz/CAMBIOS.md`.
 

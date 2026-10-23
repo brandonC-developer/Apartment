@@ -1,0 +1,275 @@
+﻿Prueba del modelo MDD-SGA-001 v0.5 - 2026-10-22 16:00:38
+psql (PostgreSQL) 18.4
+Servidor desechable en el puerto 54329 (directorio temporal, se borra al terminar)
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "sga_prueba_v05" as user "test".
+CREATE EXTENSION
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+INSERT 0 3
+INSERT 0 2
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ asociar_cedula 
+----------------
+              3
+(1 row)
+
+INSERT 0 1
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ asociar_cedula 
+----------------
+              5
+(1 row)
+
+INSERT 0 1
+UPDATE 1
+ asociar_cedula 
+----------------
+              6
+(1 row)
+
+INSERT 0 1
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ asociar_fotografia_contrato 
+-----------------------------
+                           2
+(1 row)
+
+ asociar_fotografia_contrato 
+-----------------------------
+                           3
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+ espera_error 
+--------------
+ 
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+
+== Resultado de las comprobaciones de una sola sesion ==
+   r    |                                             prueba                                              |                                detalle                                 
+--------+-------------------------------------------------------------------------------------------------+------------------------------------------------------------------------
+  OK    | R11 referencia con una URL                                                                      | new row for relation "documento_identidad" violates check constraint "
+  OK    | R11 referencia con una ruta                                                                     | new row for relation "documento_contrato" violates check constraint "d
+  OK    | R12 DELETE de acceso_documento                                                                  | fila inmutable
+  OK    | R12 UPDATE de acceso_documento                                                                  | fila inmutable
+  OK    | R2 anulado no cuenta; vigente y futuro contiguos                                                | 3 contratos insertados
+  OK    | R22 el mismo orden en otro contrato es valido                                                   | insertado
+  OK    | R22 el orden de las fotografias es 1,2                                                          | obtenido=1,2 esperado=1,2
+  OK    | R22 orden cero                                                                                  | new row for relation "documento_contrato" violates check constraint "d
+  OK    | R22 orden repetido en el mismo contrato                                                         | duplicate key value violates unique constraint "r22_orden_unico"
+  OK    | R23 acceso a cedula y a contrato por separado                                                   | insertados
+  OK    | R23 acceso con los dos documentos                                                               | new row for relation "acceso_documento" violates check constraint "r23
+  OK    | R23 acceso sin ningun documento                                                                 | new row for relation "acceso_documento" violates check constraint "r23
+  OK    | R24 archivo de contrato usado como cedula                                                       | el archivo temporal no es de una cedula
+  OK    | R24 el archivo de contrato rechazado como cedula queda sin usar (se deshizo)                    | obtenido=true esperado=true
+  OK    | R24 identificador inexistente                                                                   | identificador no valido, usado o vencido
+  OK    | R24 identificador vencido                                                                       | identificador no valido, usado o vencido
+  OK    | R24 identificador ya limpiado                                                                   | identificador no valido, usado o vencido
+  OK    | R24 la limpieza elimina solo lo vencido y no asociado                                           | obtenido=1 esperado=1
+  OK    | R24 lo usado no se limpia                                                                       | obtenido=true esperado=true
+  OK    | R24 primer uso del identificador                                                                | asociado a Beto
+  OK    | R24 segundo uso del mismo identificador                                                         | identificador no valido, usado o vencido
+  OK    | R25 el identificador del frente rechazado queda sin usar (atomicidad)                           | obtenido=true esperado=true
+  OK    | R25 el reverso es otra cara y se acepta                                                         | asociado
+  OK    | R25 queda un solo frente activo                                                                 | obtenido=1 esperado=1
+  OK    | R25 reemplazo: marcado eliminado el anterior, el nuevo frente se acepta                         | asociado
+  OK    | R25 segundo frente activo del mismo inquilino                                                   | duplicate key value violates unique constraint "r25_una_activa_por_car
+  OK    | RF-51 el vigente es Beto                                                                        | obtenido=Beto esperado=Beto
+  OK    | RF-51 propiedad sin contrato no ofrece la accion                                                | obtenido=0 esperado=0
+  OK    | RF-51 un solo inquilino vigente (ignora anulado y futuro)                                       | obtenido=1 esperado=1
+  OK    | archivo_temporal acepta filas validas (7)                                                       | insertadas
+  OK    | cedula sin cara                                                                                 | new row for relation "archivo_temporal" violates check constraint "arc
+  OK    | contrato con cara informada                                                                     | new row for relation "archivo_temporal" violates check constraint "arc
+  OK    | expira_en distinto de creado_en + 24 horas                                                      | new row for relation "archivo_temporal" violates check constraint "arc
+  OK    | fotografia de un contrato inexistente                                                           | insert or update on table "documento_contrato" violates foreign key co
+  OK    | hash del identificador duplicado                                                                | duplicate key value violates unique constraint "archivo_temporal_ident
+  OK    | tipo real distinto de JPEG y PNG                                                                | new row for relation "documento_identidad" violates check constraint "
+(36 rows)
+
+ ok | fallas 
+----+--------
+ 36 |      0
+(1 row)
+
+
+
+== Pruebas de concurrencia (dos sesiones reales) ==
+ OK    R24 concurrencia: la primera sesion usa el identificador | codigo=0
+ OK    R24 concurrencia: la segunda espera el bloqueo (>= 2 s) y falla | codigo=3 espera=2.1 s mensaje=psql:C:/Users/crbra/AppData/Local/Temp/sga_pg_v05_91e36c65/b.sql:2: ERROR:  identificador no valido, usado o vencido
+ OK    R24 concurrencia: queda una sola fotografia, la de la primera sesion | obtenido=1:99999999999999999999999999999999
+ OK    R22 concurrencia SIN bloqueo del contrato: la segunda sesion calcula el mismo orden y R22 la rechaza | primera=0 segunda=3 mensaje=psql:C:/Users/crbra/AppData/Local/Temp/sga_pg_v05_91e36c65/b.sql:2: ERROR:  duplicate key value violates unique constraint "r22_orden_unico"
+ OK    R22 concurrencia CON bloqueo del contrato: las dos se registran con ordenes distintos (1 y 2 de antes, 3 y 4 ahora) | primera=0 segunda=0 espera=2.1 s ordenes=1,2,3,4
+Concurrencia: 5 correctas, 0 fallas
+Servidor detenido y directorio temporal borrado.

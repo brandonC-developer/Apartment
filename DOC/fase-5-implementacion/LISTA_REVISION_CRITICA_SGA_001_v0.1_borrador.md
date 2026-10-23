@@ -6,7 +6,10 @@
 **Versión:** 0.1
 **Estado:** Borrador para revisión; no aprobado
 **Fecha:** 21 de octubre de 2026
-**Base:** ERS-SGA-001 v1.9, DAS-SGA-001 v0.11, MDD-SGA-001 v0.4 y PIM-SGA-001 v0.1 (todos borradores no aprobados)
+**Base:** ERS-SGA-001 v1.16, DAS-SGA-001 v0.15, MDD-SGA-001 v0.7 y PIM-SGA-001 v0.1 (todos borradores no aprobados)
+**Ajuste del 22-oct-2026 (actualización 2026-10-22g, sin versión nueva):** alineada con la ERS v1.10; se precisa RV-14.
+**Ajuste del 22-oct-2026 (actualización 2026-10-22k, sin versión nueva):** alineada también con la ERS v1.11; las fotografías del contrato (RF-52) entran por analogía en las verificaciones de documentos privados (área 3); no se añadieron puntos.
+**Ajuste del 23-oct-2026 (actualización 2026-10-23f, sin versión nueva):** alineada con la ERS v1.12; RV-14 usa 5 MiB; no se añadieron puntos (sin zona temporal no hay verificaciones de ella).
 
 Esta lista sirve a la persona que revise las partes críticas del SGA antes de cargar datos reales (plan de implementación, sección 3.3, DP-23). **No hay persona designada ni código escrito**: la parte A se puede usar ya sobre los documentos y las partes B y C se usarán sobre el código y el servidor. Los puntos a verificar son **propuesta del asistente**, derivados de las decisiones del proyecto y de las fuentes de la sección 2; el solicitante no los revisó uno por uno. No es asesoría legal ni una auditoría de seguridad.
 
@@ -75,7 +78,7 @@ Resultado: Cumple / No cumple / No aplica / No pude verificar. Los identificador
 |---|---|---|---|---|
 | RV-12 | Los archivos están fuera de la raíz web, con nombre aleatorio y sin el número de documento en la ruta; ninguna URL pública los sirve | ADR-003, R11, CA-11 | B, C | |
 | RV-13 | La descarga pasa por una vista que comprueba la autorización y registra el acceso (actor, fecha, inquilino) sin guardar la imagen | RF-45, CA-26 | B | |
-| RV-14 | Solo se aceptan JPEG y PNG, se verifica el tipo real, el límite es 5 MB y Nginx limita el tamaño de la subida | ADR-003 | B, C | |
+| RV-14 | Solo se aceptan JPEG y PNG, se verifica el tipo real, el límite es 5 MiB (5 242 880 bytes) y Nginx limita el tamaño de la subida (6m en la ruta de subida de un archivo, 1m en el resto); la reducción en el navegador (RF-50) no cuenta como control | ADR-003, RF-02, RF-50 | B, C | |
 | RV-15 | La retención elimina el archivo del almacenamiento, marca la fila y avisa antes de ejecutar | RF-41, CA-28 | B | |
 
 ### Área 4. Datos personales y registros

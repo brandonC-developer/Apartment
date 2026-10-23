@@ -1,0 +1,374 @@
+﻿Prueba del modelo MDD-SGA-001 v0.7 - 2026-10-23 12:27:01
+psql (PostgreSQL) 18.4
+Servidor desechable en el puerto 54329 (directorio temporal, se borra al terminar)
+DROP DATABASE
+CREATE DATABASE
+You are now connected to database "sga_prueba_v07" as user "test".
+CREATE EXTENSION
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+INSERT 0 5
+INSERT 0 4
+INSERT 0 2
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ agregar_o_reemplazar_cedula 
+-----------------------------
+                           1
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ agregar_o_reemplazar_cedula 
+-----------------------------
+                           2
+(1 row)
+
+ agregar_o_reemplazar_cedula 
+-----------------------------
+                           3
+(1 row)
+
+ agregar_o_reemplazar_cedula 
+-----------------------------
+                           4
+(1 row)
+
+ crear_contrato 
+----------------
+              1
+(1 row)
+
+ crear_contrato 
+----------------
+              2
+(1 row)
+
+ crear_contrato 
+----------------
+              3
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ agregar_o_reemplazar_cedula 
+-----------------------------
+                           5
+(1 row)
+
+INSERT 0 1
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ crear_contrato 
+----------------
+              5
+(1 row)
+
+INSERT 0 1
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ agregar_o_reemplazar_cedula 
+-----------------------------
+                          11
+(1 row)
+
+INSERT 0 1
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ agregar_o_reemplazar_cedula 
+-----------------------------
+                          12
+(1 row)
+
+INSERT 0 1
+ agregar_fotografia_contrato 
+-----------------------------
+                           3
+(1 row)
+
+ agregar_fotografia_contrato 
+-----------------------------
+                           4
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+ espera_error 
+--------------
+ 
+(1 row)
+
+ agregar_fotografia_contrato 
+-----------------------------
+                           9
+                          10
+                          11
+                          12
+                          13
+                          14
+                          15
+                          16
+(8 rows)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_mensaje 
+----------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_valor 
+--------------
+ 
+(1 row)
+
+DELETE 1
+ espera_valor 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+ espera_error 
+--------------
+ 
+(1 row)
+
+
+== Resultado de las comprobaciones de una sola sesion ==
+   r    |                                             prueba                                              |                                       detalle                                       
+--------+-------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------
+  OK    | H20 con 9 filas, max(orden)+1 = 11 y el CHECK lo rechaza (el hallazgo es real: habria que reuti | new row for relation "documento_contrato" violates check constraint "r
+  OK    | H20 tras borrar una fotografia quedan 9 filas                                                   | obtenido=9 esperado=9
+  OK    | R11 referencia con una URL                                                                      | new row for relation "documento_identidad" violates check constraint "
+  OK    | R11 referencia con una ruta                                                                     | new row for relation "documento_contrato" violates check constraint "r
+  OK    | R12 DELETE de acceso_documento                                                                  | fila inmutable
+  OK    | R12 UPDATE de acceso_documento                                                                  | fila inmutable
+  OK    | R2 contrato solapado sigue rechazado                                                            | conflicting key value violates exclusion constraint "contrato_propieda
+  OK    | R22 el mismo orden en otro contrato es valido                                                   | insertado
+  OK    | R22 el orden de las fotografias es 1,2                                                          | obtenido=1,2 esperado=1,2
+  OK    | R22 orden cero                                                                                  | new row for relation "documento_contrato" violates check constraint "d
+  OK    | R22 orden repetido en el mismo contrato                                                         | duplicate key value violates unique constraint "r22_orden_unico"
+  OK    | R23 acceso a cedula y a contrato por separado                                                   | insertados
+  OK    | R23 acceso con los dos documentos                                                               | new row for relation "acceso_documento" violates check constraint "r23
+  OK    | R23 acceso sin ningun documento                                                                 | new row for relation "acceso_documento" violates check constraint "r23
+  OK    | R25 el reverso es otra cara y se acepta                                                         | agregado
+  OK    | R25 la anterior queda marcada, no borrada                                                       | obtenido=1 esperado=1
+  OK    | R25 queda un solo frente activo                                                                 | obtenido=1 esperado=1
+  OK    | R25 reemplazo: marca la anterior y acepta el nuevo frente                                       | reemplazado
+  OK    | R25 segundo frente activo sin reemplazo (INSERT directo)                                        | duplicate key value violates unique constraint "r25_una_activa_por_car
+  OK    | R26 Eva ya tiene frente                                                                         | obtenido=true esperado=true
+  OK    | R26 con frente se crea el contrato (3 contratos)                                                | obtenido=3 esperado=3
+  OK    | R26 contrato con un inquilino que solo tiene el reverso                                         | R26: el inquilino no tiene el frente de la fotografia cargado
+  OK    | R26 contrato con un inquilino sin frente                                                        | R26: el inquilino no tiene el frente de la fotografia cargado
+  OK    | R26 contrato de Eva en Casa B tras cargar el frente                                             | creado
+  OK    | R26 el rechazo no deja contrato                                                                 | obtenido=0 esperado=0
+  OK    | R26 inquilino recien guardado no tiene frente                                                   | obtenido=false esperado=false
+  OK    | R26 solo con el reverso sigue sin frente                                                        | obtenido=false esperado=false
+  OK    | R26 tras reemplazar el frente de Beto sigue con frente                                          | obtenido=true esperado=true
+  OK    | R27 5 242 880 bytes se acepta                                                                   | frente de Eva
+  OK    | R27 5 242 881 bytes se rechaza                                                                  | new row for relation "documento_identidad" violates check constraint "
+  OK    | R27 5 242 881 bytes se rechaza tambien en la fotografia del contrato                            | new row for relation "documento_contrato" violates check constraint "r
+  OK    | R27 PDF se rechaza                                                                              | new row for relation "documento_identidad" violates check constraint "
+  OK    | R27 cero bytes se rechaza                                                                       | new row for relation "documento_identidad" violates check constraint "
+  OK    | R27/R25 el reemplazo rechazado deja el frente anterior activo                                   | obtenido=33333333333333333333333333333333 esperado=33333333333333333333333333333333
+  OK    | R28 el rechazo conserva las 10 anteriores                                                       | obtenido=10 esperado=10
+  OK    | R28 la fotografia numero 11 la rechaza el servicio con el mensaje de R28 (no el del CHECK)      | R28: el contrato ya tiene el maximo de 10 fotografias
+  OK    | R28 las 10 fotografias se aceptan, ordenes 1 a 10                                               | obtenido=1,2,3,4,5,6,7,8,9,10 esperado=1,2,3,4,5,6,7,8,9,10
+  OK    | R28 orden 11 por INSERT directo lo rechaza el CHECK                                             | new row for relation "documento_contrato" violates check constraint "r
+  OK    | R28 otro contrato no se ve afectado y sigue aceptando                                           | obtenido=true esperado=true
+  OK    | RF-51 el vigente es Beto                                                                        | obtenido=Beto esperado=Beto
+  OK    | RF-51 propiedad sin contrato no ofrece la accion                                                | obtenido=0 esperado=0
+  OK    | RF-51 un solo inquilino vigente (ignora anulado y futuro)                                       | obtenido=1 esperado=1
+  OK    | consentimiento: agregar fotografia sin consentimiento vigente                                   | sin consentimiento vigente
+  OK    | fotografia de un contrato inexistente                                                           | insert or update on table "documento_contrato" violates foreign key co
+(44 rows)
+
+ ok | fallas 
+----+--------
+ 44 |      0
+(1 row)
+
+
+
+== Pruebas de concurrencia y del archivo huerfano (sesiones reales de psql) ==
+ OK    H18 concurrencia SIN bloqueo del contrato: la segunda sesion calcula el mismo orden y R22 la rechaza | primera=0 segunda=3 mensaje=psql:C:/Users/crbra/AppData/Local/Temp/sga_pg_v07_fc1343c9/408296f586d143beb42b0b69bc4a5af2.sql:2: ERROR:  duplicate key value violates unique constraint "r22_orden_unico"
+ OK    H18 concurrencia CON bloqueo del contrato: las dos se registran con ordenes distintos (1 y 2 de antes, 3 de la sesion sin bloqueo, 4 y 5 ahora) | primera=0 segunda=0 espera=2 s ordenes=1,2,3,4,5
+ OK    R25 concurrencia: dos reemplazos del mismo frente, la segunda espera y falla; queda un solo frente activo, el de la primera | primera=0 segunda=3 espera=2.1 s mensaje=psql:C:/Users/crbra/AppData/Local/Temp/sga_pg_v07_fc1343c9/b10aebd32e234879bf2fbc9c741f110c.sql:2: ERROR:  duplicate key value violates unique constraint "r25_una_activa_por_cara" activos=1:55555555555555555555555555555555
+ OK    R26 concurrencia: crear el contrato mientras otra sesion reemplaza el frente se acepta sin esperar (el frente anterior sigue activo hasta confirmar) | reemplazo=0 contrato=0 espera=0.1 s contratos:frentes_activos=1:1
+ OK    R28 concurrencia: con 9 fotografias, dos sesiones agregan a la vez; la primera registra la 10 y la segunda espera y la rechaza el servicio con el mensaje de R28 | primera=0 segunda=3 espera=2.1 s mensaje=psql:C:/Users/crbra/AppData/Local/Temp/sga_pg_v07_fc1343c9/ec893a453a7946b8aa78560d712bc744.sql:2: ERROR:  R28: el contrato ya tiene el maximo de 10 fotografias filas:max_orden=10:10
+ OK    H19b falla la transaccion: el archivo escrito se borra en la misma peticion y no queda fila | codigo=3 archivo_existe=False filas=0 mensaje=psql:C:/Users/crbra/AppData/Local/Temp/sga_pg_v07_fc1343c9/41fa1514ffaf4a51a5804409aa60dd02.sql:1: ERROR:  sin consentimiento vigente
+ OK    H19b si la transaccion se confirma, el archivo se conserva y hay una fila | codigo=0 archivo_existe=True filas=1
+Concurrencia y archivo huerfano: 7 correctas, 0 fallas
+Servidor detenido y directorio temporal borrado.

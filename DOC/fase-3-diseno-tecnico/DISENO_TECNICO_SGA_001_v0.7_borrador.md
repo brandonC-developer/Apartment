@@ -4,7 +4,10 @@
 **Versión:** 0.7 — reemplaza a la [v0.6](DISENO_TECNICO_SGA_001_v0.6_borrador.md), que se conserva sin cambios (las [v0.5](DISENO_TECNICO_SGA_001_v0.5_borrador.md), [v0.4](DISENO_TECNICO_SGA_001_v0.4_borrador.md), [v0.3](DISENO_TECNICO_SGA_001_v0.3_borrador.md), [v0.2](DISENO_TECNICO_SGA_001_v0.2_borrador.md) y [v0.1](DISENO_TECNICO_SGA_001_v0.1_borrador.md) también)
 **Estado:** Borrador para revisión; no aprobado
 **Fecha:** 21 de octubre de 2026
-**Base:** ERS-SGA-001 v1.9, DAS-SGA-001 v0.11 y MDD-SGA-001 v0.4 (todos borradores no aprobados)
+**Base:** ERS-SGA-001 v1.16, DAS-SGA-001 v0.15 y MDD-SGA-001 v0.7 (todos borradores no aprobados)
+**Ajuste del 23-oct-2026 (actualización 2026-10-23f, sin versión nueva):** alineado con la ERS v1.12: sin zona temporal (registro en dos pasos, F-01 y nuevo F-11), tope de 5 MiB, contrato rechazado sin frente (F-02, CA-78), F-10 directo al contrato con bloqueo (H18), HT-10 reemplazado. El 23-oct-2026 (ERS v1.13, DP-30) la lista de inquilinos filtra los «Sin frente».
+**Ajuste del 22-oct-2026 (actualización 2026-10-22g, sin versión nueva):** alineado con la ERS v1.10 (RF-50, CA-73, CA-74): la fotografía se reduce en el navegador y cada archivo se envía en su propia petición; nuevo hallazgo HT-10.
+**Ajuste del 22-oct-2026 (actualización 2026-10-22k, sin versión nueva):** alineado con la ERS v1.11 (RF-51, RF-52, CA-75 a CA-77): perfil de la propiedad con dos acciones; nuevo hallazgo HT-11.
 
 Este documento cubre los tres productos de la fase 3 que faltaban además del modelo de datos: las interfaces (antes llamadas "contratos de API"), los permisos por operación y los flujos de negocio detallados. **No hay código ni se ha autorizado implementarlo.** Todo lo que no cita una fuente es **propuesta** del asistente y espera la decisión del solicitante (sección 7). La v0.2 incorporó las decisiones del solicitante sobre HT-05 (20-oct-2026); la v0.3 incorporó las de HT-08 (21-oct-2026); la v0.7 alinea el documento con la ERS v1.9, el DAS v0.11 y el modelo de datos v0.4, que ya recogen las decisiones de HT-01, HT-02, HT-03, HT-05 y HT-08 (sin decisiones nuevas); la v0.6 incorporó las de HT-02 (21-oct-2026: comprobantes físicos fuera del sistema por ahora); la v0.5 incorporó las de HT-03 (21-oct-2026: alcance y formato de la exportación del titular); la v0.4 incorporó las de HT-01 (21-oct-2026), que cambian el alcance de las notificaciones (sección 3.7), y corrige un error de la sección 3.3 (el destinatario de WhatsApp es el administrador, RF-44, no el inquilino). No es asesoría legal: las obligaciones de las leyes 7527 y 8968 siguen pendientes de abogado (DP-17).
 
@@ -168,12 +171,14 @@ Cambios que esto exigía en la ERS y el DAS (hechos en la ERS v1.9 y el DAS v0.1
 
 | Operación | RF | Controles adicionales | Auditoría |
 |---|---|---|---|
-| Registrar inquilino | 01, 02, 39 | Consentimiento previo con texto informativo; formato JPEG o PNG, hasta 5 MB, tipo real del archivo; advertencia por documento duplicado (CA-25) | Sí |
+| Registrar inquilino | 01, 02, 39 | Consentimiento previo con texto informativo; se guarda sin fotografía (ERS v1.12); advertencia por documento duplicado (CA-25) | Sí |
+| Agregar o reemplazar la fotografía del documento (desde la ficha o el perfil de la propiedad) | 03, 50, 51 | Exige consentimiento (RF-39); la fotografía se reduce en el navegador (RF-50, no es un control de seguridad) y cada archivo llega en su propia petición; en el servidor, JPEG o PNG, hasta 5 MiB (5 242 880 bytes), tipo real; desde el perfil, solo con contrato vigente (acción desactivada si no); el reemplazo marca la anterior como eliminada | Sí; sin la imagen |
 | Consultar y actualizar ficha | 03, 05 | Cambios de identificación validados | Sí; sin valores de campos personales (ADR-017) |
 | Desactivar o reactivar inquilino | 04 | Bloqueada con contrato vigente o saldos pendientes | Sí |
 | Ver o descargar fotografía de cédula | 26, 45 | Solo por vista autorizada; no se guarda la imagen en el registro | **Cada acceso**: actor, fecha y hora, inquilino |
 | Registrar propiedad | 06 | Estado derivado (disponible u ocupada); *inactiva* la marca el administrador | Sí (RF-28) |
-| Crear contrato | 07, 08 | Rechazo por solapamiento con otro contrato de la propiedad; advertencia (sin bloqueo) si la vigencia pactada es menor de tres años | Sí |
+| Agregar o consultar la fotografía del contrato | 52 | Asociada al contrato; JPEG o PNG, hasta 5 MiB (5 242 880 bytes), tipo real, un archivo por petición; reducción en el navegador; acción desactivada sin contrato vigente; solo la cuenta administradora autenticada; sin URL pública | Sí, cada consulta (propuesta); sin la imagen |
+| Crear contrato | 07, 08 | Rechazo por solapamiento con otro contrato de la propiedad; rechazo si el inquilino no tiene cargado el frente de la fotografía (CA-78); advertencia (sin bloqueo) si la vigencia pactada es menor de tres años | Sí |
 | Finalizar contrato | 09 | Anula obligaciones futuras sin movimientos; prorratea el último período; ajuste manual con motivo; advertencia si faltan menos de tres meses | Sí |
 | Consultar la auditoría | 28 | Pantalla de solo lectura con filtros por fecha, tipo de evento, entidad y actor; la consulta no se audita | No |
 | Anular contrato | 48 | Solo sin movimientos válidos; motivo obligatorio; anula sus obligaciones y su depósito sin abonos | Sí |
@@ -209,15 +214,16 @@ Los flujos 10.1 (proceso diario), 10.2 (abono), 10.3 (anulación), 10.4 (reajust
 
 **F-01 Registrar inquilino**
 1. Se muestra el texto informativo de la Ley 8968 y se registra el consentimiento (fecha, versión del texto, medio) antes de guardar datos (RF-39).
-2. Se validan campos obligatorios, contacto y archivo; el tipo real del archivo se verifica y se rechazan formatos distintos de JPEG y PNG o más de 5 MB (RF-02).
+2. Se validan campos obligatorios y contacto (RF-02). *Ajuste 23-oct-2026 (ERS v1.12): el registro es en dos pasos y no hay archivos en este formulario; el frente se sube después (F-11) y se exige antes de crear un contrato (F-02, CA-78).*
 3. Si existe otro inquilino activo con el mismo documento, se advierte y el administrador decide (CA-25).
-4. En una transacción: se guarda el inquilino, se guarda el archivo con nombre aleatorio fuera de la raíz web (ADR-003) y se registra la auditoría.
-5. Un error en cualquier paso no deja un inquilino a medias ni un archivo huérfano.
+4. En una transacción: se guarda el inquilino con su consentimiento y se registra la auditoría. Un error no deja un inquilino a medias.
+5. La ficha indica que falta el frente y ofrece subirlo (F-11). La lista de inquilinos permite filtrar los «Sin frente»; los que nunca se completan siguen la retención sin contrato de RF-41 (DP-30, resuelta el 23-oct-2026; ERS v1.13).
 
 **F-02 Crear contrato**
 1. Se elige inquilino y propiedad y se ingresan fechas, monto, moneda, vencimiento y gracia; si hay depósito, se define.
 2. Se rechaza el contrato si comparte un día con otro de la misma propiedad; la base lo garantiza con la restricción de exclusión (RF-08, ADR-002).
 3. Se advierte, sin bloquear, si la vigencia pactada es menor de tres años.
+3b. *Ajuste 23-oct-2026:* se rechaza el contrato si el inquilino no tiene cargado el frente de la fotografía del documento (RF-07, CA-78).
 4. En una transacción: se crea el contrato, la condición inicial y la auditoría. Las obligaciones las genera el proceso diario, 30 días antes de cada período (RF-11).
 5. Si el inicio es anterior a la carga en el sistema, se ofrece registrar el saldo de apertura (F-04).
 
@@ -254,6 +260,18 @@ Los flujos 10.1 (proceso diario), 10.2 (abono), 10.3 (anulación), 10.4 (reajust
 1. Se rechaza si tiene un contrato vigente o saldos pendientes (CA-29).
 2. Si no, se desactiva sin eliminar contratos ni historial (CA-10) y se audita. Se puede reactivar.
 
+**F-10 Agregar la fotografía del contrato (propuesta)**
+1. Desde el perfil de la propiedad (acción desactivada si no hay contrato vigente), el administrador toma o elige la fotografía; el navegador la reduce (RF-50, con lado mayor de 3508 px y calidad 0,85 como punto de partida del contrato, a confirmar en la E2: DP-29) y la envía en su propia petición, directo al contrato.
+2. El servidor valida el tipo real, el tope de 5 MiB = 5 242 880 bytes (RF-02) y que el contrato tenga menos de 10 fotografías (RF-52, CA-76); la número 11 se rechaza con un mensaje.
+3. En una transacción: se bloquea la fila del contrato (`FOR UPDATE`, H18 del modelo de datos), se calcula el orden, se guarda el archivo con nombre aleatorio fuera de la raíz web (ADR-003), se inserta el documento del contrato y se registra la auditoría.
+4. Un error no deja un registro a medias ni un archivo huérfano: si falla la base, el archivo ya escrito se borra en la misma petición (propuesta del asistente).
+
+**F-11 Agregar o reemplazar la fotografía del documento (propuesta)**
+1. Desde la ficha del inquilino (RF-03) o desde el perfil de la propiedad con contrato vigente (RF-51, acción desactivada si no lo hay), el administrador elige la cara (frente o reverso), toma o elige la fotografía; el navegador la reduce (RF-50) y la envía en su propia petición, directo al inquilino.
+2. El servidor exige el consentimiento registrado (RF-39), valida el tipo real y los 5 MiB (RF-02).
+3. En una transacción: se guarda el archivo con nombre aleatorio, se inserta el documento; si ya hay una fotografía activa en esa cara (la acción dice «Reemplazar»), se marca la anterior como eliminada (R25); y se registra la auditoría.
+4. Un error no deja un registro a medias ni un archivo huérfano (mismo tratamiento que en F-10). Un archivo rechazado no pierde los demás datos (CA-78).
+
 ## 6. Hallazgos
 
 | ID | Hallazgo | Propuesta |
@@ -267,6 +285,8 @@ Los flujos 10.1 (proceso diario), 10.2 (abono), 10.3 (anulación), 10.4 (reajust
 | HT-07 | **Resuelto el 21-oct-2026:** la técnica es `select_for_update()` de Django dentro de `transaction.atomic()` (`SELECT ... FOR UPDATE` en PostgreSQL), verificada en la documentación de Django (leída por resumen, primera mitad) y de PostgreSQL (bloqueos de fila). Sin `nowait`: la segunda operación espera. Bloquear varias filas siempre en el mismo orden. Sin efecto en SQLite | Incorporado en el DAS v0.11 (10.2); la prueba de concurrencia usa `TransactionTestCase` y PostgreSQL (estrategia de pruebas) |
 | HT-08 | **Resuelto a nivel de diseño el 21-oct-2026** (sección 3.6): contraseña actual para cambiar la contraseña y reemplazar el TOTP; enlace por correo de 15 minutos para restablecer. Las dos primeras decisiones van contra la recomendación | Incorporado en la ERS v1.9 (RF-27, CA-59), el DAS v0.11 (ADR-026) y el modelo de datos v0.4 (`TOKEN_RESTABLECIMIENTO`) |
 | HT-09 | La ERS 2.4 excluye el correo como canal de notificación; el ADR-026 lo usa solo para alertas de seguridad | **Resuelto en la ERS v1.9 (21-oct-2026):** sección 2.4 y RF-23 |
+| HT-10 | Con la subida del frente y el reverso en peticiones separadas (decisión del solicitante, 22-oct-2026), el paso 4 de F-01 (una sola transacción, sin archivos huérfanos) ya no se cumple tal cual: cada archivo llega antes de que exista el inquilino | **Reemplazado el 23-oct-2026: el solicitante decidió quitar la zona temporal** (registro en dos pasos; el inquilino no recibe contrato hasta tener el frente); ver la [actualización 2026-10-23 (d)](../actualizaciones/2026-10-23d_quitar-zona-temporal/CAMBIOS.md). Los documentos que la describían se alinearon el 23-oct-2026 (ERS v1.12, DAS, modelo v0.6). Texto anterior: **Resuelto el 22-oct-2026 (decisión del solicitante entre dos opciones del asistente):** zona temporal privada con identificador de un solo uso, que se asocia al inquilino en la transacción final; un proceso elimina lo no asociado a las 24 horas (plazo recomendado por el asistente y aceptado por el solicitante). El modelo de datos v0.5 lo recoge en `ARCHIVO_TEMPORAL` (R24); falta detallar la ligadura del identificador a la sesión (propuesta) y reflejarlo en el DAS |
+| HT-11 | El perfil de la propiedad no existe en el diseño: contenido, qué se muestra si hay contratos futuros o por decidir, y a qué inquilino se asocia la cédula; además la zona temporal (HT-10) debe cubrir la fotografía del contrato | **Resuelto el 23-oct-2026 (decisiones del solicitante, tres preguntas con la opción recomendada por el asistente):** (1) el perfil muestra los datos de RF-06, el inquilino y contrato vigente y las acciones "Agregar cédula" y "Foto del contrato"; sin historial de contratos en la v1; (2) sin contrato vigente (libre o solo con contrato futuro) los botones se ven desactivados con el aviso "No hay contrato vigente"; (3) si ya hay cédula activa en esa cara, el botón dice "Reemplazar" y la anterior se marca eliminada (R25). La zona temporal sirve para ambos tipos de archivo (HT-10, propuesta del asistente). Detalle en la [actualización 2026-10-23](../actualizaciones/2026-10-23_ht-11-perfil-propiedad/CAMBIOS.md). Queda sin diseñar el detalle visual y el texto de los avisos |
 
 HT-nn es un identificador local de este documento, no de la lista compartida del proyecto.
 
@@ -289,9 +309,11 @@ HT-nn es un identificador local de este documento, no de la lista compartida del
 4. Auditoría de lecturas: decidido el 21-oct-2026 (fotos de cédula y exportación del titular; no las lecturas ordinarias). La reimpresión del comprobante se decide en la fase A.
 5. HT-08: resuelto en la sección 3.6, con las protecciones del enlace de restablecimiento decididas el 21-oct-2026; queda decidir si se añade el TOTP al reemplazo del segundo factor y al cambio de correo (fecha o versión).
 6. Decidido el 21-oct-2026: dominio `.com` en Cloudflare Registrar (nombre y precio por confirmar al comprarlo); dos direcciones del solicitante en proveedores distintos; reintentador cada 1 minuto; protecciones del enlace de restablecimiento. Detalle en la actualización 2026-10-21k.
+7. HT-10: reemplazado el 23-oct-2026 (sin zona temporal; registro en dos pasos); el modelo de datos v0.6 ya no tiene `ARCHIVO_TEMPORAL`. DP-30 (inquilinos sin frente) resuelta en la ERS v1.13. Queda DP-27 (metadatos de la imagen) tras la prueba en teléfonos reales.
+8. HT-11: resuelto el 23-oct-2026 (contenido, botones desactivados sin contrato vigente, reemplazo de la cédula); quedan DP-28 (conservación de la fotografía del contrato) y DP-29 (número de fotografías y cifras de reducción).
 ## 8. Condiciones para aprobar este documento
 
-- Aprobar la ERS v1.9, el DAS v0.11 y el modelo de datos v0.4.
+- Aprobar la ERS v1.16, el DAS v0.15 y el modelo de datos v0.7.
 - Resolver los pendientes de la sección 7.
 - Revisión por otra persona distinta del autor (hoy el solicitante ocupa los tres roles, DP-23).
 

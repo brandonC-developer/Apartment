@@ -4,16 +4,21 @@
 **Versión:** 0.3 — reemplaza a la [v0.2](ESTRATEGIA_PRUEBAS_SGA_001_v0.2_borrador.md), que se conserva sin cambios (la [v0.1](ESTRATEGIA_PRUEBAS_SGA_001_v0.1_borrador.md) también)
 **Estado:** Borrador para revisión; no aprobado
 **Fecha:** 21 de octubre de 2026
-**ERS de referencia:** ERS-SGA-001 v1.9 (borrador no aprobado)
-**DAS de referencia:** DAS-SGA-001 v0.11 (borrador no aprobado)
+**ERS de referencia:** ERS-SGA-001 v1.16 (borrador no aprobado)
+**DAS de referencia:** DAS-SGA-001 v0.15 (borrador no aprobado)
 
+**Ajuste del 22-oct-2026 (actualización 2026-10-22g, sin versión nueva):** alineada con la ERS v1.10; se asignan CA-73 y CA-74. Los niveles y las prioridades de esos dos criterios son propuesta del asistente.
+**Ajuste del 22-oct-2026 (actualización 2026-10-22k, sin versión nueva):** alineada también con la ERS v1.11; se asignan CA-75, CA-76 y CA-77. Niveles y prioridades propuestos por el asistente.
+**Ajuste del 23-oct-2026 (actualización 2026-10-23f, sin versión nueva):** alineada con la ERS v1.12; se asigna CA-78 (Integración, Alta, propuesta del asistente) y el tope pasa a 5 MiB (5 242 880 bytes) con prueba del límite. Sin zona temporal no hay pruebas de identificador de un solo uso ni de caducidad. El 23-oct-2026 se añadió a CA-78 el filtro «Sin frente» (ERS v1.13).
+**Ajuste del 23-oct-2026 (actualización 2026-10-23zm, sin versión nueva):** alineada con la ERS v1.15; se asignan CA-79 (Integración, Media), CA-80 (inspección, Media) y CA-81 (verificación manual en la etapa B, Alta). Niveles y prioridades propuestos por el asistente.
+**Ajuste del 23-oct-2026 (actualización 2026-10-23zt, sin versión nueva):** alineada con la ERS v1.16; se asignan CA-82 (Integración con un JPEG de prueba que lleva ubicación en sus metadatos, más el registro de la medición con tres teléfonos en la E2; Media) y CA-83 (Integración con un JPEG y un PNG truncados; Media). Niveles y prioridades propuestos por el asistente.
 Este documento propone cómo demostrar que cada requisito del SGA funciona. **No hay código ni se ha autorizado implementarlo**: todo lo que sigue es un diseño de pruebas, no resultados. Lo que proviene de una fuente se indica con ella; lo demás es **propuesta** del asistente. La v0.3 alinea la estrategia con la ERS v1.9 y el DAS v0.11 (decisiones del solicitante del 20 y 21-oct-2026: pruebas del canal de correo, CA-58 a CA-61, recibo físico y comprobante como fase posterior; sección 5 y HP-01); la v0.2 incorporó las siete decisiones del solicitante del 20-oct-2026 (sección 11); lo que sigue como propuesta se indica. No es asesoría legal: los criterios de aceptación que dependen de las leyes 7527 y 8968 son provisionales hasta que un abogado valide las obligaciones (DP-17).
 
 ## 1. Alcance
 
 | Incluido | Fuera de alcance de este documento |
 |---|---|
-| Pruebas de los 72 criterios de aceptación (CA-01 a CA-72; CA-37 y CA-54 pertenecen a la fase posterior del comprobante y no se ejecutan en la v1) | Casos de prueba detallados (se escriben con la implementación) |
+| Pruebas de los 83 criterios de aceptación (CA-01 a CA-83; CA-37 y CA-54 pertenecen a la fase posterior del comprobante y no se ejecutan en la v1) | Casos de prueba detallados (se escriben con la implementación) |
 | Verificación de los RNF sin criterio de aceptación (RNF-05, 07, 08, 09, 10, 11) | Pruebas de penetración por un tercero |
 | Pruebas de operación: restauración, temporizador, HTTPS y respaldos | Pruebas del canal de WhatsApp (DP-04, futuro, fuera de la v1): solo se prueba la interfaz de canal de salida con el correo y un canal simulado |
 | Datos de prueba y entornos | Cualquier dato personal real |
@@ -73,6 +78,14 @@ Prioridad (propuesta): **Alta** = dinero, plazos legales, datos personales o seg
 | Área (ERS sección 9) | CA | Nivel principal | Prioridad |
 |---|---|---|---|
 | Inquilinos y datos personales | CA-01, 25, 29 | Integración | Media |
+| | CA-73 | Extremo a extremo con Selenium (reducción de una foto de ejemplo en el navegador; peso y dimensiones del archivo enviado); el peso con fotos reales de un iPhone y dos Android se mide a mano en la entrega E1 y se registra | Media |
+| | CA-74 | Integración (cliente de pruebas de Django: archivo de más de 5 MiB y tipo real falso rechazados, original de hasta 5 MiB aceptado; con 5 242 880 bytes aceptado y con 5 242 881 rechazado, un archivo por petición); el navegador sin canvas se comprueba a mano | Alta |
+| | CA-75 | Vistas y permisos; integración (la fotografía queda en la ficha del inquilino, no en la propiedad; sin contrato vigente la acción se ve desactivada con el aviso; con la cara ya cargada dice «Reemplazar» y la anterior queda eliminada) | Media |
+| | CA-76 | Integración (fotografía asociada al contrato; más de 5 MiB o tipo real falso rechazados; la fotografía número 11 se rechaza y las 10 anteriores se conservan; la cédula y el contrato no se modifican entre sí) | Alta |
+| | CA-77 | Vistas y permisos; integración (acceso denegado sin sesión y sin URL pública; registro de auditoría de la consulta sin la imagen) | Alta |
+| | CA-78 | Integración (inquilino guardado sin fotografía; contrato rechazado sin frente; el frente subido desde la ficha habilita el contrato; un archivo rechazado no pierde los datos; el filtro «Sin frente» de la lista incluye al que solo tiene reverso; no se envía ninguna alerta); vistas (la ficha indica que falta el frente) | Alta |
+| | CA-82 | Integración (JPEG con ubicación en los metadatos enviado sin reducir: el archivo guardado no la conserva; registro del resultado con un iPhone y dos Android en la E2, y, si los reducidos conservan metadatos, repetir la comprobación sobre ellos) | Media |
+| | CA-83 | Integración (JPEG y PNG truncados o dañados rechazados con mensaje y sin guardar; el otro archivo ya aceptado no se descarta; un archivo íntegro se acepta) | Media |
 | | CA-67 | Integración (texto de cada versión del consentimiento, aviso y bloqueo al revocar, solicitud de oficio) | Alta |
 | | CA-11, 26 | Vistas y permisos; integración (auditoría) | Alta |
 | | CA-27, 28 (L) | Unitarias (plazo de cinco días hábiles); integración (retención y registro de auditoría de la exportación del titular) | Alta |
@@ -93,6 +106,9 @@ Prioridad (propuesta): **Alta** = dinero, plazos legales, datos personales o seg
 | Seguridad y configuración | CA-13, 47, 48 | Vistas y permisos | Alta |
 | | CA-71 | Integración (eventos de autenticación en la auditoría sin secretos, con IP; consulta de solo lectura que no se audita) | Alta |
 | | CA-72 | Integración (reintentador con un proceso diario omitido o fallido; alerta web y correo simulado; sin correo repetido) | Media |
+| | CA-79 | Integración (reintentador con la marca del último respaldo correcto de más de 26 horas; alerta web y correo simulado; sin correo repetido; una marca escrita antes de terminar la subida no cuenta) | Media |
+| | CA-80 | Inspección del registro de cuentas de la fase 6 (sin código): correo de recuperación, dos factores sin SMS, ubicación de los códigos y bloqueo del dominio | Media |
+| | CA-81 | Verificación manual en la etapa B: cabeceras de los tres tipos de correo con `dmarc=pass` y consulta del registro `_dmarc` en `p=reject` | Alta |
 | | CA-68, 69, 70 | Integración (espera creciente y reinicio del contador; TOTP repetido, tolerancia de 30 s y códigos nuevos con contraseña; comandos de creación y rescate) | Alta |
 | | CA-64 | Vistas y permisos; integración (contraseña actual, confirmación en la dirección nueva, aviso a las dos anteriores, enlace usado o vencido; buzón en memoria) | Alta |
 | | CA-59 | Vistas y permisos; integración (enlace de un solo uso y 15 minutos; no inicia sesión; respuesta idéntica exista o no la cuenta; límite de 3 solicitudes por hora; invalidación de los demás enlaces y de las sesiones; buzón en memoria) | Alta |
@@ -104,7 +120,7 @@ Prioridad (propuesta): **Alta** = dinero, plazos legales, datos personales o seg
 | | CA-53 | Integración (auditoría) | Alta |
 | | CA-55, 49 | Unitarias; integración | Alta |
 
-Recuento: 72 de 72 CA asignados (los 57 de la v0.2 más CA-58 a CA-72); CA-37 y CA-54 quedan asignados pero se ejecutan solo en la fase posterior del comprobante. No se recalculó el desglose por área de la v0.2, porque los CA nuevos no siguen las áreas de la sección 9 de la ERS.
+Recuento: 83 de 83 CA asignados (los 57 de la v0.2, más CA-58 a CA-72, CA-73 y CA-74 de la ERS v1.10 y CA-75 a CA-77 de la ERS v1.11 y CA-78 de la ERS v1.12 y CA-79 a CA-81 de la ERS v1.15 y CA-82 y CA-83 de la ERS v1.16); CA-37 y CA-54 quedan asignados pero se ejecutan solo en la fase posterior del comprobante. No se recalculó el desglose por área de la v0.2, porque los CA nuevos no siguen las áreas de la sección 9 de la ERS.
 
 ## 6. Requisitos sin criterio de aceptación
 
@@ -189,7 +205,7 @@ Decididas el 20-oct-2026, tras una investigación y una recomendación del asist
 - Quién revisa estas pruebas: hoy el solicitante ocupa los tres roles (DP-23).
 ## 12. Condiciones para aprobar esta estrategia
 
-- Aprobar la ERS v1.9 y el DAS v0.11.
+- Aprobar la ERS v1.16 y el DAS v0.15.
 - Resolver los pendientes de la sección 11.
 - Revisión por otra persona distinta del autor (hoy el solicitante ocupa los tres roles, DP-23).
 - Incorporar el dictamen del abogado en los CA marcados (L).
