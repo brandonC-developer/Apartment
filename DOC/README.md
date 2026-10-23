@@ -137,6 +137,7 @@ Carpetas transversales:
 | 2026-10-23 (zu) | `actualizaciones/2026-10-23zu_DAS-v0.15/` | DAS v0.15: ADR-003 (decodificación, metadatos, sin antivirus), ADR-032 con 18 decisiones (registros de Nginx y Gunicorn; dispositivo y llave SSH), DP-27 resuelta y DP-31 nueva; documentos alineados |
 | 2026-10-23 (zv) | `actualizaciones/2026-10-23zv_modelo-amenazas-v0.4/` | Modelo de amenazas v0.4: BR-05, BR-06, BR-07 y BR-09 decididas, BR-10 remitida al abogado (DP-31), CA-82 y CA-83; sin amenazas nuevas ni cambios de nivel |
 | 2026-10-23 (zw) | `actualizaciones/2026-10-23zw_resumen-abogado-v3/` | Resumen para el abogado v3: alineado con la ERS v1.16 y el DAS v0.15; B6 con la consulta DP-31 (arts. 14 y 31 f)); B11 (fotografía del contrato) y B12 (IP) nuevas; no enviado |
+| 2026-10-23 (zx) | `actualizaciones/2026-10-23zx_registro-lectura-informal/` | Registro de una lectura informal de toda la documentación por un tercero, sin hallazgos y sin nombre ni fecha; no es revisión crítica, dictamen ni aprobación; modelo de amenazas v0.4 ajusta su estado |
 
 ## Control de versiones
 

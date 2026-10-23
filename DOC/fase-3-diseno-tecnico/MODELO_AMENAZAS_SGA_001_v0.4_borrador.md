@@ -5,7 +5,7 @@
 **Identificador:** MA-SGA-001
 **Versión:** 0.4 — Borrador para revisión
 **Fecha:** 23 de octubre de 2026
-**Estado:** Borrador; no aprobado. **Autoverificación del asistente: no lo ha revisado otra persona** (DP-23)
+**Estado:** Borrador; no aprobado. **Autoverificación del asistente. Lectura informal de un tercero (un compañero con un emprendimiento), sin hallazgos; no es una revisión crítica ni de seguridad independiente** (DP-23; [actualización (zx)](../actualizaciones/2026-10-23zx_registro-lectura-informal/CAMBIOS.md))
 **Base:** [ERS-SGA-001 v1.16](../fase-1-ers/ERS_SGA_001_v1.16_borrador.md), [DAS-SGA-001 v0.15](../fase-2-arquitectura/DAS_SGA_001_v0.15_borrador.md) (ADR-032), [MDD-SGA-001 v0.7](MODELO_DATOS_SGA_001_v0.7_borrador.md) y [DISENO_TECNICO_SGA_001 v0.7](DISENO_TECNICO_SGA_001_v0.7_borrador.md)
 **Decisiones de método:** [actualización 2026-10-23 (w)](../actualizaciones/2026-10-23w_modelo-amenazas-decisiones/CAMBIOS.md)
 **Qué cambia la v0.4:** incorpora las decisiones del solicitante del 23-oct-2026 sobre las cinco brechas que quedaban abiertas, y los requisitos CA-82 y CA-83 de la ERS v1.16: BR-05 (metadatos de las imágenes, actualización (zo)), BR-06 (sin antivirus, (zp)), BR-07 (registros de Nginx y Gunicorn, (zq)), BR-09 (dispositivo y llave SSH, (zr)) y BR-10 (preguntas al abogado, DP-31, (zs)); ADR-003 y ADR-032 decisiones 17 y 18 del DAS v0.15. **No añade amenazas nuevas ni cambia ningún nivel.** **Ninguna brecha queda «abierta» sin decisión**, pero BR-10 solo se resolvió remitiéndola al abogado y BR-07 deja sin decidir la rotación de journald, de la auditoría y de PostgreSQL. Reemplaza a la [v0.3](MODELO_AMENAZAS_SGA_001_v0.3_borrador.md), que se conserva sin cambios; la v0.2 y la v0.1 también.
@@ -192,7 +192,7 @@ Las filas "Decidida" recogen decisiones del solicitante del 23-oct-2026 (con su 
 ## 10. Qué no cubre este borrador y cómo se mantiene
 
 - No cubre la cadena de construcción ni el interior de los proveedores (sección 1), ni un adversario con acceso de `root` al servidor, ni la seguridad física del dispositivo del administrador.
-- No se verificó ningún control: no hay servidor. Los niveles son juicio del asistente, sin datos de ataques reales ni revisión de otra persona.
+- No se verificó ningún control: no hay servidor. Los niveles son juicio del asistente, sin datos de ataques reales ni revisión crítica de otra persona (solo la lectura informal registrada en la actualización (zx)).
 - No se usó una herramienta de modelado de amenazas ni se leyó NIST SP 800-30.
 - **Mantenimiento** (OWASP: el modelo se actualiza a medida que cambia el sistema): revisarlo tras la respuesta del abogado a DP-31 (BR-10), al decidir la rotación y la retención de registros que BR-07 dejó pendientes, tras la medición de metadatos de la entrega E2 (BR-05), tras la revisión con otra persona, al empezar la E1, antes de cargar datos reales y tras cualquier incidente (RF-46). Cada revisión es una versión nueva.
 
