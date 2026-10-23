@@ -1,9 +1,10 @@
 # Sistema de Gestión de Alquileres (SGA) — documentación
 
-Proyecto en fase de **documentación**. No hay código ni se ha autorizado implementarlo. Idioma de trabajo y de los documentos: español.
+Proyecto en fase de **documentación**, con la **implementación autorizada solo para la entrega E0** (esqueleto) por el solicitante el 23-oct-2026; el código vive en `src/` y las demás entregas requieren su autorización expresa. Idioma de trabajo y de los documentos: español.
 
 ## Estructura de `DOC/`
 
+- `src/` (fuera de `DOC/`): código del proyecto Django, solo la entrega E0 por ahora; usa un entorno virtual `src/.venv` (no se versiona). Pruebas: `cd src; $env:SGA_DEBUG=1; .venvScriptspython manage.py test`.
 - `fase-1-ers/` a `fase-6-despliegue-operacion/`: un documento por fase, con todas sus versiones en la misma carpeta. Cada carpeta tiene un `README.md` que indica la versión vigente.
 - `actualizaciones/AAAA-MM-DD_<docs y versiones>/`: un `CAMBIOS.md` por actualización (motivo, cambios, decisiones, evidencia, aprobación) y la evidencia de investigación. Plantilla: `DOC/metodologia/plantilla_CAMBIOS.md`.
 - `legal/`: resumen para el abogado y dictámenes.

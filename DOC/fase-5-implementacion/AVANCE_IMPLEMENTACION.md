@@ -5,7 +5,7 @@
 **Creado:** 21 de octubre de 2026
 **Plan:** [Plan de implementación v0.1](PLAN_IMPLEMENTACION_SGA_001_v0.1_borrador.md)
 
-Este archivo registra el avance real de las entregas del plan. **La implementación no está autorizada ni iniciada**: todas las entregas figuran como *no iniciada* hasta que se aprueben la ERS y la arquitectura.
+Este archivo registra el avance real de las entregas del plan. **La E0 se inició el 23-oct-2026 por instrucción del solicitante, sin que la ERS ni la arquitectura estén aprobadas** (actualización 2026-10-23 (zy)); las demás entregas figuran como *no iniciada*.
 
 ## Reglas (decisión del solicitante, 21-oct-2026)
 1. **Una entrega a la vez.** No se empieza la siguiente hasta que la actual cumpla la definición de terminado (sección 3.1 del plan). Como máximo una entrega está *en curso* o *bloqueada*.
@@ -17,7 +17,7 @@ Este archivo registra el avance real de las entregas del plan. **La implementaci
 ## Entregas
 | Entrega | Estado | Inicio | Fin | Condiciones de terminado cumplidas (de 9) | CA aprobados / asignados | Desviaciones y enlace a su CAMBIOS |
 |---|---|---|---|---|---|---|
-| E0 Esqueleto | no iniciada | — | — | 0 | 0 / 8 | — |
+| E0 Esqueleto | en curso | 2026-10-23 | — | 0 | 0 / 8 | Iniciada sin ERS ni DAS aprobados, por instrucción del solicitante ([actualización 2026-10-23 (zy)](../actualizaciones/2026-10-23zy_inicio-implementacion-e0/CAMBIOS.md)); solo el esqueleto del proyecto, sin CA aprobados |
 | E1 Inquilinos | no iniciada | — | — | 0 | 0 / 8 | Alcance ampliado el 22 y 23-oct-2026: CA-73, CA-74 y CA-83 ([actualización 2026-10-23zt](../actualizaciones/2026-10-23zt_alineacion-ERS-v1.16/CAMBIOS.md) y [actualización 2026-10-22f](../actualizaciones/2026-10-22f_ERS-v1.10/CAMBIOS.md)) |
 | E2 Contratos y obligaciones | no iniciada | — | — | 0 | 0 / 25 | Alcance ampliado el 22 y 23-oct-2026: CA-75, CA-76, CA-77, CA-78 y CA-82 ([actualización 2026-10-23zt](../actualizaciones/2026-10-23zt_alineacion-ERS-v1.16/CAMBIOS.md), [actualización 2026-10-22j](../actualizaciones/2026-10-22j_ERS-v1.11/CAMBIOS.md) y [2026-10-23e](../actualizaciones/2026-10-23e_ERS-v1.12/CAMBIOS.md)) |
 | E3 Movimientos y depósitos | no iniciada | — | — | 0 | 0 / 17 | — |
@@ -36,3 +36,4 @@ Este archivo registra el avance real de las entregas del plan. **La implementaci
 | 2026-10-23 | E6 | Alcance ampliado: pasa de sin CA a 2 CA (CA-80 y CA-81); la entrega sigue *no iniciada* | [Actualización 2026-10-23 (zm)](../actualizaciones/2026-10-23zm_alineacion-ERS-v1.15/CAMBIOS.md) |
 | 2026-10-23 | E1 | Alcance ampliado: CA asignados de 7 a 8 (CA-83); la entrega sigue *no iniciada* | [Actualización 2026-10-23 (zt)](../actualizaciones/2026-10-23zt_alineacion-ERS-v1.16/CAMBIOS.md) |
 | 2026-10-23 | E2 | Alcance ampliado: CA asignados de 24 a 25 (CA-82); la entrega sigue *no iniciada* | [Actualización 2026-10-23 (zt)](../actualizaciones/2026-10-23zt_alineacion-ERS-v1.16/CAMBIOS.md) |
+| 2026-10-23 | E0 | Pasa a *en curso*: esqueleto del proyecto Django en `src/` (sin modelos, migraciones ni pantallas) | [Actualización 2026-10-23 (zy)](../actualizaciones/2026-10-23zy_inicio-implementacion-e0/CAMBIOS.md) |

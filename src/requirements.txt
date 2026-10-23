@@ -1,0 +1,5 @@
+# Versiones fijadas el 23-oct-2026 en un entorno de desarrollo con Python 3.12 en Windows.
+# Deben volver a fijarse en WSL con Ubuntu-26.04 y Python 3.14 (DOC/fase-5, sección 5.2).
+Django==5.2.18
+psycopg[binary]==3.3.6
+argon2-cffi==25.1.0

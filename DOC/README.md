@@ -138,6 +138,7 @@ Carpetas transversales:
 | 2026-10-23 (zv) | `actualizaciones/2026-10-23zv_modelo-amenazas-v0.4/` | Modelo de amenazas v0.4: BR-05, BR-06, BR-07 y BR-09 decididas, BR-10 remitida al abogado (DP-31), CA-82 y CA-83; sin amenazas nuevas ni cambios de nivel |
 | 2026-10-23 (zw) | `actualizaciones/2026-10-23zw_resumen-abogado-v3/` | Resumen para el abogado v3: alineado con la ERS v1.16 y el DAS v0.15; B6 con la consulta DP-31 (arts. 14 y 31 f)); B11 (fotografía del contrato) y B12 (IP) nuevas; no enviado |
 | 2026-10-23 (zx) | `actualizaciones/2026-10-23zx_registro-lectura-informal/` | Registro de una lectura informal de toda la documentación por un tercero, sin hallazgos y sin nombre ni fecha; no es revisión crítica, dictamen ni aprobación; modelo de amenazas v0.4 ajusta su estado |
+| 2026-10-23 (zy) | `actualizaciones/2026-10-23zy_inicio-implementacion-e0/` | Inicio de la implementación (solo E0): esqueleto Django en `src/`, 6 pruebas sin base de datos, CLAUDE.md y registro de avance actualizados; entorno Python 3.12 en Windows, distinto del plan |
 
 ## Control de versiones
 
