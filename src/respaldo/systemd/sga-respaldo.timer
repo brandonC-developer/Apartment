@@ -1,0 +1,14 @@
+# Respaldo a las 05:00 hora de Costa Rica (11:00 UTC), después del reinicio de las 04:00 y antes del
+# proceso diario de las 07:00 (ADR-032, decisión 15). `Persistent=true` lo ejecuta al arrancar si el
+# servidor estaba apagado a esa hora. BORRADOR SIN PROBAR: la zona dentro de OnCalendar exige una
+# versión de systemd que no se ha verificado (estrategia de pruebas, sección 7); si no la admite,
+# usar 11:00 UTC.
+[Unit]
+Description=Respaldo diario cifrado del SGA (05:00 America/Costa_Rica)
+
+[Timer]
+OnCalendar=*-*-* 05:00:00 America/Costa_Rica
+Persistent=true
+
+[Install]
+WantedBy=timers.target

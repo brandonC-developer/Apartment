@@ -101,6 +101,59 @@ jobs:
           # La aplicación debe poder leer su configuración con el rol sin privilegios de dueño.
           SGA_BD_USUARIO=sga_app python manage.py shell -c "from nucleo.models import Organizacion; print(Organizacion.objects.get().zona_horaria)"
 
+  respaldo:
+    name: Respaldo cifrado y su restauración (age, pg_dump 18)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      SGA_BD_HOST: localhost
+      SGA_BD_PUERTO: '5432'
+      SGA_BD_USUARIO: postgres
+      SGA_DEBUG: '1'
+    defaults:
+      run:
+        working-directory: src
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: src/requirements.txt
+
+      # pg_dump debe ser de la misma versión mayor que el servidor (18); la imagen trae el cliente 16.
+      # SIN VERIFICAR: el script del repositorio de PostgreSQL (PGDG) y el paquete `age` de Ubuntu.
+      - name: Instalar age y el cliente de PostgreSQL 18
+        working-directory: .
+        run: |
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-18 age
+          echo /usr/lib/postgresql/18/bin >> "$GITHUB_PATH"
+
+      - name: Instalar dependencias
+        run: python -m pip install -r requirements.txt
+
+      - name: Pruebas del respaldo y la restauración (no se pueden omitir)
+        run: |
+          set -o pipefail
+          pg_dump --version
+          age --version
+          python manage.py test nucleo.tests_respaldo --verbosity 2 2>&1 | tee salida.txt
+          if grep -q "skipped" salida.txt; then echo "Las pruebas de respaldo se omitieron: falta una herramienta."; exit 1; fi
+
   auditoria-dependencias:
     name: Vulnerabilidades de las dependencias (pip-audit)
     runs-on: ubuntu-latest

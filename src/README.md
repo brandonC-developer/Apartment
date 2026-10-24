@@ -52,3 +52,6 @@ Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional proteg
 
 ## Integración continua (actualización 2026-10-24h)
 `.github/workflows/integracion-continua.yml` (en la raíz del repositorio). Pasos que puede repetir en local: `python manage.py makemigrations --check --dry-run`, `python manage.py test` y, sin `SGA_DEBUG`, `python manage.py check --deploy` con `SGA_SECRET_KEY` y `SGA_HOSTS_PERMITIDOS` definidos (solo debe quedar el aviso de HSTS). Nota: el aviso `security.W020` (ALLOWED_HOSTS vacío) también aparece sin `SGA_HOSTS_PERMITIDOS`; la afirmación anterior de este archivo de que solo avisaba de HSTS no incluía ese caso.
+
+## Respaldo cifrado y restauración (actualización 2026-10-24i)
+`respaldo/respaldar.sh`, `respaldo/restaurar.sh` y su guía en `respaldo/README.md`. 153 pruebas en total; las del respaldo exigen `age` y un `pg_dump` de la misma versión mayor que el servidor, y se omiten si falta algo.

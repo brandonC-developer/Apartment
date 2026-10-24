@@ -96,12 +96,12 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [~] `manage.py check --deploy` sin avisos distintos de HSTS: pasa en local con `SGA_HOSTS_PERMITIDOS` definido (sin él da el aviso W020); falta la corrida en el flujo
 
 ### G. Respaldo cifrado y restauración (ADR-024, ADR-032 d9; RNF-09)
-- [ ] Elegir la herramienta de cifrado de los respaldos: el DAS fija `age` con clave pública (ADR-032 d9); confirmar antes de usarla
-- [ ] Respaldo diario: `pg_dump` en formato personalizado, `pg_dumpall --globals-only` y la carpeta de documentos privados, cifrados y guardados en una carpeta local (plan 5.1)
-- [ ] Restauración completa probada desde el respaldo local (criterio de salida; RNF-09)
-- [ ] Probar que se restaura con la clave correcta y falla con una incorrecta (EPP, sección 7)
-- [ ] Guía de generación y respaldo de la clave Fernet (`/etc/sga/clave_cifrado`): hoy sin decidir
-- [ ] Marca del último respaldo correcto, escrita solo al terminar la subida (ADR-032 d15; la vigilancia es RF-53 en la E4)
+- [x] Herramienta de cifrado: `age` a clave pública, como fija el ADR-032 d9; se usó la versión 1.3.2 (2026-08-29) en las pruebas locales, descargada de las publicaciones oficiales de FiloSottile/age sin verificar su prueba de transparencia (`.proof`)
+- [x] Respaldo diario `respaldo/respaldar.sh`: `pg_dump` en formato personalizado, `pg_dumpall --globals-only --no-role-passwords` y la carpeta de documentos, cada uno cifrado por tubería (nada en claro en el disco) a una carpeta local, con sumas y retención de 35 días (ADR-024, ADR-032 d9; actualización 2026-10-24i)
+- [~] Restauración `respaldo/restaurar.sh` probada con una base de pruebas completa y con documentos (criterio de salida; RNF-09): sumas, descifrado, base nueva, carpeta vacía y consultas de cordura. **Falta repetirla en WSL con `peer` y medir el tiempo**
+- [x] Se restaura con la clave correcta y falla con otra, sin dejar una base a medias (EPP, sección 7)
+- [~] Guía de las claves en `respaldo/README.md`: la `age` se genera fuera del servidor y se guarda en dos lugares fuera de línea; **propuesta** para la Fernet: no va en el respaldo y su pérdida se resuelve con `rescatar_segundo_factor`. Falta que decidas si la guardas también fuera de línea
+- [x] Marca `ultimo_respaldo_correcto` escrita solo al terminar todo, de forma atómica; un fallo en cualquier parte no la toca (ADR-032 d15; la subida a Spaces antes de la marca y la vigilancia, RF-53, llegan en la E6 y la E4)
 
 ### H. Integración continua (ADR-025, ADR-032 d10)
 - [~] Flujo de GitHub Actions `.github/workflows/integracion-continua.yml` (PostgreSQL 18, Python 3.14): migraciones al día, pruebas desde cero, `check --deploy` y despliegue de la base con roles y privilegios (ADR-025). **Escrito y simulado paso a paso en local con Python 3.12; sin correr todavía en GitHub: la primera corrida verde es lo que cierra esta tarea** (actualización 2026-10-24h)

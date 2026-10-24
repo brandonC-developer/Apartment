@@ -1,0 +1,25 @@
+# Respaldo diario cifrado del SGA (ADR-024; ADR-032, decisiones 4, 9 y 15).
+# BORRADOR SIN PROBAR: no hay systemd en el entorno donde se escribió; se prueba en WSL (etapa A).
+# Las rutas /opt/sga y /var/lib/sga son propuesta del asistente: el esquema de directorios del
+# servidor aún no está decidido.
+[Unit]
+Description=Respaldo diario cifrado del SGA
+After=postgresql.service
+
+[Service]
+Type=oneshot
+# Usuario de sistema estático con el nombre del rol de respaldos (peer, ADR-027 y ADR-032 d4).
+User=sga_respaldos
+Group=sga_respaldos
+Environment=SGA_BD_NOMBRE=sga PGHOST=/var/run/postgresql
+EnvironmentFile=-/etc/sga/respaldo.env
+ExecStart=/opt/sga/src/respaldo/respaldar.sh
+
+# Endurecimiento (ADR-032, decisión 4): solo escribe en el destino de los respaldos.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/var/lib/sga/respaldos
+ReadOnlyPaths=/var/lib/sga/documentos /etc/sga
