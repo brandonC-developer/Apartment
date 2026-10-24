@@ -41,3 +41,6 @@ Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional proteg
 
 ## Auditoría base (actualización 2026-10-24e)
 `nucleo.Auditoria` (solo inserción), `nucleo.auditoria.registrar` y la pantalla `/auditoria/`; los eventos de autenticación y de la cuenta se registran con la IP de origen. Detrás de Nginx hace falta `proxy_set_header X-Real-IP $remote_addr;` (la configuración lee `X-Real-IP` cuando no es depuración). 100 pruebas en total.
+
+## Organización y configuración regional (actualización 2026-10-24f)
+`nucleo.Organizacion` (fila única), `nucleo/formato.py` (formato propio; en plantillas, `{% load formato %}`) y el middleware de la zona horaria. 121 pruebas en total.

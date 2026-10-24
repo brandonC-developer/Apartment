@@ -15,6 +15,9 @@ from .models import Auditoria
 CAMPOS_PERSONALES = frozenset({
     'nombre_completo', 'numero_documento', 'tipo_documento', 'telefono', 'correo', 'correo_electronico',
     'imagen_cedula', 'fotografia', 'archivo',
+    # Identidad y direcciones del responsable (ORGANIZACION): también datos personales.
+    'nombre_responsable', 'direccion_responsable', 'correo_admin', 'correo_aviso_secundario',
+    'telefono_whatsapp_admin',
 })
 # Nunca se guardan sus valores: contraseñas, códigos, tokens y secretos.
 CAMPOS_SECRETOS = frozenset({

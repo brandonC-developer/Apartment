@@ -71,10 +71,10 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [~] Dirección IP de origen detrás de Nginx: se lee la cabecera `X-Real-IP` solo si `IP_ORIGEN_CABECERA` la declara de confianza (fuera de depuración) y se descarta lo que no sea una IP; **falta configurar Nginx con `proxy_set_header X-Real-IP $remote_addr;` y comprobarlo al desplegar** (propuesta del asistente)
 
 ### D. Organización y configuración regional (RF-33, RNF-12, RNF-17; CA-18)
-- [ ] Entidad ORGANIZACIÓN con moneda predeterminada CRC y zona `America/Costa_Rica` (RF-33; modelo de datos)
-- [ ] Formato propio de fechas dd/mm/aaaa, números con punto de miles y coma decimal, símbolo de moneda delante y porcentajes con coma, sin depender del idioma de la plataforma (RNF-12)
-- [ ] Marcas temporales en UTC y aritmética decimal exacta (RNF-17); `USE_TZ = True` ya está
-- [ ] Los registros históricos no cambian al modificar la configuración regional (CA-18; la parte de contratos se completa en la E2)
+- [~] Entidad `nucleo.Organizacion` de una sola fila (restricción de la tabla y migración de datos) con moneda CRC y zona `America/Costa_Rica` como predeterminadas, zona validada contra IANA, hora del proceso diario 07:00 y la identidad del responsable (RF-33; actualización 2026-10-24f). **Solo los atributos que usa la E0**; los demás del MDD (correos, anticipaciones, retención, días de gracia) llegan con la entrega que los usa. Sin pantalla de edición: solo el servicio `organizacion.actualizar`, con auditoría
+- [x] Formato propio (`nucleo/formato.py` y filtros de plantilla): fechas dd/mm/aaaa, números con punto de miles y coma decimal, símbolo delante, porcentajes con coma; lectura estricta de números y fechas; todo con `Decimal` (RNF-12). **Pendiente de decidir:** cuántos decimales se muestran en colones
+- [x] Marcas temporales en UTC y aritmética decimal exacta (`float` rechazado en el formato) (RNF-17); `USE_TZ = True`; la zona de la organización se activa en cada petición (`ZonaHorariaDeLaOrganizacion`)
+- [~] Los registros históricos no cambian al modificar la configuración regional: probado con la auditoría (instante intacto, solo cambia la presentación) (CA-18); la parte de contratos en USD se completa en la E2
 
 ### E. Base de datos: roles, privilegios y esquema (ADR-027, ADR-029, ADR-031; condición 4)
 - [ ] Tres roles de PostgreSQL: dueño (solo migraciones), aplicación y respaldos, con autenticación `peer` por socket Unix (ADR-027, ADR-032 d12)

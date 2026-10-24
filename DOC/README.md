@@ -150,6 +150,7 @@ Carpetas transversales:
 | 2026-10-24 (c) | `actualizaciones/2026-10-24c_lista-de-tareas-implementacion/` | Lista de tareas de la implementación (TAR-SGA-001) generada de la ERS, el plan, el DAS y la estrategia de pruebas: E0 detallada con lo hecho marcado; E1 a E6 con sus RF, RNF y CA |
 | 2026-10-24 (d) | `actualizaciones/2026-10-24d_correcciones-revision-codigo/` | Seis correcciones de la revisión de código del registro del segundo factor, con un token de registro de un solo uso impreso por los comandos del servidor; 78 pruebas pasan en un PostgreSQL desechable |
 | 2026-10-24 (e) | `actualizaciones/2026-10-24e_auditoria-base/` | Auditoría base (RF-28, CA-53, CA-71): modelo de solo inserción, eventos de autenticación con IP, pantalla de consulta de solo lectura y alerta de avisos de seguridad; 100 pruebas pasan en un PostgreSQL desechable; sin rol de PostgreSQL de solo inserción |
+| 2026-10-24 (f) | `actualizaciones/2026-10-24f_organizacion-configuracion-regional/` | Organización y configuración regional (RF-33, RNF-12, RNF-17, CA-18): fila única, zona activa por petición, formato propio de fechas, números, moneda y porcentajes; 121 pruebas pasan en un PostgreSQL desechable |
 
 ## Control de versiones
 

@@ -1,7 +1,11 @@
-"""Modelos de `nucleo`. Por ahora solo la auditoría (RF-28, RNF-06, R12, R14, R19)."""
+"""Modelos de `nucleo`: la auditoría (RF-28, RNF-06, R12, R14, R19) y la organización (RF-33)."""
+from datetime import time
+
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Q
+
+from .regional import ZONA_PREDETERMINADA, validar_zona_horaria
 
 
 class RegistroInmutable(Exception):
@@ -66,3 +70,28 @@ class Auditoria(models.Model):
 
     def __str__(self):
         return f'{self.ocurrido_en:%Y-%m-%d %H:%M:%S} {self.accion} ({self.actor})'
+
+
+class Organizacion(models.Model):
+    """Entidad ORGANIZACION del MDD v0.7: una sola fila en la v1 (restricción de la tabla).
+
+    La E0 solo incluye lo que necesita la configuración regional y la identidad del responsable
+    (RF-33, art. 5 h de la Ley 8968); los demás atributos del MDD (correos, anticipaciones,
+    retención, días de gracia) llegan con la entrega que los usa, en migraciones propias.
+    """
+    nombre_responsable = models.CharField(max_length=150, blank=True, default='')
+    direccion_responsable = models.CharField(max_length=250, blank=True, default='')
+    zona_horaria = models.CharField(
+        max_length=64, default=ZONA_PREDETERMINADA, validators=[validar_zona_horaria])
+    hora_proceso_diario = models.TimeField(default=time(7, 0))  # DP-02, hora local de la zona
+    actualizado_en = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'organización'
+        verbose_name_plural = 'organizaciones'
+        constraints = [
+            models.CheckConstraint(name='organizacion_una_sola_fila', condition=Q(id=1)),
+        ]
+
+    def __str__(self):
+        return self.nombre_responsable or 'Organización'

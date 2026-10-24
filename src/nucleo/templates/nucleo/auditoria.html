@@ -1,4 +1,5 @@
 {% extends "cuentas/base.html" %}
+{% load formato %}
 {% block titulo %}Auditoría{% endblock %}
 {% block contenido %}
 <h1>Auditoría</h1>
@@ -19,7 +20,7 @@
   <tbody>
   {% for r in pagina %}
     <tr>
-      <td>{{ r.ocurrido_en|date:"d/m/Y H:i:s" }}</td><td>{{ r.accion }}</td><td>{{ r.entidad }}{% if r.registro_id %} #{{ r.registro_id }}{% endif %}</td>
+      <td>{{ r.ocurrido_en|fecha_hora:1 }}</td><td>{{ r.accion }}</td><td>{{ r.entidad }}{% if r.registro_id %} #{{ r.registro_id }}{% endif %}</td>
       <td>{{ r.actor }}</td><td>{{ r.ip_origen|default_if_none:"" }}</td>
       <td>{{ r.campos_modificados|join:", " }}</td><td>{{ r.valor_anterior|default_if_none:"" }}</td><td>{{ r.valor_nuevo|default_if_none:"" }}</td>
     </tr>
