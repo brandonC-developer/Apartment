@@ -155,6 +155,7 @@ Carpetas transversales:
 | 2026-10-24 (h) | `actualizaciones/2026-10-24h_integracion-continua/` | Flujo de GitHub Actions (ADR-025): migraciones al día, pruebas, `check --deploy` y despliegue de la base con PostgreSQL 18 y Python 3.14, más `pip-audit`; simulado paso a paso en local, **sin correr aún en GitHub** |
 | 2026-10-24 (i) | `actualizaciones/2026-10-24i_respaldo-cifrado-y-restauracion/` | Respaldo diario cifrado con `age` y su restauración (ADR-024, ADR-032 d9 y d15): scripts, borradores de systemd, 13 pruebas que ejecutan los scripts de verdad (153 en total) y un trabajo nuevo del flujo; sin correr en GitHub ni en WSL |
 | 2026-10-24 (j) | `actualizaciones/2026-10-24j_despliegue-etapa-a-wsl/` | Despliegue de la etapa A en WSL con Ubuntu 26.04.1 (un solo comando): PostgreSQL por socket con `peer`, Gunicorn con socket de systemd, Nginx con HTTPS autofirmado, respaldo diario con su servicio real; 157 pruebas pasan con Python 3.14; verificaciones repetibles y cuatro hallazgos al desplegar |
+| 2026-10-24 (k) | `actualizaciones/2026-10-24k_gitattributes-configuracion/` | `.gitattributes`: fin de línea LF también para `*.conf`, `*.service`, `*.socket` y `*.timer`, que se copian tal cual a Linux |
 
 ## Control de versiones
 
