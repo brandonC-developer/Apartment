@@ -139,6 +139,10 @@ Carpetas transversales:
 | 2026-10-23 (zw) | `actualizaciones/2026-10-23zw_resumen-abogado-v3/` | Resumen para el abogado v3: alineado con la ERS v1.16 y el DAS v0.15; B6 con la consulta DP-31 (arts. 14 y 31 f)); B11 (fotografía del contrato) y B12 (IP) nuevas; no enviado |
 | 2026-10-23 (zx) | `actualizaciones/2026-10-23zx_registro-lectura-informal/` | Registro de una lectura informal de toda la documentación por un tercero, sin hallazgos y sin nombre ni fecha; no es revisión crítica, dictamen ni aprobación; modelo de amenazas v0.4 ajusta su estado |
 | 2026-10-23 (zy) | `actualizaciones/2026-10-23zy_inicio-implementacion-e0/` | Inicio de la implementación (solo E0): esqueleto Django en `src/`, 6 pruebas sin base de datos, CLAUDE.md y registro de avance actualizados; entorno Python 3.12 en Windows, distinto del plan |
+| 2026-10-23 (zz) | `actualizaciones/2026-10-23zz_modelo-de-usuario/` | Modelo de usuario de la E0: `cuentas.Administrador` sobre AbstractBaseUser sin PermissionsMixin, con los campos del MDD; código sin escribir |
+| 2026-10-23 (zza) | `actualizaciones/2026-10-23zza_biblioteca-segundo-factor/` | Biblioteca del segundo factor: pyotp con campos propios del MDD; sin django-otp ni django-two-factor-auth; cifrado del secreto sin decidir; código sin escribir |
+| 2026-10-23 (zzb) | `actualizaciones/2026-10-23zzb_cifrado-secreto-segundo-factor/` | Cifrado del secreto TOTP: Fernet/MultiFernet de `cryptography` con la clave en /etc/sga; no protege contra una aplicación comprometida; respaldo de la clave sin decidir; código sin escribir |
+| 2026-10-23 (zzc) | `actualizaciones/2026-10-23zzc_cuentas-administrador/` | Implementación de `cuentas.Administrador` (modelo, cifrado Fernet, TOTP con pyotp, límite de intentos, backend, migración): 32 pruebas pasan en un PostgreSQL desechable; sin vista de inicio de sesión, códigos de recuperación ni comando de creación |
 
 ## Control de versiones
 

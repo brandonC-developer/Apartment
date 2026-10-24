@@ -3,3 +3,5 @@
 Django==5.2.18
 psycopg[binary]==3.3.6
 argon2-cffi==25.1.0
+pyotp==2.10.0
+cryptography==50.0.2

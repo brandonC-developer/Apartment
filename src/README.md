@@ -19,7 +19,10 @@ cd src
 $env:SGA_DEBUG = "1"
 .venv\Scripts\python manage.py test nucleo
 ```
-Las 6 pruebas actuales no usan la base de datos: comprueban Argon2id, el mínimo de 15 caracteres, la zona horaria, la ausencia del administrador de Django y que el proyecto no arranque sin `SECRET_KEY`. `manage.py check --deploy` solo avisa de HSTS, que se activa por etapas en la etapa B (ADR-032, decisión 5).
+Las pruebas de `nucleo` no usan la base de datos y las de `cuentas` sí (necesitan PostgreSQL; ver más abajo): comprueban Argon2id, el mínimo de 15 caracteres, la zona horaria, la ausencia del administrador de Django y que el proyecto no arranque sin `SECRET_KEY`. `manage.py check --deploy` solo avisa de HSTS, que se activa por etapas en la etapa B (ADR-032, decisión 5).
 
 ## Qué falta de la E0
 Modelo de usuario (`ADMINISTRADOR`, decidirlo antes de la primera migración), segundo factor (biblioteca por decidir), códigos de recuperación, límite de intentos, auditoría, organización y configuración regional, roles de PostgreSQL y archivo de privilegios (ADR-027, 031), despliegue en WSL, HTTPS autofirmado, respaldo cifrado y su restauración, e integración continua.
+
+## `cuentas.Administrador` (actualización zzc)
+Modelo, cifrado del secreto del segundo factor (Fernet), TOTP con pyotp y límite de intentos, con 26 pruebas que necesitan PostgreSQL. Para correrlas hace falta un servidor PostgreSQL accesible y las variables `SGA_BD_HOST`, `SGA_BD_PUERTO` y `SGA_BD_USUARIO`; el usuario debe poder crear bases (el ejecutor crea `test_sga`). No existe todavía la vista de inicio de sesión, y **una vista que llame a `login()` tras `authenticate()` sin pedir el TOTP saltaría el segundo factor**.

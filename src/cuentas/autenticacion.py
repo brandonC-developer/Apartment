@@ -1,0 +1,116 @@
+"""Reglas de autenticación de la cuenta administradora (RF-27, CA-68, CA-69).
+
+Las cifras (5 fallos, espera de 1 minuto que se duplica hasta 1 hora, intervalo de 30 s y
+tolerancia de un intervalo) son las de la ERS v1.16, propuestas del asistente y aceptadas por
+el solicitante. Que un intento hecho durante la espera no sume otro fallo es propuesta del
+asistente.
+"""
+import hmac
+from datetime import timedelta
+from enum import Enum
+
+import pyotp
+from django.contrib.auth.hashers import make_password
+from django.db import transaction
+from django.utils import timezone
+
+from .models import Administrador
+
+UMBRAL_FALLOS = 5
+ESPERA_BASE_SEGUNDOS = 60
+ESPERA_MAXIMA_SEGUNDOS = 3600
+INTERVALO_TOTP = 30
+DIGITOS_TOTP = 6
+
+
+class Resultado(Enum):
+    CORRECTO = 'correcto'
+    INCORRECTO = 'incorrecto'
+    EN_ESPERA = 'en_espera'
+
+
+class Respuesta:
+    """Resultado de un intento. `aviso_cinco_fallos` es verdadero solo en el quinto fallo
+    seguido: quien llama debe enviar el aviso de seguridad (CA-68)."""
+
+    def __init__(self, resultado, administrador=None, aviso_cinco_fallos=False, espera_hasta=None):
+        self.resultado = resultado
+        self.administrador = administrador
+        self.aviso_cinco_fallos = aviso_cinco_fallos
+        self.espera_hasta = espera_hasta
+
+    @property
+    def correcto(self):
+        return self.resultado is Resultado.CORRECTO
+
+
+def segundos_de_espera(fallos):
+    if fallos < UMBRAL_FALLOS:
+        return 0
+    return min(ESPERA_BASE_SEGUNDOS * 2 ** (fallos - UMBRAL_FALLOS), ESPERA_MAXIMA_SEGUNDOS)
+
+
+def _en_espera(administrador, ahora):
+    return administrador.espera_hasta is not None and ahora < administrador.espera_hasta
+
+
+def _registrar_fallo(administrador, ahora):
+    administrador.fallos_consecutivos += 1
+    espera = segundos_de_espera(administrador.fallos_consecutivos)
+    administrador.espera_hasta = ahora + timedelta(seconds=espera) if espera else None
+    administrador.save(update_fields=['fallos_consecutivos', 'espera_hasta', 'actualizado_en'])
+    return Respuesta(
+        Resultado.INCORRECTO,
+        aviso_cinco_fallos=administrador.fallos_consecutivos == UMBRAL_FALLOS,
+        espera_hasta=administrador.espera_hasta,
+    )
+
+
+def comprobar_contrasena(usuario, contrasena, ahora=None):
+    """Primer paso. Una contraseña correcta NO reinicia el contador: solo lo reinicia el
+    segundo factor correcto, porque el contador se comparte entre los dos pasos."""
+    ahora = ahora or timezone.now()
+    with transaction.atomic():
+        administrador = Administrador.objects.select_for_update().filter(usuario=usuario).first()
+        if administrador is None:
+            make_password(contrasena)  # tiempo parecido al de una cuenta real
+            return Respuesta(Resultado.INCORRECTO)
+        if _en_espera(administrador, ahora):
+            return Respuesta(Resultado.EN_ESPERA, espera_hasta=administrador.espera_hasta)
+        if administrador.check_password(contrasena):
+            return Respuesta(Resultado.CORRECTO, administrador=administrador)
+        return _registrar_fallo(administrador, ahora)
+
+
+def verificar_totp(administrador_id, codigo, ahora=None):
+    """Segundo paso. Acepta el intervalo actual y uno anterior o posterior (CA-69) y rechaza un
+    intervalo no posterior al último aceptado, para que un código no se reutilice. Si es
+    correcto reinicia el contador de fallos."""
+    ahora = ahora or timezone.now()
+    with transaction.atomic():
+        administrador = Administrador.objects.select_for_update().get(pk=administrador_id)
+        if _en_espera(administrador, ahora):
+            return Respuesta(Resultado.EN_ESPERA, espera_hasta=administrador.espera_hasta)
+        if not administrador.secreto_segundo_factor:
+            return _registrar_fallo(administrador, ahora)
+        totp = pyotp.TOTP(
+            administrador.secreto_segundo_factor_en_claro(),
+            digits=DIGITOS_TOTP, interval=INTERVALO_TOTP,
+        )
+        actual = int(ahora.timestamp()) // INTERVALO_TOTP
+        codigo = (codigo or '').strip()
+        aceptado = None
+        for intervalo in (actual - 1, actual, actual + 1):
+            esperado = totp.at(intervalo * INTERVALO_TOTP)
+            if hmac.compare_digest(esperado, codigo):
+                aceptado = intervalo
+        ultimo = administrador.ultimo_intervalo_totp
+        if aceptado is None or (ultimo is not None and aceptado <= ultimo):
+            return _registrar_fallo(administrador, ahora)
+        administrador.ultimo_intervalo_totp = aceptado
+        administrador.fallos_consecutivos = 0
+        administrador.espera_hasta = None
+        administrador.save(update_fields=[
+            'ultimo_intervalo_totp', 'fallos_consecutivos', 'espera_hasta', 'actualizado_en',
+        ])
+        return Respuesta(Resultado.CORRECTO, administrador=administrador)

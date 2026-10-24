@@ -129,3 +129,12 @@ if not DEBUG:
     # HSTS por etapas (ADR-032, decisión 5): se activa en la etapa B con un max-age corto.
     SECURE_HSTS_SECONDS = 0
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Cuenta administradora (RF-26, RF-27, RN-25): modelo propio sobre AbstractBaseUser, sin
+# permisos de Django (decisión del solicitante, 23-oct-2026, actualización zz).
+AUTH_USER_MODEL = 'cuentas.Administrador'
+AUTHENTICATION_BACKENDS = ['cuentas.backends.BackendAdministrador']
+
+# Claves de Fernet para cifrar el secreto del segundo factor (actualización zzb). Lista separada
+# por comas: se cifra con la primera y se descifra con cualquiera (MultiFernet) para rotar.
+CLAVES_CIFRADO = [c.strip() for c in (leer_secreto('clave_cifrado', '') or '').split(',') if c.strip()]
