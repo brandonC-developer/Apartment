@@ -15,6 +15,7 @@ import urllib.parse
 import urllib.request
 
 import pyotp
+from django.utils import timezone
 
 from cuentas import autenticacion
 from cuentas.models import Administrador
@@ -97,6 +98,91 @@ comprobar(estado == 200, 'la pantalla de auditoría responde')
 # 2. IP de origen: la falsificada por el cliente no debe llegar a la auditoría
 ips = set(Auditoria.objects.exclude(ip_origen=None).values_list('ip_origen', flat=True))
 comprobar(SPOOF not in ips and ips == {'127.0.0.1'}, f'la auditoría guarda la IP real y no la falsificada: {sorted(ips)}')
+
+# 2b. Fotografías del documento (E1, grupo D): subida, almacenamiento privado, entrega autorizada y su registro
+import grp
+import os
+import pwd
+import random
+import uuid
+from io import BytesIO
+
+from PIL import Image
+
+from inquilinos import services as servicios_inquilinos
+from inquilinos.models import AccesoDocumento, DocumentoIdentidad, TextoConsentimiento
+
+texto_consentimiento = TextoConsentimiento.objects.create(
+    version=1, contenido='Texto de la verificación', vigente_desde=timezone.now())
+inquilino = servicios_inquilinos.registrar_inquilino(
+    actor='admin_despliegue', datos={'nombre_completo': 'Persona de Prueba', 'tipo_documento': 'cedula',
+                                     'numero_documento': '9-9999-9999'}, texto=texto_consentimiento, medio='fisico')
+
+
+def jpeg(ancho=200, alto=150, ruido=False, gps=False):
+    imagen = Image.new('RGB', (ancho, alto))
+    if ruido:
+        generador = random.Random(1)
+        imagen.putdata([(generador.randrange(256), generador.randrange(256), generador.randrange(256))
+                        for _ in range(ancho * alto)])
+    exif = Image.Exif()
+    if gps:
+        exif[0x8825] = {1: 'N', 2: (9.0, 56.0, 12.0), 3: 'W', 4: (84.0, 4.0, 5.0)}
+        exif[0x010F] = 'MarcaDeLaCamara'
+    salida = BytesIO()
+    imagen.save(salida, 'JPEG', exif=exif, quality=95)
+    return salida.getvalue()
+
+
+def subir(cara, contenido, ruta=None):
+    frontera = uuid.uuid4().hex
+    salto = chr(13) + chr(10)
+    cabecera = salto.join([f'--{frontera}', 'Content-Disposition: form-data; name="archivo"; filename="f.jpg"',
+                           'Content-Type: image/jpeg', '', ''])
+    cuerpo = cabecera.encode() + contenido + (salto + f'--{frontera}--' + salto).encode()
+    token = [c.value for c in jar if c.name == 'csrftoken'][0]
+    peticion = urllib.request.Request(
+        BASE + (ruta or f'/inquilinos/{inquilino.pk}/fotografias/{cara}/'), data=cuerpo, method='POST',
+        headers={'Content-Type': f'multipart/form-data; boundary={frontera}', 'X-CSRFToken': token,
+                 'Referer': BASE + '/', 'Origin': BASE})
+    try:
+        respuesta = abridor.open(peticion, timeout=60)
+    except urllib.error.HTTPError as e:
+        respuesta = e
+    return respuesta.status, respuesta.read().decode('utf-8', 'replace')
+
+
+original = jpeg(gps=True)
+estado, cuerpo = subir('frente', original)
+comprobar(estado == 201, f'la subida de la cédula responde 201 ({estado})')
+documento = DocumentoIdentidad.objects.get(inquilino=inquilino, cara='frente', eliminado_en__isnull=True)
+ruta_archivo = os.path.join('/var/lib/sga/documentos/cedulas', documento.referencia_archivo)
+datos_guardados = open(ruta_archivo, 'rb').read()
+comprobar(b'MarcaDeLaCamara' not in datos_guardados and b'Exif' not in datos_guardados, 'el archivo guardado no conserva los metadatos')
+info = os.stat(ruta_archivo)
+comprobar(oct(info.st_mode & 0o777) == '0o640', f'el archivo es 0640 ({oct(info.st_mode & 0o777)})')
+comprobar(pwd.getpwuid(info.st_uid).pw_name == 'sga_app' and grp.getgrgid(info.st_gid).gr_name == 'sga_respaldos',
+          'el archivo es de sga_app y del grupo del respaldo (setgid)')
+estado, _, _ = pedir(f'/inquilinos/documentos/{documento.pk}/ver/')
+comprobar(estado == 200, 'con sesión se entrega la cédula')
+abierto = urllib.request.Request(BASE + f'/inquilinos/documentos/{documento.pk}/ver/', headers={'Referer': BASE + '/'})
+respuesta = abridor.open(abierto, timeout=30)
+comprobar(respuesta.read() == datos_guardados and respuesta.headers['Cache-Control'].startswith('max-age=0')
+          or 'no-store' in respuesta.headers['Cache-Control'], 'la imagen entregada es la guardada y no se guarda en caché')
+sin_sesion = urllib.request.build_opener(urllib.request.HTTPSHandler(context=contexto), SinRedireccion())
+try:
+    sin_sesion.open(BASE + f'/inquilinos/documentos/{documento.pk}/ver/', timeout=30)
+    estado_anonimo = 200
+except urllib.error.HTTPError as e:
+    estado_anonimo = e.code
+comprobar(estado_anonimo == 302, f'sin sesión se niega (CA-11): {estado_anonimo}')
+comprobar(AccesoDocumento.objects.count() == 2, f'cada consulta quedó registrada (CA-26): {AccesoDocumento.objects.count()} accesos')
+estado, _ = subir('reverso', jpeg(1500, 1500, ruido=True))
+comprobar(estado == 201, f'Nginx admite un cuerpo de más de 1 MiB en la ruta de subida ({estado})')
+estado, _ = subir('reverso', os.urandom(7 * 1024 * 1024))
+comprobar(estado == 413, f'Nginx rechaza más de 6 MiB incluso en la ruta de subida ({estado})')
+estado, _ = subir('reverso', os.urandom(2 * 1024 * 1024), ruta='/entrar/')
+comprobar(estado == 413, f'Nginx rechaza más de 1 MiB en el resto de las rutas ({estado})')
 
 # 3. Cierre de sesión y acceso denegado
 formulario_cierre = pedir('/')

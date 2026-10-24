@@ -51,7 +51,7 @@ prueba "Gunicorn no tiene registro de acceso (el journal no trae peticiones)" '!
 prueba "la rotación de los registros de Nginx es diaria y de 14 días" 'grep -Eq "^\s*daily" /etc/logrotate.d/nginx && grep -Eq "^\s*rotate 14" /etc/logrotate.d/nginx'
 
 echo; echo "== Limpieza de la cuenta de prueba"
-runuser -u postgres -- psql -X -q -d sga -c "TRUNCATE cuentas_administrador, nucleo_auditoria CASCADE; DELETE FROM django_session" >/dev/null && ok "datos de prueba borrados" || mal "no se borraron los datos de prueba"
+runuser -u postgres -- psql -X -q -d sga -c "TRUNCATE cuentas_administrador, nucleo_auditoria, inquilinos_accesodocumento, inquilinos_documentoidentidad, inquilinos_consentimiento, inquilinos_textoconsentimiento, inquilinos_inquilino CASCADE; DELETE FROM django_session" >/dev/null && rm -rf /var/lib/sga/documentos/cedulas && ok "datos de prueba y archivos borrados" || mal "no se borraron los datos de prueba"
 
 echo; echo "== systemd-analyze security (informativo, ADR-032 d4)"
 for unidad in sga-gunicorn.service sga-respaldo.service; do

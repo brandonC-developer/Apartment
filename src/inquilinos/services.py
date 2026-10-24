@@ -13,8 +13,10 @@ from django.utils import timezone
 
 from nucleo import auditoria
 
-from . import bloqueos, ganchos
-from .models import Consentimiento, Inquilino, TextoConsentimiento
+from . import almacenamiento, bloqueos, ganchos
+from .imagenes import ImagenInvalida, procesar_imagen
+from .models import (
+    AccesoDocumento, Consentimiento, DocumentoIdentidad, Inquilino, TextoConsentimiento)
 
 CAMPOS_EDITABLES = ('nombre_completo', 'tipo_documento', 'numero_documento', 'telefono', 'correo')
 _TELEFONO = re.compile(r'^[0-9+().\- ]{6,40}$')
@@ -256,3 +258,61 @@ def revocar_consentimiento(inquilino_id, *, actor, ip_origen=None, ahora=None):
         cambios={'revocado': (False, True)}, ahora=ahora)
     ganchos.ejecutar_al_revocar(vigente)
     return vigente
+
+
+# ---------------------------------------------------------------- fotografías del documento (RF-01, RF-02, RF-03)
+def _marcar_eliminada_la_anterior(inquilino, cara, ahora):
+    anterior = DocumentoIdentidad.objects.select_for_update().filter(
+        inquilino=inquilino, cara=cara, eliminado_en__isnull=True).first()
+    if anterior is not None:
+        anterior.eliminado_en = ahora
+        anterior.save(update_fields=['eliminado_en'])
+    return anterior
+
+
+def subir_fotografia(inquilino_id, *, cara, contenido, actor, ip_origen=None, ahora=None):
+    """Valida, limpia y guarda la fotografía de una cara del documento (RF-01, RF-02, RF-03, RF-39).
+
+    Cada llamada es UN archivo: si se rechaza, no se pierde el otro ya aceptado (CA-74). Exige el consentimiento
+    vigente (RF-39). El archivo se guarda con nombre aleatorio fuera de la raíz web; si la base falla, se borra en la
+    misma petición (HI-07). Si la cara ya tenía una fotografía, esa se marca como eliminada en la misma transacción
+    (R25) y su archivo se borra del disco al confirmarla.
+    """
+    ahora = ahora or timezone.now()
+    if cara not in (DocumentoIdentidad.FRENTE, DocumentoIdentidad.REVERSO):
+        raise ErrorDeValidacion({'cara': ['Indique si es el frente o el reverso.']})
+    try:
+        imagen = procesar_imagen(contenido)
+    except ImagenInvalida as error:
+        raise ErrorDeValidacion({'archivo': [str(error)]})
+    referencia = None
+    try:
+        with transaction.atomic():
+            inquilino = _bloquear(inquilino_id)
+            if not inquilino.consentimientos.filter(revocado_en__isnull=True).exists():
+                raise ErrorDeValidacion({'consentimiento': [
+                    'El inquilino no tiene un consentimiento vigente: no se pueden guardar fotografías (RF-39).']})
+            anterior = _marcar_eliminada_la_anterior(inquilino, cara, ahora)
+            referencia = almacenamiento.guardar(imagen.contenido, imagen.extension)
+            documento = DocumentoIdentidad.objects.create(
+                inquilino=inquilino, cara=cara, referencia_archivo=referencia, tipo_real_archivo=imagen.tipo,
+                tamano_bytes=len(imagen.contenido))
+            auditoria.registrar(
+                'fotografia_reemplazada' if anterior else 'fotografia_subida', 'inquilino', registro_id=inquilino.pk,
+                actor=actor, ip_origen=ip_origen, cambios={'cara': (None, cara), 'fotografia': (None, None)}, ahora=ahora)
+            if anterior is not None:
+                # El archivo anterior se borra del disco solo si la transacción se confirma.
+                transaction.on_commit(lambda ref=anterior.referencia_archivo: almacenamiento.borrar(ref))
+    except BaseException:
+        if referencia is not None:
+            almacenamiento.borrar(referencia)  # sin archivos huérfanos (HI-07)
+        raise
+    return documento
+
+
+def registrar_acceso(documento, *, actor, accion, ahora=None):
+    """Una consulta o descarga de una cédula (RF-45, CA-26): quién, cuándo y qué, sin la imagen."""
+    if accion not in (AccesoDocumento.CONSULTA, AccesoDocumento.DESCARGA):
+        raise ValueError(accion)
+    return AccesoDocumento.objects.create(
+        documento=documento, actor=actor, accion=accion, ocurrido_en=ahora or timezone.now())

@@ -86,3 +86,6 @@ Aplicación `inquilinos` (inquilino, texto y consentimiento, fotografía del doc
 
 ## E1, grupo C: consentimiento (actualización 2026-10-24t)
 Antes de usar el sistema con un inquilino: `python manage.py configurar_organizacion --nombre-responsable ... --direccion-responsable ...` y luego `python manage.py cargar_texto_consentimiento`. El texto es un **borrador sin validar por abogado**; el texto definitivo se carga con `--archivo ... --validado`. 297 pruebas en total.
+
+## E1, grupo D: fotografías del documento (actualización 2026-10-24u)
+Nueva dependencia: Pillow 12.3.0. Rutas: `POST /inquilinos/<id>/fotografias/<cara>/` (un archivo por petición), `GET /inquilinos/documentos/<id>/ver/` y `.../descargar/`. Los archivos van en `RAIZ_DOCUMENTOS/cedulas` y solo salen por esa vista. **Al editar scripts de shell desde Python en Windows, escribir con `newline='\n'`**: un CRLF no corre en Linux. 347 pruebas en total.

@@ -49,7 +49,8 @@ usermod -aG sga_bd postgres
 
 paso "3. Carpetas"
 install -d -m 0755 -o root -g root /etc/sga "$DESTINO"
-install -d -m 0750 -o sga_app -g sga_respaldos /var/lib/sga/documentos
+# Bit setgid (2750): los archivos y carpetas que cree la aplicación heredan el grupo del respaldo, que así puede leerlos.
+install -d -m 2750 -o sga_app -g sga_respaldos /var/lib/sga/documentos
 install -d -m 0750 -o sga_respaldos -g sga_respaldos /var/lib/sga/respaldos
 chmod 0755 /var/lib/sga
 

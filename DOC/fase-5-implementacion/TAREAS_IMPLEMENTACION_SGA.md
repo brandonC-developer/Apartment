@@ -194,12 +194,12 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Registrar la revocación sin efecto retroactivo (`services.revocar_consentimiento`) y mostrar el aviso en la ficha (`consentimiento_revocado`, `puede_crear_contratos`) (CA-67, segunda parte). Los ganchos `inquilinos.ganchos.al_revocar` permiten que la E5 abra de oficio la solicitud de supresión y la E2 consulta `tiene_consentimiento_vigente`; **el rechazo de contratos nuevos va en la E2 (HI-04) y la solicitud de supresión, en la E5 (RF-40)**
 
 **D. Fotografías del documento: servidor** (RF-02, RF-45, ADR-003; CA-74, CA-83, CA-11, CA-26)
-- [ ] Almacenamiento privado fuera de la raíz web (`RAIZ_DOCUMENTOS`), nombre aleatorio (UUID) y permisos mínimos
-- [ ] Validación en el servidor con Pillow 12.3.0 (decisión 2), en una petición por archivo: JPEG o PNG por su tipo real, hasta 5 242 880 bytes, decodificación completa que rechaza lo dañado, tope de 60 millones de píxeles (RF-02, R27, CA-74, CA-83)
-- [ ] Volver a codificar la imagen sin metadatos y con la orientación aplicada (`quality="keep"` en JPEG) (RF-02, BR-05; CA-82 se completa en la E2)
-- [ ] A lo sumo una fotografía activa por cara; reemplazar marca la anterior como eliminada en la misma transacción (R25); un fallo al guardar no deja un archivo huérfano (HI-07)
-- [ ] Vista que entrega el archivo solo con sesión, sin URL pública y sin guardar la imagen en el registro; cada consulta o descarga deja un `AccesoDocumento` (RF-45, CA-11, CA-26)
-- [ ] Nginx: `client_max_body_size` de 6 MiB solo en la ruta de subida y 1 MiB en el resto (ADR-003, decisión del 22-oct-2026)
+- [x] Almacenamiento privado fuera de la raíz web (`RAIZ_DOCUMENTOS/cedulas`), nombre aleatorio (UUID) creado con `O_EXCL`, permisos 0640 y carpeta con bit setgid para que el respaldo lea; una referencia con otra forma (`..`, barras, mayúsculas, extensiones) se rechaza (actualización 2026-10-24u)
+- [x] Validación en el servidor con Pillow 12.3.0, una petición por archivo: JPEG o PNG por su tipo real, hasta 5 242 880 bytes, decodificación completa que rechaza lo dañado, tope de 60 millones de píxeles comprobado antes de decodificar (RF-02, R27, CA-74, CA-83); exige el consentimiento vigente (RF-39)
+- [x] Se vuelve a codificar la imagen sin metadatos (ubicación, cámara, comentario, XMP, bloques de texto de PNG, datos añadidos al final) y con la orientación aplicada; se conserva el perfil de color (RF-02, BR-05). **Con el JPEG sin girar se usan las mismas tablas de calidad, pero no es una transcodificación sin pérdida**; CA-82 se completa en la E2 con fotos reales
+- [x] A lo sumo una fotografía activa por cara; reemplazar marca la anterior como eliminada en la misma transacción y borra su archivo del disco al confirmarla (R25); un fallo al guardar no deja un archivo huérfano (HI-07)
+- [x] Vista que entrega el archivo solo con sesión, sin URL pública, con `no-store` y `nosniff`, y un `AccesoDocumento` por cada consulta o descarga sin la imagen; si el registro falla, no se entrega (RF-45, CA-11, CA-26). Subida de UN archivo por petición en `/inquilinos/<id>/fotografias/<cara>/`
+- [x] Nginx: `client_max_body_size` de 6 MiB solo en la ruta de subida y 1 MiB en el resto, comprobado en WSL con cuerpos reales (201, 413 y 413) (ADR-003)
 
 **E. Reducción en el navegador** (RF-50; CA-73, CA-74)
 - [ ] Script propio sin bibliotecas: lado mayor de 2048 píxeles sin ampliar, JPEG a calidad 0,85 y menor hasta 0,70 si pasa de 2 MB, reducir el lado si pasa de 5 MiB, conservar la orientación; enviar el original si no puede y cumple el límite

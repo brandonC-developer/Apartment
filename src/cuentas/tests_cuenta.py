@@ -166,11 +166,14 @@ class TodasLasVistasTests(TestCase):
         rutas = dict(_rutas(get_resolver().url_patterns))
         self.assertIn('cuentas:inicio', rutas)
         self.assertIn('nucleo:auditoria', rutas)
-        for nombre in rutas:
+        self.assertIn('inquilinos:ver_documento', rutas)
+        for nombre, patron in rutas.items():
             if nombre in VISTAS_PUBLICAS:
                 continue
+            # Las rutas con parámetros se prueban con valores de ejemplo (un entero y una cara).
+            ruta = '/' + re.sub(r'<str:[^>]+>', 'frente', re.sub(r'<int:[^>]+>', '1', patron))
             for metodo in ('get', 'post'):
-                r = getattr(Client(), metodo)(reverse(nombre))
+                r = getattr(Client(), metodo)(ruta)
                 self.assertEqual(r.status_code, 302, f'{metodo.upper()} {nombre} responde sin sesión')
                 self.assertTrue(r['Location'].startswith('/entrar/'), f'{nombre}: {r["Location"]}')
 
