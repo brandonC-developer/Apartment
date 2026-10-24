@@ -1,0 +1,13 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}Registrar el segundo factor{% endblock %}
+{% block contenido %}
+<h1>Registrar el segundo factor</h1>
+<p>Agregue esta clave en su aplicación de autenticación (tipo tiempo, 6 dígitos, 30 segundos) y escriba el código que muestre.</p>
+<p>Clave: <code>{{ secreto }}</code></p>
+<p>Dirección para aplicaciones que la admitan: <code>{{ uri }}</code></p>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="post">{% csrf_token %}
+  <p><label>Código <input name="codigo" autocomplete="one-time-code" required autofocus></label></p>
+  <button type="submit">Activar</button>
+</form>
+{% endblock %}

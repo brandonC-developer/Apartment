@@ -9,6 +9,7 @@
 | Plan de implementación (entregas E0 a E6, criterios de salida, condiciones antes de datos reales) | `PLAN_IMPLEMENTACION_SGA_001_v0.1_borrador.md` (vigente) | Borrador v0.1; no aprobado |
 | Lista de verificación de la revisión por otra persona (53 puntos en nueve áreas) | `LISTA_REVISION_CRITICA_SGA_001_v0.1_borrador.md` (vigente) | Borrador v0.1; no aprobado; sin persona revisora designada |
 | Registro de avance (una entrega a la vez; estados; bloqueo si falta una prueba Alta) | `AVANCE_IMPLEMENTACION.md` | Registro vivo, solo de adiciones; todas las entregas *no iniciada* |
+| Lista de tareas por entrega (RF, RNF y CA generados de la ERS; E0 detallada; casillas para marcar) | `TAREAS_IMPLEMENTACION_SGA.md` | Lista viva; no versionada ni aprobada |
 
 **Entradas:** ERS v1.16, DAS v0.15 (módulos de la sección 5 y ADR-002, 022 a 032), diseño técnico (fase 3) y estrategia de pruebas (fase 4).
 

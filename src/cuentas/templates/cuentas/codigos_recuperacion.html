@@ -1,0 +1,8 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}Códigos de recuperación{% endblock %}
+{% block contenido %}
+<h1>Códigos de recuperación</h1>
+<p>Guárdelos ahora en un lugar seguro. <strong>No se volverán a mostrar</strong> y cada uno sirve una sola vez.</p>
+<ul>{% for codigo in codigos %}<li><code>{{ codigo }}</code></li>{% endfor %}</ul>
+<p><a href="{% url 'cuentas:inicio' %}">Continuar</a></p>
+{% endblock %}

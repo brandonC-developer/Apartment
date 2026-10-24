@@ -22,7 +22,7 @@ $env:SGA_DEBUG = "1"
 Las pruebas de `nucleo` no usan la base de datos y las de `cuentas` sí (necesitan PostgreSQL; ver más abajo): comprueban Argon2id, el mínimo de 15 caracteres, la zona horaria, la ausencia del administrador de Django y que el proyecto no arranque sin `SECRET_KEY`. `manage.py check --deploy` solo avisa de HSTS, que se activa por etapas en la etapa B (ADR-032, decisión 5).
 
 ## Qué falta de la E0
-Registro del segundo factor en el primer ingreso, aviso por correo, límite de intentos, auditoría, organización y configuración regional, roles de PostgreSQL y archivo de privilegios (ADR-027, 031), despliegue en WSL, HTTPS autofirmado, respaldo cifrado y su restauración, e integración continua.
+Aviso por correo, auditoría, organización y configuración regional, roles de PostgreSQL y archivo de privilegios (ADR-027, 031), despliegue en WSL, HTTPS autofirmado, respaldo cifrado y su restauración, e integración continua.
 
 ## `cuentas.Administrador` (actualización zzc)
 Modelo, cifrado del secreto del segundo factor (Fernet), TOTP con pyotp y límite de intentos, con 26 pruebas que necesitan PostgreSQL. Para correrlas hace falta un servidor PostgreSQL accesible y las variables `SGA_BD_HOST`, `SGA_BD_PUERTO` y `SGA_BD_USUARIO`; el usuario debe poder crear bases (el ejecutor crea `test_sga`). No existe todavía la vista de inicio de sesión, y **una vista que llame a `login()` tras `authenticate()` sin pedir el TOTP saltaría el segundo factor**.
@@ -31,7 +31,7 @@ Modelo, cifrado del secreto del segundo factor (Fernet), TOTP con pyotp y límit
 `CodigoRecuperacion`, `emitir_codigos_recuperacion` y `verificar_codigo_recuperacion` en `cuentas/autenticacion.py`; 38 pruebas en total. Aún sin vista que los use.
 
 ## Inicio de sesión (actualización 2026-10-24)
-Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional protegida), con el middleware `LimiteDeSesion` (24 h / 1 h). 51 pruebas en total. La cuenta aún solo se crea desde código: no hay comando de creación ni activación del segundo factor.
+Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional protegida), con el middleware `LimiteDeSesion` (24 h / 1 h). 51 pruebas en total. La cuenta se crea con `crear_administrador`.
 
 ## Comandos de gestión (actualización 2026-10-24a)
-`python manage.py crear_administrador --usuario X` y `python manage.py rescatar_segundo_factor`. 56 pruebas en total. Una cuenta recién creada no puede entrar hasta que exista la pantalla de registro del segundo factor.
+`python manage.py crear_administrador --usuario X` y `python manage.py rescatar_segundo_factor`. 56 pruebas en total. Una cuenta recién creada registra su segundo factor en el primer ingreso (actualización 2026-10-24b, 64 pruebas), sin código QR.

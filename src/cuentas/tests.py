@@ -2,6 +2,7 @@
 
 Necesitan PostgreSQL (restricción de la tabla, bloqueo de fila).
 """
+import re
 import time
 from io import StringIO
 from datetime import datetime, timedelta, timezone as utc
@@ -331,12 +332,14 @@ class InicioDeSesionTests(CuentaTestCase):
         self.assertContains(a, views.MENSAJE_PRIMER_PASO)
         self.assertContains(b, views.MENSAJE_PRIMER_PASO)
 
-    def test_sin_segundo_factor_activo_no_hay_acceso(self):
+    def test_sin_segundo_factor_activo_la_contrasena_lleva_al_registro_y_no_a_la_sesion(self):
         self.admin.segundo_factor_activo = False
         self.admin.save()
         r = self.primer_paso()
-        self.assertEqual(r.status_code, 200)
-        self.assertNotIn('primer_paso_administrador', self.client.session)
+        self.assertRedirects(r, '/entrar/registro/', fetch_redirect_response=False)
+        self.assertEqual(self.client.get('/').status_code, 302)
+        r = self.client.get('/entrar/codigo/')
+        self.assertRedirects(r, '/entrar/registro/', fetch_redirect_response=False)
 
     def test_el_primer_paso_caduca(self):
         self.primer_paso()
@@ -432,3 +435,76 @@ class ComandosTests(TestCase):
     def test_rescate_sin_cuenta(self):
         with self.assertRaises(CommandError):
             self.llamar('rescatar_segundo_factor', confirmar=True)
+
+
+@override_settings(CLAVES_CIFRADO=[CLAVE_A])
+class RegistroSegundoFactorTests(TestCase):
+    def setUp(self):
+        self.admin = Administrador.objects.crear_administrador('admin', CONTRASENA)
+        self.client.post('/entrar/', {'usuario': 'admin', 'contrasena': CONTRASENA})
+
+    def secreto(self):
+        r = self.client.get('/entrar/registro/')
+        self.assertEqual(r.status_code, 200)
+        return re.search(r'<code>([A-Z2-7]{32})</code>', r.content.decode()).group(1)
+
+    def test_la_pantalla_muestra_clave_y_direccion_otpauth(self):
+        r = self.client.get('/entrar/registro/')
+        self.assertContains(r, 'otpauth://totp/')
+        self.assertContains(r, 'issuer=SGA')
+
+    def test_el_secreto_es_el_mismo_al_recargar_y_no_esta_en_claro_en_la_sesion(self):
+        a = self.secreto()
+        self.assertEqual(self.secreto(), a)
+        self.assertNotIn(a, str(dict(self.client.session)))
+
+    def test_sin_primer_paso_no_hay_registro(self):
+        self.client.cookies.clear()
+        r = self.client.get('/entrar/registro/')
+        self.assertRedirects(r, '/entrar/', fetch_redirect_response=False)
+
+    def test_un_codigo_correcto_activa_inicia_sesion_y_muestra_diez_codigos_una_vez(self):
+        secreto = self.secreto()
+        r = self.client.post('/entrar/registro/', {'codigo': pyotp.TOTP(secreto).now()})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(re.findall(r'<code>[A-Z2-9]{5}-[A-Z2-9]{5}</code>', r.content.decode())), 10)
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.segundo_factor_activo)
+        self.assertEqual(self.admin.secreto_segundo_factor_en_claro(), secreto)
+        self.assertNotIn(secreto, self.admin.secreto_segundo_factor)
+        self.assertEqual(CodigoRecuperacion.objects.count(), 10)
+        self.assertEqual(self.client.get('/').status_code, 200)
+        self.assertNotContains(self.client.get('/'), 'XXXXX')
+
+    def test_un_codigo_incorrecto_no_activa_y_cuenta_como_fallo(self):
+        self.secreto()
+        r = self.client.post('/entrar/registro/', {'codigo': '000000'})
+        self.assertContains(r, 'Código incorrecto')
+        self.admin.refresh_from_db()
+        self.assertFalse(self.admin.segundo_factor_activo)
+        self.assertEqual(self.admin.fallos_consecutivos, 1)
+        self.assertEqual(self.client.get('/').status_code, 302)
+
+    def test_los_fallos_del_registro_producen_espera(self):
+        self.secreto()
+        for _ in range(5):
+            self.client.post('/entrar/registro/', {'codigo': '000000'})
+        r = self.client.post('/entrar/registro/', {'codigo': '000000'})
+        self.assertContains(r, 'Espere')
+
+    def test_no_se_puede_reemplazar_un_segundo_factor_ya_activo(self):
+        self.admin.segundo_factor_activo = True
+        self.admin.save()
+        secreto = pyotp.random_base32()
+        respuesta, codigos = autenticacion.activar_segundo_factor(self.admin.pk, secreto, pyotp.TOTP(secreto).now())
+        self.assertEqual(respuesta.resultado, Resultado.INCORRECTO)
+        self.assertIsNone(codigos)
+        r = self.client.get('/entrar/registro/')
+        self.assertRedirects(r, '/entrar/codigo/', fetch_redirect_response=False)
+
+    def test_la_cuenta_creada_puede_entrar_despues_de_registrar(self):
+        secreto = self.secreto()
+        self.client.post('/entrar/registro/', {'codigo': pyotp.TOTP(secreto).now()})
+        self.client.post('/salir/')
+        self.client.post('/entrar/', {'usuario': 'admin', 'contrasena': CONTRASENA})
+        self.assertEqual(self.client.get('/entrar/codigo/').status_code, 200)

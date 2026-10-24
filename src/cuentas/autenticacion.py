@@ -84,6 +84,19 @@ def comprobar_contrasena(usuario, contrasena, ahora=None):
         return _registrar_fallo(administrador, ahora)
 
 
+def _intervalo_aceptado(secreto, codigo, ahora):
+    """Intervalo del código si coincide con el actual o con uno anterior o posterior; si no, None."""
+    totp = pyotp.TOTP(secreto, digits=DIGITOS_TOTP, interval=INTERVALO_TOTP)
+    actual = int(ahora.timestamp()) // INTERVALO_TOTP
+    codigo = (codigo or '').strip()
+    aceptado = None
+    for intervalo in (actual - 1, actual, actual + 1):
+        esperado = totp.at(intervalo * INTERVALO_TOTP)
+        if hmac.compare_digest(esperado, codigo):
+            aceptado = intervalo
+    return aceptado
+
+
 def verificar_totp(administrador_id, codigo, ahora=None):
     """Segundo paso. Acepta el intervalo actual y uno anterior o posterior (CA-69) y rechaza un
     intervalo no posterior al último aceptado, para que un código no se reutilice. Si es
@@ -95,17 +108,7 @@ def verificar_totp(administrador_id, codigo, ahora=None):
             return Respuesta(Resultado.EN_ESPERA, espera_hasta=administrador.espera_hasta)
         if not administrador.secreto_segundo_factor:
             return _registrar_fallo(administrador, ahora)
-        totp = pyotp.TOTP(
-            administrador.secreto_segundo_factor_en_claro(),
-            digits=DIGITOS_TOTP, interval=INTERVALO_TOTP,
-        )
-        actual = int(ahora.timestamp()) // INTERVALO_TOTP
-        codigo = (codigo or '').strip()
-        aceptado = None
-        for intervalo in (actual - 1, actual, actual + 1):
-            esperado = totp.at(intervalo * INTERVALO_TOTP)
-            if hmac.compare_digest(esperado, codigo):
-                aceptado = intervalo
+        aceptado = _intervalo_aceptado(administrador.secreto_segundo_factor_en_claro(), codigo, ahora)
         ultimo = administrador.ultimo_intervalo_totp
         if aceptado is None or (ultimo is not None and aceptado <= ultimo):
             return _registrar_fallo(administrador, ahora)
@@ -139,6 +142,10 @@ def emitir_codigos_recuperacion(administrador, contrasena):
     Quien llama debe enviar el aviso de seguridad."""
     if not administrador.check_password(contrasena):
         return None
+    return _generar_codigos(administrador)
+
+
+def _generar_codigos(administrador):
     codigos = [
         ''.join(secrets.choice(ALFABETO_CODIGO) for _ in range(LONGITUD_CODIGO))
         for _ in range(CODIGOS_POR_EMISION)
@@ -172,3 +179,29 @@ def verificar_codigo_recuperacion(administrador_id, codigo, ahora=None):
         administrador.espera_hasta = None
         administrador.save(update_fields=['fallos_consecutivos', 'espera_hasta', 'actualizado_en'])
         return Respuesta(Resultado.CORRECTO, administrador=administrador)
+
+
+def activar_segundo_factor(administrador_id, secreto, codigo, ahora=None):
+    """Registro del segundo factor en el primer ingreso (RF-27). Comprueba el código contra el
+    `secreto` propuesto con las mismas reglas y el mismo contador de intentos que el inicio de
+    sesión; si es correcto lo guarda cifrado, lo activa y emite los 10 códigos de recuperación.
+    Nunca reemplaza un segundo factor ya activo (eso exige la sesión y la contraseña). Devuelve
+    (Respuesta, códigos en claro o None)."""
+    ahora = ahora or timezone.now()
+    with transaction.atomic():
+        administrador = Administrador.objects.select_for_update().get(pk=administrador_id)
+        if administrador.segundo_factor_activo:
+            return Respuesta(Resultado.INCORRECTO), None
+        if _en_espera(administrador, ahora):
+            return Respuesta(Resultado.EN_ESPERA, espera_hasta=administrador.espera_hasta), None
+        aceptado = _intervalo_aceptado(secreto, codigo, ahora)
+        if aceptado is None:
+            return _registrar_fallo(administrador, ahora), None
+        administrador.fijar_secreto_segundo_factor(secreto)
+        administrador.segundo_factor_activo = True
+        administrador.ultimo_intervalo_totp = aceptado
+        administrador.fallos_consecutivos = 0
+        administrador.espera_hasta = None
+        administrador.save()
+        codigos = _generar_codigos(administrador)
+        return Respuesta(Resultado.CORRECTO, administrador=administrador), codigos

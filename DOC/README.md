@@ -146,6 +146,8 @@ Carpetas transversales:
 | 2026-10-24 (zzd) | `actualizaciones/2026-10-23zzd_codigos-recuperacion/` | Códigos de recuperación (RF-27, CA-69): modelo, emisión con contraseña, verificación con límite de intentos compartido; 38 pruebas pasan en un PostgreSQL desechable |
 | 2026-10-24 | `actualizaciones/2026-10-24_vista-inicio-sesion/` | Vista de inicio de sesión de dos pasos (contraseña y luego TOTP o código de recuperación) y límites de sesión de 24 h y 1 h de inactividad (RF-26, RF-27, CA-48): 51 pruebas pasan en un PostgreSQL desechable; sin aviso por correo, auditoría ni comando de creación |
 | 2026-10-24 (a) | `actualizaciones/2026-10-24a_comandos-creacion-rescate/` | Comandos `crear_administrador` y `rescatar_segundo_factor` (RF-27): 56 pruebas pasan en un PostgreSQL desechable; sin registro del segundo factor en el primer ingreso, auditoría ni aviso por correo |
+| 2026-10-24 (b) | `actualizaciones/2026-10-24b_registro-segundo-factor/` | Pantalla de registro del segundo factor en el primer ingreso (RF-27, CA-69): clave y dirección otpauth, activación con TOTP, 10 códigos de recuperación mostrados una vez; 64 pruebas pasan en un PostgreSQL desechable; sin QR, aviso por correo ni auditoría |
+| 2026-10-24 (c) | `actualizaciones/2026-10-24c_lista-de-tareas-implementacion/` | Lista de tareas de la implementación (TAR-SGA-001) generada de la ERS, el plan, el DAS y la estrategia de pruebas: E0 detallada con lo hecho marcado; E1 a E6 con sus RF, RNF y CA |
 
 ## Control de versiones
 
