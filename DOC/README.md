@@ -159,6 +159,7 @@ Carpetas transversales:
 | 2026-10-24 (l) | `actualizaciones/2026-10-24l_pendientes-pequenos-e0/` | Pendientes pequeños de la E0: pantalla de códigos de recuperación nuevos (CA-69), pruebas de concurrencia del contador, todas las vistas exigen sesión, CSRF, sin secretos en los registros, `BigAutoField`, carpeta de documentos privados y `btree_gist`; 181 pruebas pasan, también con Python 3.14 en WSL |
 | 2026-10-24 (m) | `actualizaciones/2026-10-24m_revision-codigo-sin-cubrir-e0/` | Revisión del código sin cubrir de la E0 (condición 5 de terminado), una autorrevisión: cobertura de 94 % a 99 %, 15 pruebas nuevas, 196 en total; no sustituye la revisión por otra persona |
 | 2026-10-24 (n) | `actualizaciones/2026-10-24n_cierre-e0/` | Cierre de la entrega E0: 9 de 9 condiciones de terminado y 7 de 8 CA (CA-18 con su parte de contratos en USD diferida a la E2 por aceptación del solicitante); integración continua en verde según el solicitante; no empieza la E1 sin su autorización |
+| 2026-10-24 (o) | `actualizaciones/2026-10-24o_decisiones-abiertas-e0/` | Cinco decisiones del solicitante (decimales en colones, organización por comando, códigos de recuperación con Argon2id y sal por hallazgo del asistente, `DELETE` de esos códigos y clave Fernet sin copia) con su trazabilidad, implementadas; 211 pruebas pasan, también en WSL con Python 3.14; cambios pendientes en ERS v1.17, DAS v0.16 y modelo de datos v0.8 |
 
 ## Control de versiones
 

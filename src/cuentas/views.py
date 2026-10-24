@@ -71,6 +71,8 @@ def _auditar_fallo(request, respuesta, administrador=None):
     if respuesta.correcto or respuesta.resultado is Resultado.EN_ESPERA:
         return
     _auditar(request, 'inicio_sesion_fallido', administrador)
+    if respuesta.secreto_ilegible:
+        _auditar(request, 'segundo_factor_ilegible', administrador)
     if respuesta.aviso_cinco_fallos:
         _auditar(request, 'cinco_fallos_seguidos', administrador)
 

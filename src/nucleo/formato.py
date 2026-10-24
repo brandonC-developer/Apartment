@@ -32,8 +32,16 @@ def numero(valor, decimales=2):
     return f'{signo}{entera},{fraccion}' if decimales else f'{signo}{entera}'
 
 
-def moneda(valor, codigo, decimales=2):
-    """«₡180.000,50»; el signo negativo va antes del símbolo (propuesta del asistente)."""
+def moneda(valor, codigo, decimales=None):
+    """«₡180.000,50»; el signo negativo va antes del símbolo (propuesta del asistente).
+
+    Decimales (decisión del solicitante, 24-oct-2026): los colones **sin decimales si el importe es
+    entero y con dos si tiene céntimos** (así nunca se oculta un céntimo guardado), y los dólares
+    siempre con dos. Con `decimales` se fuerza una cantidad."""
+    if decimales is None:
+        cifra = _decimal(valor).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        entero = cifra == cifra.to_integral_value()
+        decimales = 0 if (codigo == 'CRC' and entero) else 2
     texto = numero(valor, decimales)
     signo, cifra = ('-', texto[1:]) if texto.startswith('-') else ('', texto)
     return f'{signo}{SIMBOLOS[codigo]}{cifra}'

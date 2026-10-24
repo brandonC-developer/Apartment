@@ -65,8 +65,7 @@ class CodigosNuevosTests(TestCase):
         r = self.client.post('/cuenta/codigos/', {'contrasena': 'mal'})
         self.assertContains(r, 'Contraseña incorrecta')
         self.assertEqual(CodigoRecuperacion.objects.count(), 10)
-        self.assertTrue(CodigoRecuperacion.objects.filter(
-            hash_codigo=autenticacion._hash_codigo(self.viejos[0])).exists())
+        self.assertTrue(autenticacion.codigo_disponible(self.admin, self.viejos[0]))
         self.admin.refresh_from_db()
         self.assertEqual(self.admin.fallos_consecutivos, 1)
         self.assertEqual(Auditoria.objects.filter(accion='inicio_sesion_fallido').count(), 1)
@@ -76,8 +75,7 @@ class CodigosNuevosTests(TestCase):
             self.client.post('/cuenta/codigos/', {'contrasena': 'mal'})
         r = self.client.post('/cuenta/codigos/', {'contrasena': CONTRASENA})
         self.assertContains(r, 'Espere')
-        self.assertTrue(CodigoRecuperacion.objects.filter(
-            hash_codigo=autenticacion._hash_codigo(self.viejos[0])).exists())
+        self.assertTrue(autenticacion.codigo_disponible(self.admin, self.viejos[0]))
         self.assertEqual(Auditoria.objects.filter(accion='cinco_fallos_seguidos').count(), 1)
 
     def test_deja_el_aviso_de_seguridad_en_la_auditoria_y_en_la_pantalla_de_inicio(self):

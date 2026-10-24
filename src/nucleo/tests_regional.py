@@ -34,8 +34,24 @@ class FormatoTests(SimpleTestCase):
     def test_moneda_con_el_simbolo_delante(self):
         self.assertEqual(formato.moneda(Decimal('180000.50'), 'CRC'), '₡180.000,50')
         self.assertEqual(formato.moneda(Decimal('300'), 'USD'), '$300,00')
-        self.assertEqual(formato.moneda(Decimal('-20000'), 'CRC'), '-₡20.000,00')
+        self.assertEqual(formato.moneda(Decimal('-20000.25'), 'CRC'), '-₡20.000,25')
         self.assertEqual(formato.moneda(Decimal('92903'), 'CRC', 0), '₡92.903')
+
+    def test_colones_sin_decimales_si_son_enteros_y_con_dos_si_tienen_centimos(self):
+        """Decisión del solicitante, 24-oct-2026: nunca se oculta un céntimo guardado."""
+        casos = [
+            (Decimal('180000'), '₡180.000'), (Decimal('180000.00'), '₡180.000'), (180000, '₡180.000'),
+            (Decimal('92903'), '₡92.903'), (Decimal('0'), '₡0'), (Decimal('-20000'), '-₡20.000'),
+            (Decimal('180000.50'), '₡180.000,50'), (Decimal('150000.01'), '₡150.000,01'),
+            (Decimal('150000.004'), '₡150.000'),  # menos de medio céntimo: se muestra entero
+            (Decimal('150000.005'), '₡150.000,01'),  # medio céntimo sube: ya hay céntimo y se muestra
+        ]
+        for valor, esperado in casos:
+            self.assertEqual(formato.moneda(valor, 'CRC'), esperado, valor)
+
+    def test_dolares_siempre_con_dos_decimales(self):
+        for valor, esperado in ((Decimal('300'), '$300,00'), (Decimal('300.5'), '$300,50'), (Decimal('0'), '$0,00')):
+            self.assertEqual(formato.moneda(valor, 'USD'), esperado)
 
     def test_porcentaje_con_coma(self):
         self.assertEqual(formato.porcentaje(Decimal('3.2')), '3,2 %')
@@ -67,10 +83,10 @@ class FormatoTests(SimpleTestCase):
 
     def test_filtros_de_plantilla(self):
         plantilla = Template(
-            '{% load formato %}{{ m|moneda:"CRC" }}|{{ p|porcentaje }}|{{ f|fecha }}|{{ n|numero:0 }}|{{ v|moneda }}')
+            '{% load formato %}{{ m|moneda:"CRC" }}|{{ p|porcentaje }}|{{ f|fecha }}|{{ n|numero:0 }}|{{ v|moneda }}|{{ e|moneda:"CRC" }}')
         salida = plantilla.render(Context({'m': Decimal('180000.5'), 'p': Decimal('3.2'),
-                                           'f': date(2026, 2, 5), 'n': Decimal('1234.5'), 'v': None}))
-        self.assertEqual(salida, '₡180.000,50|3,2 %|05/02/2026|1.235|')
+                                           'f': date(2026, 2, 5), 'n': Decimal('1234.5'), 'v': None, 'e': Decimal('180000')}))
+        self.assertEqual(salida, '₡180.000,50|3,2 %|05/02/2026|1.235||₡180.000')
 
 
 class ConstantesTests(SimpleTestCase):

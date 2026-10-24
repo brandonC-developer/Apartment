@@ -29,7 +29,7 @@ SIN_VALOR = CAMPOS_PERSONALES | CAMPOS_SECRETOS
 # Eventos de seguridad de la cuenta que la pantalla de inicio destaca (CA-68, CA-69, CA-70, HI-01).
 EVENTOS_DE_SEGURIDAD = (
     'cinco_fallos_seguidos', 'codigo_recuperacion_usado', 'codigos_emitidos',
-    'segundo_factor_registrado', 'segundo_factor_rescatado',
+    'segundo_factor_registrado', 'segundo_factor_rescatado', 'segundo_factor_ilegible',
 )
 ACCIONES_DE_AUTENTICACION = (
     'inicio_sesion', 'inicio_sesion_fallido', 'cierre_sesion', 'cuenta_creada',

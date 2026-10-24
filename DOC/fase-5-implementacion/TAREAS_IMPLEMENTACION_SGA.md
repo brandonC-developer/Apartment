@@ -48,7 +48,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Secreto del segundo factor cifrado con Fernet/MultiFernet, clave en `/etc/sga/clave_cifrado` (34fb5e9; zzb)
 - [x] TOTP con pyotp: 6 dígitos, intervalo de 30 s, tolerancia de ±1 intervalo, sin reutilizar un código aceptado (34fb5e9; CA-69)
 - [x] Límite de intentos fallidos compartido por contraseña, TOTP y códigos de recuperación: 5 fallos, espera de 1 min que se duplica hasta 1 h, sin bloqueo permanente, el TOTP correcto reinicia el contador (34fb5e9; CA-68)
-- [x] 10 códigos de recuperación de un solo uso, con hash, emitir nuevos exige la contraseña y borra los anteriores (2026-10-24, 3d2c230; CA-69)
+- [x] 10 códigos de recuperación de un solo uso, **guardados con Argon2id y sal propia por código** (NIST SP 800-63B; decisión del solicitante del 24-oct-2026, actualización 2026-10-24o); emitir nuevos exige la contraseña y **borra** los anteriores (`DELETE` solo en esa tabla, excepción decidida al ADR-027) (34fb5e9 y 3d2c230, corregido en la actualización 2026-10-24o; CA-69)
 - [x] Vista de inicio de sesión en dos pasos: la contraseña sola no inicia sesión (2026-10-24, 1ee8ab6; RF-26, RNF-01)
 - [x] Sesión con cierre a las 24 h y por inactividad de 1 h (1ee8ab6; CA-48)
 - [x] Comandos de servidor `crear_administrador` y `rescatar_segundo_factor` (2026-10-24, 26e7895; CA-70)
@@ -71,8 +71,8 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Dirección IP de origen detrás de Nginx: se lee `X-Forwarded-For`, que Nginx **sustituye** por `$remote_addr` (ADR-032 d13); comprobado en WSL enviando una IP falsificada: la auditoría guarda la real (127.0.0.1)
 
 ### D. Organización y configuración regional (RF-33, RNF-12, RNF-17; CA-18)
-- [~] Entidad `nucleo.Organizacion` de una sola fila (restricción de la tabla y migración de datos) con moneda CRC y zona `America/Costa_Rica` como predeterminadas, zona validada contra IANA, hora del proceso diario 07:00 y la identidad del responsable (RF-33; actualización 2026-10-24f). **Solo los atributos que usa la E0**; los demás del MDD (correos, anticipaciones, retención, días de gracia) llegan con la entrega que los usa. Sin pantalla de edición: solo el servicio `organizacion.actualizar`, con auditoría
-- [x] Formato propio (`nucleo/formato.py` y filtros de plantilla): fechas dd/mm/aaaa, números con punto de miles y coma decimal, símbolo delante, porcentajes con coma; lectura estricta de números y fechas; todo con `Decimal` (RNF-12). **Pendiente de decidir:** cuántos decimales se muestran en colones
+- [x] Entidad `nucleo.Organizacion` de una sola fila (restricción de la tabla y migración de datos) con moneda CRC y zona `America/Costa_Rica` como predeterminadas, zona validada contra IANA, hora del proceso diario 07:00 y la identidad del responsable (RF-33). **Se edita con el comando `configurar_organizacion` (decisión del solicitante, 24-oct-2026), con auditoría; las pantallas web llegan solo con el RF que las pida** (RF-21 en la E4). Solo los atributos que usa la E0
+- [x] Formato propio (`nucleo/formato.py` y filtros de plantilla): fechas dd/mm/aaaa, números con punto de miles y coma decimal, símbolo delante, porcentajes con coma; lectura estricta; todo con `Decimal` (RNF-12). **Colones sin decimales si el importe es entero y con dos si tiene céntimos; dólares siempre con dos** (decisión del solicitante, 24-oct-2026)
 - [x] Marcas temporales en UTC y aritmética decimal exacta (`float` rechazado en el formato) (RNF-17); `USE_TZ = True`; la zona de la organización se activa en cada petición (`ZonaHorariaDeLaOrganizacion`)
 - [~] Los registros históricos no cambian al modificar la configuración regional: probado con la auditoría (instante intacto, solo cambia la presentación) (CA-18); la parte de contratos en USD se completa en la E2
 
@@ -104,7 +104,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Respaldo diario `respaldo/respaldar.sh`: `pg_dump` en formato personalizado, `pg_dumpall --globals-only --no-role-passwords` y la carpeta de documentos, cada uno cifrado por tubería (nada en claro en el disco) a una carpeta local, con sumas y retención de 35 días (ADR-024, ADR-032 d9; actualización 2026-10-24i)
 - [x] Restauración `respaldo/restaurar.sh` probada en WSL con `peer` y con las unidades de systemd: respaldo por el servicio real y restauración completa de la base y de los documentos con la clave privada (criterio de salida; RNF-09). **Pendiente: medir el tiempo frente al RTO de 24 h con datos reales (E6)**
 - [x] Se restaura con la clave correcta y falla con otra, sin dejar una base a medias (EPP, sección 7)
-- [~] Guía de las claves en `respaldo/README.md`: la `age` se genera fuera del servidor y se guarda en dos lugares fuera de línea; **propuesta** para la Fernet: no va en el respaldo y su pérdida se resuelve con `rescatar_segundo_factor`. Falta que decidas si la guardas también fuera de línea
+- [x] Guía de las claves en `respaldo/README.md`: la `age` se genera fuera del servidor y se guarda en dos lugares fuera de línea. **Clave Fernet: sin copia; si se pierde, los códigos de recuperación siguen sirviendo y `rescatar_segundo_factor` registra el autenticador de nuevo** (decisión del solicitante, 24-oct-2026); un secreto ilegible ya es un fallo con aviso y no un error 500
 - [x] Marca `ultimo_respaldo_correcto` escrita solo al terminar todo, de forma atómica; un fallo en cualquier parte no la toca (ADR-032 d15; la subida a Spaces antes de la marca y la vigilancia, RF-53, llegan en la E6 y la E4)
 
 ### H. Integración continua (ADR-025, ADR-032 d10)

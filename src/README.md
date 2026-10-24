@@ -71,3 +71,9 @@ Pantalla `/cuenta/codigos/` (códigos de recuperación nuevos), ajuste `RAIZ_DOC
 
 ## Revisión del código sin cubrir (actualización 2026-10-24m)
 Para medir la cobertura: instalar `coverage` en el entorno virtual (no está en `requirements.txt`) y `coverage run --branch --source=cuentas,nucleo,sga manage.py test`. 196 pruebas; los ajustes de `settings.py` se prueban en un proceso aparte, que `coverage` no mide.
+
+## Decisiones del 24-oct-2026 (actualización 2026-10-24o)
+- `python manage.py configurar_organizacion` muestra o cambia el responsable, la zona y la hora del proceso diario (sin pantalla web).
+- Los códigos de recuperación se guardan con Argon2id y sal (`CODIGOS_ARGON2`); tras la migración `cuentas/0004` hay que emitir códigos nuevos desde `/cuenta/codigos/`.
+- Colones: sin decimales si el importe es entero y con dos si tiene céntimos; dólares con dos.
+- 211 pruebas en total.

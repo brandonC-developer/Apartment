@@ -6,6 +6,7 @@ o a la decisión que lo origina. Lo marcado «propuesta» no lo ha decidido el s
 Los secretos nunca van en este archivo ni en el repositorio (ADR-032, decisión 6).
 """
 import os
+import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -106,6 +107,14 @@ DATABASES = {
 # código, sin URL pública; solo se sirven por una vista con sesión (RNF-03, RNF-14, ADR-003). La usan
 # las entregas E1 y E2; el respaldo y Gunicorn ya la conocen (despliegue/, respaldo/).
 RAIZ_DOCUMENTOS = Path(os.environ.get('SGA_DOCUMENTOS', '/var/lib/sga/documentos'))
+
+# Hash de los códigos de recuperación: Argon2id con sal por código (NIST SP 800-63B: un secreto de menos
+# de 112 bits se guarda con sal y un esquema de hash de contraseñas). Parámetros mínimos de OWASP
+# (19 MiB, 2 iteraciones, 1 hilo). Solo en las pruebas se usan parámetros baratos para no tardar.
+CODIGOS_ARGON2 = (
+    {'time_cost': 1, 'memory_cost': 1024, 'parallelism': 1} if 'test' in sys.argv
+    else {'time_cost': 2, 'memory_cost': 19456, 'parallelism': 1}
+)
 
 # Roles de PostgreSQL (ADR-027): dueño (solo migraciones), aplicación y respaldos. Los nombres son
 # propuesta del asistente; no son secretos. Ver db/roles.sql y `manage.py aplicar_privilegios`.

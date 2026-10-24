@@ -21,8 +21,9 @@ PRIVILEGIOS = {
     # Sin DELETE: la cuenta única no se borra. UPDATE por el contador de intentos, el último
     # intervalo TOTP, el token de registro y last_login.
     'cuentas_administrador': {'tabla': ('SELECT', 'INSERT', 'UPDATE')},
-    # DELETE porque emitir códigos nuevos y el rescate borran los anteriores; esto se aparta de la
-    # propuesta del ADR-027 (solo UPDATE de usado_en) y consta en la actualización 2026-10-24g.
+    # DELETE porque emitir códigos nuevos y el rescate borran los anteriores. Excepción al ADR-027
+    # (que proponía solo UPDATE de usado_en), DECIDIDA por el solicitante el 24-oct-2026 (actualización
+    # 2026-10-24o): no es historia del negocio y no da más poder que marcarlos todos como usados.
     # Un código usado solo puede cambiar su marca de uso.
     'cuentas_codigorecuperacion': {'tabla': ('SELECT', 'INSERT', 'DELETE'), 'columnas': {'UPDATE': ('usado_en',)}},
     # --- Django

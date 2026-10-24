@@ -12,6 +12,10 @@ from datetime import timedelta
 from enum import Enum
 
 import pyotp
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerifyMismatchError
+from cryptography.fernet import InvalidToken
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.db import transaction
 from django.utils import timezone
@@ -36,7 +40,9 @@ class Respuesta:
     """Resultado de un intento. `aviso_cinco_fallos` es verdadero solo en el quinto fallo
     seguido: quien llama debe enviar el aviso de seguridad (CA-68)."""
 
-    def __init__(self, resultado, administrador=None, aviso_cinco_fallos=False, espera_hasta=None):
+    def __init__(self, resultado, administrador=None, aviso_cinco_fallos=False, espera_hasta=None,
+                 secreto_ilegible=False):
+        self.secreto_ilegible = secreto_ilegible
         self.resultado = resultado
         self.administrador = administrador
         self.aviso_cinco_fallos = aviso_cinco_fallos
@@ -109,7 +115,16 @@ def verificar_totp(administrador_id, codigo, ahora=None):
             return Respuesta(Resultado.EN_ESPERA, espera_hasta=administrador.espera_hasta)
         if not administrador.secreto_segundo_factor:
             return _registrar_fallo(administrador, ahora)
-        aceptado = _intervalo_aceptado(administrador.secreto_segundo_factor_en_claro(), codigo, ahora)
+        try:
+            secreto = administrador.secreto_segundo_factor_en_claro()
+        except InvalidToken:
+            # La clave de cifrado cambió o se perdió (decisión del solicitante, 24-oct-2026): el
+            # secreto guardado no se puede leer. Cuenta como fallo y la persona entra con un código
+            # de recuperación y se resuelve con `rescatar_segundo_factor`.
+            respuesta = _registrar_fallo(administrador, ahora)
+            respuesta.secreto_ilegible = True
+            return respuesta
+        aceptado = _intervalo_aceptado(secreto, codigo, ahora)
         ultimo = administrador.ultimo_intervalo_totp
         if aceptado is None or (ultimo is not None and aceptado <= ultimo):
             return _registrar_fallo(administrador, ahora)
@@ -133,8 +148,29 @@ def _normalizar_codigo(codigo):
     return ''.join((codigo or '').upper().split()).replace('-', '')
 
 
+def _hasher():
+    return PasswordHasher(**settings.CODIGOS_ARGON2)
+
+
 def _hash_codigo(codigo):
-    return hashlib.sha256(_normalizar_codigo(codigo).encode('utf-8')).hexdigest()
+    """Argon2id con sal propia por código (decisión del solicitante, 24-oct-2026; NIST SP 800-63B:
+    un secreto de menos de 112 bits va con sal y un esquema de hash de contraseñas). El hash lleva
+    sus parámetros y su sal, por eso no se puede buscar por él: se verifica contra cada código."""
+    return _hasher().hash(_normalizar_codigo(codigo))
+
+
+def _coincide(hash_guardado, codigo):
+    try:
+        return _hasher().verify(hash_guardado, _normalizar_codigo(codigo))
+    except (VerifyMismatchError, InvalidHashError):
+        return False
+
+
+def codigo_disponible(administrador, codigo):
+    """¿Hay un código sin usar que coincida? (para pruebas y comprobaciones, sin consumirlo)"""
+    return any(
+        _coincide(h, codigo) for h in CodigoRecuperacion.objects.filter(
+            administrador=administrador, usado_en__isnull=True).values_list('hash_codigo', flat=True))
 
 
 def emitir_codigos_recuperacion(administrador, contrasena):
@@ -168,10 +204,13 @@ def verificar_codigo_recuperacion(administrador_id, codigo, ahora=None):
         administrador = Administrador.objects.select_for_update().get(pk=administrador_id)
         if _en_espera(administrador, ahora):
             return Respuesta(Resultado.EN_ESPERA, espera_hasta=administrador.espera_hasta)
-        disponible = CodigoRecuperacion.objects.select_for_update().filter(
-            administrador=administrador, usado_en__isnull=True,
-            hash_codigo=_hash_codigo(codigo),
-        ).first()
+        # Se verifican todos los códigos sin usar, sin cortar en el primero que coincide, para que el
+        # tiempo no revele cuál era (hay a lo sumo 10).
+        disponible = None
+        for candidato in CodigoRecuperacion.objects.select_for_update().filter(
+                administrador=administrador, usado_en__isnull=True):
+            if _coincide(candidato.hash_codigo, codigo) and disponible is None:
+                disponible = candidato
         if disponible is None:
             return _registrar_fallo(administrador, ahora)
         disponible.usado_en = ahora
