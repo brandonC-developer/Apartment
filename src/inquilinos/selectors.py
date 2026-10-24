@@ -38,15 +38,30 @@ def texto_vigente():
     return TextoConsentimiento.objects.order_by('-version').first()
 
 
+def consentimiento_vigente(inquilino):
+    """El consentimiento sin revocar más reciente, o None (RF-39)."""
+    return inquilino.consentimientos.filter(revocado_en__isnull=True).order_by('-otorgado_en', '-id').first()
+
+
+def tiene_consentimiento_vigente(inquilino):
+    """¿Se pueden guardar fotografías y, desde la E2, crear contratos nuevos con este inquilino? (RF-39)"""
+    return inquilino.consentimientos.filter(revocado_en__isnull=True).exists()
+
+
 def obtener_ficha(inquilino_id):
     """Todo lo de un inquilino que existe en la E1 (RF-05): datos, consentimiento y fotografías activas.
     El contrato vigente, las obligaciones y el historial los agregan la E2 y la E3."""
     inquilino = Inquilino.objects.get(pk=inquilino_id)
     documentos = {d.cara: d for d in inquilino.documentos.filter(eliminado_en__isnull=True)}
     consentimientos = list(inquilino.consentimientos.select_related('texto'))
+    vigente = next((c for c in consentimientos if c.revocado_en is None), None)
     return {
         'inquilino': inquilino,
         'consentimiento': consentimientos[0] if consentimientos else None,
+        'consentimiento_vigente': vigente,
+        # Aviso en la ficha cuando el consentimiento se revocó y no hay otro vigente (RF-39, CA-67).
+        'consentimiento_revocado': vigente is None and any(c.revocado_en for c in consentimientos),
+        'puede_crear_contratos': vigente is not None,
         'consentimientos': consentimientos,
         'frente': documentos.get(DocumentoIdentidad.FRENTE),
         'reverso': documentos.get(DocumentoIdentidad.REVERSO),

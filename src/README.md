@@ -83,3 +83,6 @@ Aplicación `inquilinos` (inquilino, texto y consentimiento, fotografía del doc
 
 ## E1, grupo B: servicios de inquilinos (actualización 2026-10-24s)
 `inquilinos/services.py` (escribe), `selectors.py` (lee) y `bloqueos.py` (punto de extensión para el bloqueo de desactivar). Aún sin pantallas ni rutas. 273 pruebas en total.
+
+## E1, grupo C: consentimiento (actualización 2026-10-24t)
+Antes de usar el sistema con un inquilino: `python manage.py configurar_organizacion --nombre-responsable ... --direccion-responsable ...` y luego `python manage.py cargar_texto_consentimiento`. El texto es un **borrador sin validar por abogado**; el texto definitivo se carga con `--archivo ... --validado`. 297 pruebas en total.

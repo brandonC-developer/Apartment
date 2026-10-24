@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from nucleo import auditoria
 
-from . import bloqueos
+from . import bloqueos, ganchos
 from .models import Consentimiento, Inquilino, TextoConsentimiento
 
 CAMPOS_EDITABLES = ('nombre_completo', 'tipo_documento', 'numero_documento', 'telefono', 'correo')
@@ -214,3 +214,45 @@ def reactivar_inquilino(inquilino_id, *, actor, ip_origen=None, confirmar_duplic
         'inquilino_reactivado', 'inquilino', registro_id=inquilino.pk, actor=actor, ip_origen=ip_origen,
         cambios={'activo': (False, True)}, ahora=ahora)
     return inquilino
+
+
+@transaction.atomic
+def crear_version_texto(contenido, *, actor, ip_origen=None, borrador=True, ahora=None):
+    """Guarda el texto informativo como la versión siguiente (RF-39). Las anteriores no se tocan. Si el contenido
+    es idéntico al de la última versión no crea otra y devuelve esa. `borrador` queda verdadero hasta que un abogado
+    valide el texto (decisión del solicitante, DP-21)."""
+    ahora = ahora or timezone.now()
+    contenido = (contenido or '').strip()
+    if not contenido:
+        raise ErrorDeValidacion({'contenido': ['El texto no puede estar vacío.']})
+    ultima = TextoConsentimiento.objects.select_for_update().order_by('-version').first()
+    if ultima is not None and ultima.contenido == contenido and ultima.borrador == borrador:
+        return ultima, False
+    texto = TextoConsentimiento.objects.create(
+        version=(ultima.version + 1) if ultima else 1, contenido=contenido, borrador=borrador, vigente_desde=ahora)
+    auditoria.registrar(
+        'texto_consentimiento_cargado', 'texto_consentimiento', registro_id=texto.pk, actor=actor,
+        ip_origen=ip_origen, cambios={'version': (None, texto.version), 'borrador': (None, borrador)}, ahora=ahora)
+    return texto, True
+
+
+@transaction.atomic
+def revocar_consentimiento(inquilino_id, *, actor, ip_origen=None, ahora=None):
+    """Registra la revocación del consentimiento vigente, sin efecto retroactivo (RF-39, OL-13): no borra ni
+    cambia ningún dato ni fotografía. Después el inquilino queda con aviso en la ficha, sin consentimiento vigente
+    (la E2 no deja crearle contratos nuevos) y se ejecutan los ganchos registrados, por ejemplo el que abre de
+    oficio la solicitud de supresión (E5)."""
+    ahora = ahora or timezone.now()
+    inquilino = Inquilino.objects.select_for_update().get(pk=inquilino_id)
+    vigente = inquilino.consentimientos.filter(revocado_en__isnull=True).order_by('-otorgado_en', '-id').first()
+    if vigente is None:
+        raise ErrorDeValidacion({'consentimiento': ['El inquilino no tiene un consentimiento vigente que revocar.']})
+    if ahora < vigente.otorgado_en:
+        raise ErrorDeValidacion({'consentimiento': ['La revocación no puede ser anterior al consentimiento.']})
+    vigente.revocado_en = ahora
+    vigente.save(update_fields=['revocado_en'])
+    auditoria.registrar(
+        'consentimiento_revocado', 'inquilino', registro_id=inquilino.pk, actor=actor, ip_origen=ip_origen,
+        cambios={'revocado': (False, True)}, ahora=ahora)
+    ganchos.ejecutar_al_revocar(vigente)
+    return vigente

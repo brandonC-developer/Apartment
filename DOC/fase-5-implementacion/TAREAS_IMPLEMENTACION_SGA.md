@@ -190,8 +190,8 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Desactivar y reactivar (RF-04, CA-29) con un **punto de extensión** (`inquilinos.bloqueos`): la E1 lo prueba con comprobaciones falsas; el bloqueo real por contrato vigente se verifica en la E2 y el de saldos pendientes en la E3. Desactivar no borra nada del historial
 
 **C. Consentimiento** (RF-39, OL-13; DP-21 abierta)
-- [ ] Texto informativo con los ocho puntos del art. 5 de la Ley 8968 como versión inmutable (`TextoConsentimiento`), **borrador del asistente que el sistema muestra como «sin validar por abogado»** (decisión 1); el consentimiento apunta a la versión mostrada, con medio y fecha (CA-67, primera parte)
-- [ ] Registrar la revocación sin efecto retroactivo y mostrar el aviso en la ficha (CA-67, segunda parte). El rechazo de contratos nuevos va en la E2 (HI-04) y la solicitud de supresión de oficio, en la E5 (RF-40)
+- [x] Texto informativo con los ocho puntos del art. 5 de la Ley 8968 como versión inmutable (`TextoConsentimiento`), **borrador del asistente que se marca «sin validar por abogado»** en el propio texto y con el campo `borrador` (decisión 1); se carga con `manage.py cargar_texto_consentimiento` desde la identidad del responsable (que debe estar definida); el consentimiento apunta a la versión mostrada, con medio y fecha, y la ficha muestra el texto exacto de esa versión (CA-67, primera parte; actualización 2026-10-24t). **El texto no es asesoría legal y espera al abogado (DP-21)**
+- [x] Registrar la revocación sin efecto retroactivo (`services.revocar_consentimiento`) y mostrar el aviso en la ficha (`consentimiento_revocado`, `puede_crear_contratos`) (CA-67, segunda parte). Los ganchos `inquilinos.ganchos.al_revocar` permiten que la E5 abra de oficio la solicitud de supresión y la E2 consulta `tiene_consentimiento_vigente`; **el rechazo de contratos nuevos va en la E2 (HI-04) y la solicitud de supresión, en la E5 (RF-40)**
 
 **D. Fotografías del documento: servidor** (RF-02, RF-45, ADR-003; CA-74, CA-83, CA-11, CA-26)
 - [ ] Almacenamiento privado fuera de la raíz web (`RAIZ_DOCUMENTOS`), nombre aleatorio (UUID) y permisos mínimos
