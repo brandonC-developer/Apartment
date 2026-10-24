@@ -40,7 +40,7 @@ Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional proteg
 `crear_administrador` y `rescatar_segundo_factor` imprimen un token de un solo uso (24 h) que la pantalla de registro pide antes de mostrar la clave. 78 pruebas en total.
 
 ## Auditoría base (actualización 2026-10-24e)
-`nucleo.Auditoria` (solo inserción), `nucleo.auditoria.registrar` y la pantalla `/auditoria/`; los eventos de autenticación y de la cuenta se registran con la IP de origen. Detrás de Nginx hace falta `proxy_set_header X-Real-IP $remote_addr;` (la configuración lee `X-Real-IP` cuando no es depuración). 100 pruebas en total.
+`nucleo.Auditoria` (solo inserción), `nucleo.auditoria.registrar` y la pantalla `/auditoria/`; los eventos de autenticación y de la cuenta se registran con la IP de origen. Detrás de Nginx hace falta `proxy_set_header X-Forwarded-For $remote_addr;`, que sustituye la del cliente (la configuración lee `X-Forwarded-For` cuando no es depuración; así lo corrigió la actualización 2026-10-24j). 100 pruebas en total.
 
 ## Organización y configuración regional (actualización 2026-10-24f)
 `nucleo.Organizacion` (fila única), `nucleo/formato.py` (formato propio; en plantillas, `{% load formato %}`) y el middleware de la zona horaria. 121 pruebas en total.
@@ -55,3 +55,13 @@ Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional proteg
 
 ## Respaldo cifrado y restauración (actualización 2026-10-24i)
 `respaldo/respaldar.sh`, `respaldo/restaurar.sh` y su guía en `respaldo/README.md`. 153 pruebas en total; las del respaldo exigen `age` y un `pg_dump` de la misma versión mayor que el servidor, y se omiten si falta algo.
+
+## Despliegue en la etapa A: WSL (actualización 2026-10-24j)
+La distribución se llama `Ubuntu` (Ubuntu 26.04.1). Todo se hace con archivos de `despliegue/`, como root dentro de WSL:
+```
+wsl -d Ubuntu -u root -- bash /mnt/e/Proyectos/Portafolio/Apartment/src/despliegue/desplegar.sh
+wsl -d Ubuntu -u root -- bash /mnt/e/Proyectos/Portafolio/Apartment/src/despliegue/verificar.sh
+wsl -d Ubuntu -u root -- bash /mnt/e/Proyectos/Portafolio/Apartment/src/despliegue/verificar_respaldo.sh
+wsl -d Ubuntu -u root -- bash /mnt/e/Proyectos/Portafolio/Apartment/src/despliegue/probar.sh
+```
+`desplegar.sh` es idempotente y acepta `--clave-publica-respaldo ARCHIVO` y `--nombre-sitio NOMBRE`. El sitio queda en `https://localhost/` (certificado autofirmado: el navegador avisará). Para crear la cuenta: `runuser -u sga_app -- env $(grep -v "^#" /etc/sga/entorno | xargs) /opt/sga/venv/bin/python /opt/sga/src/manage.py crear_administrador --usuario NOMBRE`. Los scripts `verificar*.sh` borran los datos de prueba que crean; **no los ejecute sobre datos que quiera conservar**. 157 pruebas en total.

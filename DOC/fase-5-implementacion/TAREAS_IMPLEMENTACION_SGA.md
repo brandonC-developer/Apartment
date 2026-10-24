@@ -68,7 +68,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Pantalla `/auditoria/` de solo lectura con filtros por fecha, tipo de evento, entidad y actor, de 50 en 50; consultarla no genera registro (CA-71)
 - [x] Guardas en el modelo (error claro al editar o borrar) y bloqueo de `update()` y `delete()` masivos; sin sitio de administración (ADR-027); la defensa real del rol de PostgreSQL está en la sección E (actualización 2026-10-24g)
 - [x] La auditoría no se borra automáticamente: ningún código la borra (RF-28; plazo de conservación en DP-18)
-- [~] Dirección IP de origen detrás de Nginx: se lee la cabecera `X-Real-IP` solo si `IP_ORIGEN_CABECERA` la declara de confianza (fuera de depuración) y se descarta lo que no sea una IP; **falta configurar Nginx con `proxy_set_header X-Real-IP $remote_addr;` y comprobarlo al desplegar** (propuesta del asistente)
+- [x] Dirección IP de origen detrás de Nginx: se lee `X-Forwarded-For`, que Nginx **sustituye** por `$remote_addr` (ADR-032 d13); comprobado en WSL enviando una IP falsificada: la auditoría guarda la real (127.0.0.1)
 
 ### D. Organización y configuración regional (RF-33, RNF-12, RNF-17; CA-18)
 - [~] Entidad `nucleo.Organizacion` de una sola fila (restricción de la tabla y migración de datos) con moneda CRC y zona `America/Costa_Rica` como predeterminadas, zona validada contra IANA, hora del proceso diario 07:00 y la identidad del responsable (RF-33; actualización 2026-10-24f). **Solo los atributos que usa la E0**; los demás del MDD (correos, anticipaciones, retención, días de gracia) llegan con la entrega que los usa. Sin pantalla de edición: solo el servicio `organizacion.actualizar`, con auditoría
@@ -77,28 +77,32 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [~] Los registros históricos no cambian al modificar la configuración regional: probado con la auditoría (instante intacto, solo cambia la presentación) (CA-18); la parte de contratos en USD se completa en la E2
 
 ### E. Base de datos: roles, privilegios y esquema (ADR-027, ADR-029, ADR-031; condición 4)
-- [~] Tres roles de PostgreSQL con `LOGIN`, sin contraseña, sin superusuario: dueño, aplicación y respaldos (`db/roles.sql`, idempotente, probado con `psql`) (ADR-027, ADR-032 d12). **Falta la autenticación `peer` real** (`pg_hba.conf`, usuarios del sistema), que se prueba en WSL
+- [x] Tres roles de PostgreSQL con `LOGIN`, sin contraseña, sin superusuario: dueño, aplicación y respaldos (`db/roles.sql`), con autenticación `peer` real en WSL: cada rol entra solo desde el usuario del sistema del mismo nombre (ADR-027, ADR-032 d12; actualización 2026-10-24j)
 - [x] Archivo de privilegios idempotente `sga/privilegios.py` + `manage.py aplicar_privilegios`, que el rol dueño ejecuta tras cada `migrate`; parte de cero (`REVOKE ALL`) y concede solo lo que consta (ADR-031 d3; el formato es propuesta del asistente)
 - [x] Prueba que compara las tablas reales con el archivo y exige una entrada por tabla (ADR-031 d3)
 - [x] Prueba de que el rol de la aplicación es rechazado en `UPDATE`, `DELETE` y `TRUNCATE` sobre la auditoría, incluso con SQL directo (ADR-027); queda por repetir en las tablas de movimientos, ajustes y accesos cuando existan (E1 y E3)
 - [ ] Extensión `btree_gist` en una migración (ADR-031 d1; la usa la E2)
-- [~] `CONNECT` y `TEMPORARY` revocados a `PUBLIC` y concedidos a los tres roles (probado); **falta `listen_addresses = ''` y el resto del servidor, que se configura en WSL**
+- [x] `CONNECT` y `TEMPORARY` revocados a `PUBLIC` y concedidos a los tres roles; `listen_addresses = ''` (sin puerto TCP), socket 0770 con el grupo `sga_bd` y `pg_hba.conf` con solo registros `local`+`peer`, comprobados en WSL
 
 ### F. Despliegue en la etapa A: WSL 2 con Ubuntu-26.04, sin contenedores (plan, sección 5.1; ADR-023)
-- [ ] Instalar `Ubuntu-26.04` en WSL 2 (`wsl --install -d Ubuntu-26.04`); comprobar que systemd viene activo y que existen los paquetes de PostgreSQL 18 (no verificado)
-- [ ] Python 3.14 del sistema y entorno virtual con versiones fijadas (plan, sección 5.2)
-- [ ] PostgreSQL 18 con los roles y `peer` dentro de WSL
-- [ ] Gunicorn con `gunicorn.socket` de systemd, 3 workers `sync`, `timeout` 30 s; probar `forwarded_allow_ips` (ADR-032 d13)
-- [ ] Nginx como proxy inverso con HTTPS autofirmado, TLS 1.3 y 1.2 (ADR-032 d5; plan 5.1)
-- [ ] Usuarios de sistema estáticos para la aplicación y los respaldos; unidades con `NoNewPrivileges` y `ProtectSystem=strict` (ADR-032 d4)
-- [ ] Registros de Nginx con formato propio sin cadena de consulta y Gunicorn sin registro de acceso; rotación diaria de 14 días (ADR-032 d17)
-- [ ] Despliegue repetible con un solo comando (criterio de salida)
-- [~] `manage.py check --deploy` sin avisos distintos de HSTS: pasa en local con `SGA_HOSTS_PERMITIDOS` definido (sin él da el aviso W020); falta la corrida en el flujo
+- [x] Distribución instalada: **se llama `Ubuntu`** (no `Ubuntu-26.04`), es Ubuntu 26.04.1 LTS con systemd activo, Python 3.14.4, PostgreSQL 18.6 y Nginx 1.28.3 (2026-10-24)
+- [x] Python 3.14.4 del sistema y entorno virtual en `/opt/sga/venv`; **las cinco dependencias fijadas más Gunicorn 26.2.0 se instalan y funcionan con 3.14** (157 pruebas pasan)
+- [x] PostgreSQL 18.6 con los roles y `peer` dentro de WSL, solo por el socket Unix
+- [x] Gunicorn con `gunicorn.socket` de systemd, 3 workers `sync`, `timeout` 30 s, `max_requests` 1 000 con jitter 100; **`forwarded_allow_ips` por defecto basta**: Django detecta HTTPS detrás de Nginx (ADR-032 d13, pendiente declarado)
+- [x] Nginx como proxy inverso con HTTPS autofirmado (EC P-256, 825 días), TLS 1.3 y 1.2, redirección 80→443, `Host` desconocido sin respuesta (444), cabeceras `X-Forwarded-*` sustituidas, `server_tokens off` por servidor (ADR-032 d5, d13)
+- [x] Usuarios de sistema estáticos (`sga_dueno`, `sga_app`, `sga_respaldos`) y unidades endurecidas; `systemd-analyze security`: Gunicorn **1.5 OK**, respaldo **3.0 OK** (antes 5.5 y 7.7) (ADR-032 d4)
+- [x] Registros de Nginx con formato propio sin cadena de consulta, Gunicorn sin registro de acceso (errores a journald) y rotación diaria de 14 días (la trae el `logrotate` de Ubuntu, verificado) (ADR-032 d17)
+- [x] Despliegue repetible con un solo comando, idempotente: `desplegar.sh` (se ejecutó más de seis veces seguidas); `verificar.sh`, `verificar_http.py`, `verificar_respaldo.sh` y `probar.sh` lo comprueban (criterio de salida)
+- [x] Límite de solicitudes en Nginx: zona de autenticación (6 por minuto, ráfaga de 6) y zona general (10 por segundo, ráfaga de 30), respuesta 429 (ADR-032 d11); probado con una ráfaga real. `limit_req_dry_run` queda disponible para las pruebas de la etapa B
+- [x] Política de contenido (CSP) fija y estricta en modo informe, `nosniff`, `X-Frame-Options` y `Referrer-Policy` (ADR-032 d5 y d16); sin scripts ni estilos en línea, con una prueba que lo exige
+- [ ] Pasar la CSP de informe a obligatoria cuando no haya violaciones, y activar HSTS por etapas (ADR-032 d5, d16): etapa B
+- [ ] Cifrados de TLS 1.2 fijados con el generador vigente y escáner externo (ADR-032 d16): etapa B
+- [x] `manage.py check --deploy` sin avisos distintos de HSTS, también en WSL con Python 3.14 (ADR-025)
 
 ### G. Respaldo cifrado y restauración (ADR-024, ADR-032 d9; RNF-09)
 - [x] Herramienta de cifrado: `age` a clave pública, como fija el ADR-032 d9; se usó la versión 1.3.2 (2026-08-29) en las pruebas locales, descargada de las publicaciones oficiales de FiloSottile/age sin verificar su prueba de transparencia (`.proof`)
 - [x] Respaldo diario `respaldo/respaldar.sh`: `pg_dump` en formato personalizado, `pg_dumpall --globals-only --no-role-passwords` y la carpeta de documentos, cada uno cifrado por tubería (nada en claro en el disco) a una carpeta local, con sumas y retención de 35 días (ADR-024, ADR-032 d9; actualización 2026-10-24i)
-- [~] Restauración `respaldo/restaurar.sh` probada con una base de pruebas completa y con documentos (criterio de salida; RNF-09): sumas, descifrado, base nueva, carpeta vacía y consultas de cordura. **Falta repetirla en WSL con `peer` y medir el tiempo**
+- [x] Restauración `respaldo/restaurar.sh` probada en WSL con `peer` y con las unidades de systemd: respaldo por el servicio real y restauración completa de la base y de los documentos con la clave privada (criterio de salida; RNF-09). **Pendiente: medir el tiempo frente al RTO de 24 h con datos reales (E6)**
 - [x] Se restaura con la clave correcta y falla con otra, sin dejar una base a medias (EPP, sección 7)
 - [~] Guía de las claves en `respaldo/README.md`: la `age` se genera fuera del servidor y se guarda en dos lugares fuera de línea; **propuesta** para la Fernet: no va en el respaldo y su pérdida se resuelve con `rescatar_segundo_factor`. Falta que decidas si la guardas también fuera de línea
 - [x] Marca `ultimo_respaldo_correcto` escrita solo al terminar todo, de forma atómica; un fallo en cualquier parte no la toca (ADR-032 d15; la subida a Spaces antes de la marca y la vigilancia, RF-53, llegan en la E6 y la E4)
@@ -106,7 +110,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 ### H. Integración continua (ADR-025, ADR-032 d10)
 - [~] Flujo de GitHub Actions `.github/workflows/integracion-continua.yml` (PostgreSQL 18, Python 3.14): migraciones al día, pruebas desde cero, `check --deploy` y despliegue de la base con roles y privilegios (ADR-025). **Escrito y simulado paso a paso en local con Python 3.12; sin correr todavía en GitHub: la primera corrida verde es lo que cierra esta tarea** (actualización 2026-10-24h)
 - [~] `pip-audit` en un trabajo propio del flujo, con ejecución semanal además de cada cambio (ADR-032 d10); sin vulnerabilidades en las cinco dependencias al consultarlo en local el 2026-10-24; falta su primera corrida en GitHub
-- [~] Repetir todo en Python 3.14: el flujo usa 3.14, así que su primera corrida lo dirá (pyotp, `psycopg` y `cryptography` no se han probado con 3.14); si algo falla, se vuelven a fijar las versiones (plan, sección 5.2)
+- [x] Todo repetido en Python 3.14.4 en WSL: 157 pruebas pasan, 0 omitidas (las del respaldo corren con `age` 1.2.1 y `pg_dump` 18.6 reales). **Falta la primera corrida verde en GitHub Actions**
 
 ### I. Pruebas de seguridad de la aplicación de la E0 (EPP, sección 7)
 - [ ] Contraseña de mínimo 15 caracteres y Argon2id (probadas parcialmente en `nucleo`)

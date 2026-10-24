@@ -54,8 +54,8 @@ def registrar(accion, entidad, *, registro_id=None, actor, tipo_actor=Auditoria.
 
 def ip_de_origen(request):
     """Dirección IP del cliente. Detrás de Nginx, Gunicorn solo ve el socket Unix: Nginx debe
-    enviar `X-Real-IP $remote_addr` (lo pone él, el cliente no puede falsificarlo porque Gunicorn
-    solo es alcanzable por ese socket; ADR-032, decisión 13). `IP_ORIGEN_CABECERA` indica la
+    enviar `X-Forwarded-For $remote_addr` sustituyendo la del cliente (el cliente no puede
+    falsificarla porque Gunicorn solo es alcanzable por ese socket; ADR-032, decisión 13). `IP_ORIGEN_CABECERA` indica la
     cabecera de confianza; sin ella se usa `REMOTE_ADDR`. Un valor que no sea una IP se descarta."""
     cabecera = getattr(settings, 'IP_ORIGEN_CABECERA', None)
     valor = request.META.get(cabecera, '') if cabecera else request.META.get('REMOTE_ADDR', '')

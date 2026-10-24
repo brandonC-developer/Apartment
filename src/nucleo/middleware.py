@@ -22,3 +22,21 @@ class ZonaHorariaDeLaOrganizacion:
             return self.get_response(request)
         finally:
             timezone.deactivate()
+
+
+# ADR-032, decisión 16: política fija y estricta, sin scripts ni estilos en línea. En la etapa A se
+# envía solo como informe (Report-Only); pasa a obligatoria cuando no haya violaciones.
+POLITICA_DE_CONTENIDO = (
+    "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; "
+    "connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'"
+)
+
+
+class PoliticaDeContenido:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        respuesta = self.get_response(request)
+        respuesta.headers.setdefault('Content-Security-Policy-Report-Only', POLITICA_DE_CONTENIDO)
+        return respuesta

@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'cuentas.middleware.LimiteDeSesion',
     'nucleo.middleware.ZonaHorariaDeLaOrganizacion',
+    'nucleo.middleware.PoliticaDeContenido',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -134,9 +135,10 @@ SESSION_COOKIE_AGE = 24 * 60 * 60
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 
-# Cabecera con la IP del cliente que pone Nginx (`proxy_set_header X-Real-IP $remote_addr;`); sin ella
-# se usa REMOTE_ADDR (desarrollo). Gunicorn solo es alcanzable por el socket de Nginx (ADR-032, decisión 13).
-IP_ORIGEN_CABECERA = None if DEBUG else 'HTTP_X_REAL_IP'
+# Cabecera con la IP del cliente que pone Nginx: `proxy_set_header X-Forwarded-For $remote_addr;`
+# SUSTITUYE la del cliente (ADR-032, decisión 13); sin ella se usa REMOTE_ADDR (desarrollo). Gunicorn
+# solo es alcanzable por el socket de Nginx.
+IP_ORIGEN_CABECERA = None if DEBUG else 'HTTP_X_FORWARDED_FOR'
 
 if not DEBUG:
     # Nginx termina HTTPS y envía X-Forwarded-Proto (ADR-032, decisión 13).

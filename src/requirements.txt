@@ -5,3 +5,5 @@ psycopg[binary]==3.3.6
 argon2-cffi==25.1.0
 pyotp==2.10.0
 cryptography==50.0.2
+# Servidor de aplicaciones (ADR-023, ADR-032 decisión 13); 26.2.0 es de 2026-08-24.
+gunicorn==26.2.0

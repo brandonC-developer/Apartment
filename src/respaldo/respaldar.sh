@@ -45,7 +45,8 @@ trap 'rm -rf "$TRABAJO"' EXIT
 cifrar() { "$AGE" -R "$CLAVE_PUBLICA" -o "$1"; }
 
 pg_dump --format=custom --dbname="$BD" | cifrar "$TRABAJO/base.dump.age"
-pg_dumpall --globals-only --no-role-passwords --dbname="dbname=$BD" | cifrar "$TRABAJO/globales.sql.age"
+# --database: pg_dumpall conecta a esa base y no a template1, donde el rol de respaldos no tiene entrada en pg_hba.conf.
+pg_dumpall --globals-only --no-role-passwords --database="$BD" | cifrar "$TRABAJO/globales.sql.age"
 tar -C "$DOCUMENTOS" -cf - . | cifrar "$TRABAJO/documentos.tar.age"
 
 # Cada parte debe existir, no estar vacía y empezar con la cabecera de age.
