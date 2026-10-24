@@ -77,3 +77,6 @@ Para medir la cobertura: instalar `coverage` en el entorno virtual (no está en 
 - Los códigos de recuperación se guardan con Argon2id y sal (`CODIGOS_ARGON2`); tras la migración `cuentas/0004` hay que emitir códigos nuevos desde `/cuenta/codigos/`.
 - Colones: sin decimales si el importe es entero y con dos si tiene céntimos; dólares con dos.
 - 211 pruebas en total.
+
+## E1, grupo A: modelos de `inquilinos` (actualización 2026-10-24r)
+Aplicación `inquilinos` (inquilino, texto y consentimiento, fotografía del documento y acceso a documentos). `nucleo.models.RegistroProtegido` es la base de las tablas que no se editan; toda tabla nueva necesita su entrada en `sga/privilegios.py`. 237 pruebas en total.

@@ -26,6 +26,17 @@ PRIVILEGIOS = {
     # 2026-10-24o): no es historia del negocio y no da más poder que marcarlos todos como usados.
     # Un código usado solo puede cambiar su marca de uso.
     'cuentas_codigorecuperacion': {'tabla': ('SELECT', 'INSERT', 'DELETE'), 'columnas': {'UPDATE': ('usado_en',)}},
+    # --- inquilinos (E1)
+    # Sin DELETE: la retención desasocia con UPDATE (RF-41) y el inquilino se desactiva, no se borra.
+    'inquilinos_inquilino': {'tabla': ('SELECT', 'INSERT', 'UPDATE')},
+    # Textos informativos: cada versión es inmutable (RF-39).
+    'inquilinos_textoconsentimiento': {'tabla': ('SELECT', 'INSERT')},
+    # Solo se puede registrar la revocación (sin efecto retroactivo).
+    'inquilinos_consentimiento': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('revocado_en',)}},
+    # Reemplazar una fotografía solo marca la anterior como eliminada (R25).
+    'inquilinos_documentoidentidad': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('eliminado_en',)}},
+    # R12: solo inserción.
+    'inquilinos_accesodocumento': {'tabla': ('SELECT', 'INSERT')},
     # --- Django
     # DELETE por clearsessions y por el cierre de sesiones (ADR-031, corrección a ADR-027).
     'django_session': {'tabla': ('SELECT', 'INSERT', 'UPDATE', 'DELETE')},

@@ -178,9 +178,9 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Plan de trabajo de la E1 (propuesta del asistente derivada de los RF, CA, el modelo de datos v0.7 y el diseño técnico; sin aprobar)
 **A. Modelos y esquema** (MDD v0.7; ADR-027, ADR-028, ADR-031)
-- [ ] Aplicación `inquilinos` y sus modelos: `Inquilino`, `TextoConsentimiento`, `Consentimiento`, `DocumentoIdentidad`, `AccesoDocumento` (RF-01, RF-39, RF-45; R14, R23, R25, R27)
-- [ ] Privilegios: `AccesoDocumento` solo `SELECT` e `INSERT` (R12); `TextoConsentimiento` inmutable; entradas en `sga/privilegios.py` y su prueba; guardas en los modelos (ADR-027)
-- [ ] Prueba de que el rol de la aplicación es rechazado en `UPDATE` y `DELETE` sobre los accesos a documentos (ADR-027, pendiente del DAS)
+- [x] Aplicación `inquilinos` y sus modelos: `Inquilino`, `TextoConsentimiento`, `Consentimiento`, `DocumentoIdentidad` y `AccesoDocumento`, con las restricciones de la base (R14, R25, R27, medio, cara, acción, revocación posterior al consentimiento) (RF-01, RF-39, RF-45; actualización 2026-10-24r). `AccesoDocumento` solo cubre la cédula: el acceso a la fotografía del contrato queda para la E2 (ver el CAMBIOS)
+- [x] Privilegios y guardas: `AccesoDocumento` y `TextoConsentimiento` solo `SELECT` e `INSERT`; `Consentimiento` solo actualiza `revocado_en`; `DocumentoIdentidad` solo actualiza `eliminado_en`; `Inquilino` sin `DELETE`; entradas en `sga/privilegios.py`; guardas comunes en `nucleo.models.RegistroProtegido` (ADR-027)
+- [x] Pruebas con SQL directo de que el rol de la aplicación es rechazado en `UPDATE`, `DELETE` y `TRUNCATE` sobre los accesos a documentos y de que solo puede tocar las columnas permitidas de los consentimientos y las fotografías (ADR-027); 5 pruebas nuevas en `nucleo/tests_privilegios.py`
 
 **B. Registro, ficha y estado del inquilino**
 - [ ] Registrar un inquilino (nombre, tipo y número de documento obligatorios; teléfono y correo opcionales) con el consentimiento, en una transacción con su auditoría; sin fotografía todavía (RF-01, CA-01)

@@ -162,6 +162,7 @@ Carpetas transversales:
 | 2026-10-24 (o) | `actualizaciones/2026-10-24o_decisiones-abiertas-e0/` | Cinco decisiones del solicitante (decimales en colones, organización por comando, códigos de recuperación con Argon2id y sal por hallazgo del asistente, `DELETE` de esos códigos y clave Fernet sin copia) con su trazabilidad, implementadas; 211 pruebas pasan, también en WSL con Python 3.14; cambios pendientes en ERS v1.17, DAS v0.16 y modelo de datos v0.8 |
 | 2026-10-24 (p) | `actualizaciones/2026-10-24p_inicio-e1/` | Inicio de la entrega E1 (Inquilinos) por autorización expresa del solicitante: CLAUDE.md, registro de avance y plan de trabajo en siete grupos; corrige un error en la lista de tareas que marcaba como hechos los cierres de E1 a E6 |
 | 2026-10-24 (q) | `actualizaciones/2026-10-24q_decisiones-e1/` | Decisiones de la E1 con su trazabilidad: borrador del texto del consentimiento por el asistente, Pillow 12.3.0 que vuelve a codificar, `/static/` servido por Nginx, punto de extensión para el bloqueo de desactivar (CA-29, bloqueo real en la E2 y la E3 por aceptación del solicitante) y pantallas sin estilos |
+| 2026-10-24 (r) | `actualizaciones/2026-10-24r_e1-grupo-a-modelos/` | E1, grupo A: aplicación `inquilinos` con sus cinco modelos, restricciones del modelo de datos y privilegios mínimos (accesos solo `INSERT`); base reutilizable `RegistroProtegido`; 237 pruebas pasan, también en WSL con Python 3.14; hallazgo sobre el acceso a las fotografías de contrato (ciclo ADR-030) para la E2 |
 
 ## Control de versiones
 

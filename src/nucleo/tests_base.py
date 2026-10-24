@@ -10,8 +10,8 @@ from django.test import SimpleTestCase, TestCase
 class IdentificadoresTests(SimpleTestCase):
     def test_todo_modelo_del_proyecto_usa_un_entero_de_64_bits_autoincremental(self):
         """ADR-028. Se extiende solo a las aplicaciones del proyecto, no a las de Django."""
-        modelos = [m for nombre in ('nucleo', 'cuentas') for m in apps.get_app_config(nombre).get_models()]
-        self.assertGreaterEqual(len(modelos), 4)
+        modelos = [m for nombre in ('nucleo', 'cuentas', 'inquilinos') for m in apps.get_app_config(nombre).get_models()]
+        self.assertGreaterEqual(len(modelos), 9)
         for modelo in modelos:
             self.assertIsInstance(modelo._meta.pk, models.BigAutoField, modelo.__name__)
 

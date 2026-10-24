@@ -110,6 +110,34 @@ class RolesYPrivilegiosTests(TestCase):
     def test_sesiones_se_pueden_borrar(self):
         self.como('app', 'DELETE FROM django_session')
 
+    # --- inquilinos (E1)
+    def test_accesos_a_documentos_son_de_solo_insercion(self):
+        """R12: CA-26 depende de que nadie pueda editar ni borrar quién vio una cédula."""
+        self.como('app', 'SELECT count(*) FROM inquilinos_accesodocumento')
+        self.rechazado('app', 'UPDATE inquilinos_accesodocumento SET actor = actor')
+        self.rechazado('app', 'DELETE FROM inquilinos_accesodocumento')
+        self.rechazado('app', 'TRUNCATE inquilinos_accesodocumento')
+
+    def test_las_versiones_del_texto_de_consentimiento_son_inmutables(self):
+        self.rechazado('app', 'UPDATE inquilinos_textoconsentimiento SET contenido = contenido')
+        self.rechazado('app', 'DELETE FROM inquilinos_textoconsentimiento')
+
+    def test_solo_se_puede_marcar_la_revocacion_del_consentimiento(self):
+        self.como('app', 'UPDATE inquilinos_consentimiento SET revocado_en = revocado_en')
+        self.rechazado('app', "UPDATE inquilinos_consentimiento SET medio = 'fisico'")
+        self.rechazado('app', 'UPDATE inquilinos_consentimiento SET otorgado_en = otorgado_en')
+        self.rechazado('app', 'DELETE FROM inquilinos_consentimiento')
+
+    def test_de_la_fotografia_solo_se_puede_marcar_eliminada_y_nunca_borrar(self):
+        self.como('app', 'UPDATE inquilinos_documentoidentidad SET eliminado_en = eliminado_en')
+        self.rechazado('app', 'UPDATE inquilinos_documentoidentidad SET tamano_bytes = tamano_bytes')
+        self.rechazado('app', 'UPDATE inquilinos_documentoidentidad SET referencia_archivo = referencia_archivo')
+        self.rechazado('app', 'DELETE FROM inquilinos_documentoidentidad')
+
+    def test_el_inquilino_se_actualiza_pero_nunca_se_borra(self):
+        self.como('app', 'UPDATE inquilinos_inquilino SET activo = activo')
+        self.rechazado('app', 'DELETE FROM inquilinos_inquilino')
+
     def test_organizacion_se_lee_y_se_actualiza_pero_no_se_borra(self):
         self.como('app', "UPDATE nucleo_organizacion SET zona_horaria = 'America/Costa_Rica'")
         self.rechazado('app', 'DELETE FROM nucleo_organizacion')
