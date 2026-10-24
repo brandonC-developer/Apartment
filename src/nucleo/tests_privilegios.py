@@ -171,3 +171,51 @@ class RolesYPrivilegiosTests(TestCase):
         self.rechazado('app', "UPDATE nucleo_auditoria SET accion = accion")  # ...y desaparece
         self.rechazado('app', 'DELETE FROM nucleo_auditoria')
         self.rechazado('app', 'TRUNCATE nucleo_organizacion')
+
+
+@override_settings(ROLES_BD=ROLES)
+class ComandoAplicarPrivilegiosTests(TestCase):
+    """El comando (no solo la función que usa), con roles de prueba creados en la transacción."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        if not puede_crear_roles():
+            cls.tearDownClass()
+            from unittest import SkipTest
+            raise SkipTest('El usuario de conexión no puede crear roles.')
+
+    @classmethod
+    def setUpTestData(cls):
+        with connection.cursor() as c:
+            for rol in ROLES.values():
+                c.execute(f'CREATE ROLE {rol} NOLOGIN')
+
+    def llamar(self, *args):
+        from io import StringIO
+        from django.core.management import call_command
+        salida = StringIO()
+        call_command('aplicar_privilegios', *args, stdout=salida)
+        return salida.getvalue()
+
+    def test_mostrar_imprime_el_sql_sin_ejecutarlo(self):
+        texto = self.llamar('--mostrar')
+        self.assertIn('REVOKE ALL ON TABLE "nucleo_auditoria"', texto)
+        self.assertIn('GRANT SELECT, INSERT ON TABLE "nucleo_auditoria"', texto)
+        self.assertNotIn('UPDATE ON TABLE "nucleo_auditoria"', texto)
+        with connection.cursor() as c:
+            c.execute("SELECT has_table_privilege(%s, 'nucleo_auditoria', 'INSERT')", [ROLES['app']])
+            self.assertFalse(c.fetchone()[0])  # no se ejecutó nada
+
+    def test_aplicar_concede_y_avisa_de_las_tablas_sin_entrada(self):
+        with connection.cursor() as c:
+            c.execute('CREATE TABLE django_tabla_sin_entrada_prueba (id int)')
+        # django_table_names solo ve tablas de modelos: se avisa de las de modelos sin entrada.
+        from unittest.mock import patch
+        with patch('nucleo.privilegios.tablas_existentes', return_value={'nucleo_auditoria', 'tabla_olvidada'}):
+            texto = self.llamar()
+        self.assertIn('Privilegios aplicados', texto)
+        self.assertIn('tabla_olvidada', texto)
+        with connection.cursor() as c:
+            c.execute("SELECT has_table_privilege(%s, 'nucleo_auditoria', 'INSERT')", [ROLES['app']])
+            self.assertTrue(c.fetchone()[0])

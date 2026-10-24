@@ -157,6 +157,7 @@ Carpetas transversales:
 | 2026-10-24 (j) | `actualizaciones/2026-10-24j_despliegue-etapa-a-wsl/` | Despliegue de la etapa A en WSL con Ubuntu 26.04.1 (un solo comando): PostgreSQL por socket con `peer`, Gunicorn con socket de systemd, Nginx con HTTPS autofirmado, respaldo diario con su servicio real; 157 pruebas pasan con Python 3.14; verificaciones repetibles y cuatro hallazgos al desplegar |
 | 2026-10-24 (k) | `actualizaciones/2026-10-24k_gitattributes-configuracion/` | `.gitattributes`: fin de línea LF también para `*.conf`, `*.service`, `*.socket` y `*.timer`, que se copian tal cual a Linux |
 | 2026-10-24 (l) | `actualizaciones/2026-10-24l_pendientes-pequenos-e0/` | Pendientes pequeños de la E0: pantalla de códigos de recuperación nuevos (CA-69), pruebas de concurrencia del contador, todas las vistas exigen sesión, CSRF, sin secretos en los registros, `BigAutoField`, carpeta de documentos privados y `btree_gist`; 181 pruebas pasan, también con Python 3.14 en WSL |
+| 2026-10-24 (m) | `actualizaciones/2026-10-24m_revision-codigo-sin-cubrir-e0/` | Revisión del código sin cubrir de la E0 (condición 5 de terminado), una autorrevisión: cobertura de 94 % a 99 %, 15 pruebas nuevas, 196 en total; no sustituye la revisión por otra persona |
 
 ## Control de versiones
 

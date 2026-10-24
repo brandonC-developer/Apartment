@@ -167,3 +167,12 @@ class ZonaEnLaPeticionTests(TestCase):
         organizacion.actualizar(actor='admin', zona_horaria='Asia/Tokyo')
         self.pagina_de_auditoria()
         self.assertEqual(timezone.get_current_timezone_name(), 'America/Costa_Rica')
+
+
+class TextoDeLosModelosTests(TestCase):
+    def test_textos(self):
+        self.assertEqual(str(organizacion.actual()), 'Organización')
+        organizacion.actualizar(actor='admin', nombre_responsable='Nombre Apellido')
+        self.assertEqual(str(Organizacion.objects.get()), 'Nombre Apellido')
+        r = auditoria.registrar('prueba', 'contrato', actor='admin', ahora=datetime(2026, 10, 24, 18, 30, 5, tzinfo=utc.utc))
+        self.assertEqual(str(r), f'{r.ocurrido_en:%Y-%m-%d %H:%M:%S} prueba (admin)')

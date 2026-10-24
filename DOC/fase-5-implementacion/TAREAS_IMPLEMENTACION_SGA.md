@@ -152,7 +152,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
 - [ ] 3. `verificar_coherencia.ps1` sin problemas
 - [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
-- [ ] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9)
+- [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
 - [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
 - [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
 - [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
@@ -209,7 +209,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
 - [ ] 3. `verificar_coherencia.ps1` sin problemas
 - [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
-- [ ] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9)
+- [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
 - [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
 - [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
 - [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
@@ -290,7 +290,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
 - [ ] 3. `verificar_coherencia.ps1` sin problemas
 - [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
-- [ ] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9)
+- [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
 - [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
 - [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
 - [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
@@ -352,7 +352,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
 - [ ] 3. `verificar_coherencia.ps1` sin problemas
 - [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
-- [ ] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9)
+- [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
 - [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
 - [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
 - [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
@@ -414,7 +414,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
 - [ ] 3. `verificar_coherencia.ps1` sin problemas
 - [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
-- [ ] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9)
+- [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
 - [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
 - [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
 - [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
@@ -468,7 +468,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
 - [ ] 3. `verificar_coherencia.ps1` sin problemas
 - [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
-- [ ] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9)
+- [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
 - [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
 - [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
 - [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
@@ -543,7 +543,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
 - [ ] 3. `verificar_coherencia.ps1` sin problemas
 - [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
-- [ ] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9)
+- [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
 - [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
 - [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
 - [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día

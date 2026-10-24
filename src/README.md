@@ -68,3 +68,6 @@ wsl -d Ubuntu -u root -- bash /mnt/e/Proyectos/Portafolio/Apartment/src/desplieg
 
 ## Pendientes pequeños de la E0 (actualización 2026-10-24l)
 Pantalla `/cuenta/codigos/` (códigos de recuperación nuevos), ajuste `RAIZ_DOCUMENTOS` para los documentos privados y migración de `btree_gist`. 181 pruebas en total. Toda vista nueva debe usar `login_required` o declararse pública en `cuentas/tests_cuenta.py`.
+
+## Revisión del código sin cubrir (actualización 2026-10-24m)
+Para medir la cobertura: instalar `coverage` en el entorno virtual (no está en `requirements.txt`) y `coverage run --branch --source=cuentas,nucleo,sga manage.py test`. 196 pruebas; los ajustes de `settings.py` se prueban en un proceso aparte, que `coverage` no mide.
