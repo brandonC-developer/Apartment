@@ -97,6 +97,14 @@ DATABASES = {
     }
 }
 
+# Roles de PostgreSQL (ADR-027): dueño (solo migraciones), aplicación y respaldos. Los nombres son
+# propuesta del asistente; no son secretos. Ver db/roles.sql y `manage.py aplicar_privilegios`.
+ROLES_BD = {
+    'dueno': os.environ.get('SGA_ROL_DUENO', 'sga_dueno'),
+    'app': os.environ.get('SGA_ROL_APP', 'sga_app'),
+    'respaldos': os.environ.get('SGA_ROL_RESPALDOS', 'sga_respaldos'),
+}
+
 # Contraseñas: Argon2id (ADR-019) y mínimo de 15 caracteres sin reglas de composición (RF-26).
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.Argon2PasswordHasher',

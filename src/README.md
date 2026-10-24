@@ -44,3 +44,8 @@ Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional proteg
 
 ## Organización y configuración regional (actualización 2026-10-24f)
 `nucleo.Organizacion` (fila única), `nucleo/formato.py` (formato propio; en plantillas, `{% load formato %}`) y el middleware de la zona horaria. 121 pruebas en total.
+
+## Roles y privilegios (actualización 2026-10-24g)
+1. Una vez, como `postgres`: `psql -v ON_ERROR_STOP=1 -v rol_dueno=sga_dueno -v rol_app=sga_app -v rol_respaldos=sga_respaldos -v base=sga -f db/roles.sql`.
+2. Tras cada despliegue, como rol dueño: `SGA_BD_USUARIO=sga_dueno python manage.py migrate` y `SGA_BD_USUARIO=sga_dueno python manage.py aplicar_privilegios`.
+3. Gunicorn y los comandos diarios usan el rol `sga_app`. Toda tabla nueva necesita su entrada en `sga/privilegios.py`; una prueba lo exige. 140 pruebas en total (las de roles necesitan un usuario de conexión que pueda crear roles).

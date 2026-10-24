@@ -39,7 +39,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Cookies seguras, HTTPS forzado y `SECURE_PROXY_SSL_HEADER` cuando no es depuración; HSTS en 0 hasta la etapa B (ADR-032 d5, d13) (c849f0b)
 - [x] Sin `django.contrib.admin` (decisión del asistente, sin aprobar) (c849f0b)
 - [~] Versiones fijadas en `requirements.txt`: **fijadas con Python 3.12 en Windows, no con el 3.14 de WSL**; volver a fijarlas y probarlas en WSL (plan, sección 5.2)
-- [ ] `CONN_MAX_AGE = 0`, sin pool (ADR-029): comprobar que está así y dejarlo con prueba
+- [x] `CONN_MAX_AGE = 0`, sin pool (ADR-029): ya estaba y ahora tiene su prueba (2026-10-24, actualización 2026-10-24g)
 - [ ] Identificadores `BigAutoField` en todos los modelos (ADR-028); hoy la cuenta usa `id = 1` por su restricción
 - [ ] Almacenamiento privado de archivos fuera de la raíz web (RNF-03, RNF-14); la E1 lo usa
 
@@ -66,7 +66,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [~] Eventos de autenticación con IP y sin secretos: `inicio_sesion`, `inicio_sesion_fallido`, `cierre_sesion`, `cuenta_creada`, `codigo_recuperacion_usado`, `codigos_emitidos`, `segundo_factor_registrado`, `segundo_factor_rescatado` y `cinco_fallos_seguidos` (RF-28; CA-71). **Faltan** los de cambio y restablecimiento de contraseña y de cambio de una dirección de correo (E4) y el de emisión de códigos nuevos desde la sesión (pantalla pendiente)
 - [x] Tipo de actor *proceso* con su restricción R19 (actor «sistema» y ejecución obligatoria; el administrador no lleva ejecución); `ejecucion_id` sin clave foránea hasta la E2 (RF-28, HT-06)
 - [x] Pantalla `/auditoria/` de solo lectura con filtros por fecha, tipo de evento, entidad y actor, de 50 en 50; consultarla no genera registro (CA-71)
-- [~] Guardas en el modelo (error claro al editar o borrar) y bloqueo de `update()` y `delete()` masivos; sin sitio de administración (ADR-027). **Falta la defensa real: el rol de PostgreSQL de la aplicación solo con `SELECT` e `INSERT` (sección E)**
+- [x] Guardas en el modelo (error claro al editar o borrar) y bloqueo de `update()` y `delete()` masivos; sin sitio de administración (ADR-027); la defensa real del rol de PostgreSQL está en la sección E (actualización 2026-10-24g)
 - [x] La auditoría no se borra automáticamente: ningún código la borra (RF-28; plazo de conservación en DP-18)
 - [~] Dirección IP de origen detrás de Nginx: se lee la cabecera `X-Real-IP` solo si `IP_ORIGEN_CABECERA` la declara de confianza (fuera de depuración) y se descarta lo que no sea una IP; **falta configurar Nginx con `proxy_set_header X-Real-IP $remote_addr;` y comprobarlo al desplegar** (propuesta del asistente)
 
@@ -77,12 +77,12 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [~] Los registros históricos no cambian al modificar la configuración regional: probado con la auditoría (instante intacto, solo cambia la presentación) (CA-18); la parte de contratos en USD se completa en la E2
 
 ### E. Base de datos: roles, privilegios y esquema (ADR-027, ADR-029, ADR-031; condición 4)
-- [ ] Tres roles de PostgreSQL: dueño (solo migraciones), aplicación y respaldos, con autenticación `peer` por socket Unix (ADR-027, ADR-032 d12)
-- [ ] Archivo de privilegios idempotente que el rol dueño ejecuta tras cada `migrate`; una tabla nueva no da privilegios hasta constar en él (ADR-031 d3)
-- [ ] Prueba de integración que compara las tablas reales con el archivo y exige una entrada por tabla (ADR-031 d3)
-- [ ] Prueba de que el rol de la aplicación es rechazado en `UPDATE` y `DELETE` sobre las tablas de R12 (movimientos, ajustes, auditoría, accesos a documentos) (ADR-027, pendiente del DAS)
+- [~] Tres roles de PostgreSQL con `LOGIN`, sin contraseña, sin superusuario: dueño, aplicación y respaldos (`db/roles.sql`, idempotente, probado con `psql`) (ADR-027, ADR-032 d12). **Falta la autenticación `peer` real** (`pg_hba.conf`, usuarios del sistema), que se prueba en WSL
+- [x] Archivo de privilegios idempotente `sga/privilegios.py` + `manage.py aplicar_privilegios`, que el rol dueño ejecuta tras cada `migrate`; parte de cero (`REVOKE ALL`) y concede solo lo que consta (ADR-031 d3; el formato es propuesta del asistente)
+- [x] Prueba que compara las tablas reales con el archivo y exige una entrada por tabla (ADR-031 d3)
+- [x] Prueba de que el rol de la aplicación es rechazado en `UPDATE`, `DELETE` y `TRUNCATE` sobre la auditoría, incluso con SQL directo (ADR-027); queda por repetir en las tablas de movimientos, ajustes y accesos cuando existan (E1 y E3)
 - [ ] Extensión `btree_gist` en una migración (ADR-031 d1; la usa la E2)
-- [ ] Privilegios de `CONNECT` y `TEMPORARY` revocados a `PUBLIC` y `listen_addresses = ''` (ADR-032 d12)
+- [~] `CONNECT` y `TEMPORARY` revocados a `PUBLIC` y concedidos a los tres roles (probado); **falta `listen_addresses = ''` y el resto del servidor, que se configura en WSL**
 
 ### F. Despliegue en la etapa A: WSL 2 con Ubuntu-26.04, sin contenedores (plan, sección 5.1; ADR-023)
 - [ ] Instalar `Ubuntu-26.04` en WSL 2 (`wsl --install -d Ubuntu-26.04`); comprobar que systemd viene activo y que existen los paquetes de PostgreSQL 18 (no verificado)
