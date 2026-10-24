@@ -143,6 +143,7 @@ Carpetas transversales:
 | 2026-10-23 (zza) | `actualizaciones/2026-10-23zza_biblioteca-segundo-factor/` | Biblioteca del segundo factor: pyotp con campos propios del MDD; sin django-otp ni django-two-factor-auth; cifrado del secreto sin decidir; código sin escribir |
 | 2026-10-23 (zzb) | `actualizaciones/2026-10-23zzb_cifrado-secreto-segundo-factor/` | Cifrado del secreto TOTP: Fernet/MultiFernet de `cryptography` con la clave en /etc/sga; no protege contra una aplicación comprometida; respaldo de la clave sin decidir; código sin escribir |
 | 2026-10-23 (zzc) | `actualizaciones/2026-10-23zzc_cuentas-administrador/` | Implementación de `cuentas.Administrador` (modelo, cifrado Fernet, TOTP con pyotp, límite de intentos, backend, migración): 32 pruebas pasan en un PostgreSQL desechable; sin vista de inicio de sesión, códigos de recuperación ni comando de creación |
+| 2026-10-24 (zzd) | `actualizaciones/2026-10-23zzd_codigos-recuperacion/` | Códigos de recuperación (RF-27, CA-69): modelo, emisión con contraseña, verificación con límite de intentos compartido; 38 pruebas pasan en un PostgreSQL desechable |
 
 ## Control de versiones
 

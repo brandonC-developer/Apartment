@@ -5,7 +5,9 @@ tolerancia de un intervalo) son las de la ERS v1.16, propuestas del asistente y 
 el solicitante. Que un intento hecho durante la espera no sume otro fallo es propuesta del
 asistente.
 """
+import hashlib
 import hmac
+import secrets
 from datetime import timedelta
 from enum import Enum
 
@@ -14,7 +16,7 @@ from django.contrib.auth.hashers import make_password
 from django.db import transaction
 from django.utils import timezone
 
-from .models import Administrador
+from .models import Administrador, CodigoRecuperacion
 
 UMBRAL_FALLOS = 5
 ESPERA_BASE_SEGUNDOS = 60
@@ -113,4 +115,60 @@ def verificar_totp(administrador_id, codigo, ahora=None):
         administrador.save(update_fields=[
             'ultimo_intervalo_totp', 'fallos_consecutivos', 'espera_hasta', 'actualizado_en',
         ])
+        return Respuesta(Resultado.CORRECTO, administrador=administrador)
+
+
+# Códigos de recuperación (RF-27, CA-69). 10 por emisión (ERS). El formato —10 caracteres de un
+# alfabeto sin caracteres confusos, unos 49 bits— y el hash SHA-256 son propuestas del asistente.
+CODIGOS_POR_EMISION = 10
+LONGITUD_CODIGO = 10
+ALFABETO_CODIGO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+
+
+def _normalizar_codigo(codigo):
+    return ''.join((codigo or '').upper().split()).replace('-', '')
+
+
+def _hash_codigo(codigo):
+    return hashlib.sha256(_normalizar_codigo(codigo).encode('utf-8')).hexdigest()
+
+
+def emitir_codigos_recuperacion(administrador, contrasena):
+    """Emite 10 códigos nuevos e invalida los anteriores. Exige la contraseña actual (CA-69).
+    Devuelve la lista en claro (única vez que existen) o None si la contraseña no es correcta.
+    Quien llama debe enviar el aviso de seguridad."""
+    if not administrador.check_password(contrasena):
+        return None
+    codigos = [
+        ''.join(secrets.choice(ALFABETO_CODIGO) for _ in range(LONGITUD_CODIGO))
+        for _ in range(CODIGOS_POR_EMISION)
+    ]
+    with transaction.atomic():
+        CodigoRecuperacion.objects.filter(administrador=administrador).delete()
+        CodigoRecuperacion.objects.bulk_create([
+            CodigoRecuperacion(administrador=administrador, hash_codigo=_hash_codigo(c))
+            for c in codigos
+        ])
+    return [f'{c[:5]}-{c[5:]}' for c in codigos]
+
+
+def verificar_codigo_recuperacion(administrador_id, codigo, ahora=None):
+    """Sustituye al TOTP en el segundo paso. Comparte el contador de fallos; uno correcto
+    se marca como usado y reinicia el contador."""
+    ahora = ahora or timezone.now()
+    with transaction.atomic():
+        administrador = Administrador.objects.select_for_update().get(pk=administrador_id)
+        if _en_espera(administrador, ahora):
+            return Respuesta(Resultado.EN_ESPERA, espera_hasta=administrador.espera_hasta)
+        disponible = CodigoRecuperacion.objects.select_for_update().filter(
+            administrador=administrador, usado_en__isnull=True,
+            hash_codigo=_hash_codigo(codigo),
+        ).first()
+        if disponible is None:
+            return _registrar_fallo(administrador, ahora)
+        disponible.usado_en = ahora
+        disponible.save(update_fields=['usado_en'])
+        administrador.fallos_consecutivos = 0
+        administrador.espera_hasta = None
+        administrador.save(update_fields=['fallos_consecutivos', 'espera_hasta', 'actualizado_en'])
         return Respuesta(Resultado.CORRECTO, administrador=administrador)

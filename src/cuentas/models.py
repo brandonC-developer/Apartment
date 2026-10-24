@@ -60,3 +60,19 @@ class Administrador(AbstractBaseUser):
 
     def secreto_segundo_factor_en_claro(self):
         return cifrado.descifrar(self.secreto_segundo_factor)
+
+
+class CodigoRecuperacion(models.Model):
+    """Código de recuperación de un solo uso (RF-27, CA-69; entidad CODIGO_RECUPERACION del MDD).
+
+    Se guarda solo el hash SHA-256 del código normalizado; el código en claro se muestra una vez.
+    """
+    administrador = models.ForeignKey(
+        Administrador, on_delete=models.CASCADE, related_name='codigos_recuperacion')
+    hash_codigo = models.CharField(max_length=64, unique=True)
+    usado_en = models.DateTimeField(null=True, blank=True)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'código de recuperación'
+        verbose_name_plural = 'códigos de recuperación'

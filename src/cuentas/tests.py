@@ -12,7 +12,7 @@ from django.test import TestCase, override_settings
 
 from . import autenticacion, cifrado
 from .autenticacion import Resultado
-from .models import Administrador
+from .models import Administrador, CodigoRecuperacion
 
 CLAVE_A = Fernet.generate_key().decode()
 CLAVE_B = Fernet.generate_key().decode()
@@ -219,3 +219,55 @@ class BackendTests(CuentaTestCase):
     def test_el_backend_no_concede_permisos(self):
         self.assertFalse(hasattr(self.admin, 'has_perm'))
         self.assertFalse(hasattr(self.admin, 'is_staff'))
+
+
+class CodigosRecuperacionTests(CuentaTestCase):
+    def test_emite_diez_codigos_distintos_y_solo_guarda_hashes(self):
+        codigos = autenticacion.emitir_codigos_recuperacion(self.admin, CONTRASENA)
+        self.assertEqual(len(codigos), 10)
+        self.assertEqual(len(set(codigos)), 10)
+        guardados = list(CodigoRecuperacion.objects.values_list('hash_codigo', flat=True))
+        self.assertEqual(len(guardados), 10)
+        for c in codigos:
+            self.assertNotIn(c, guardados)
+            self.assertNotIn(c.replace('-', ''), guardados)
+
+    def test_emitir_exige_la_contrasena_actual(self):
+        self.assertIsNone(autenticacion.emitir_codigos_recuperacion(self.admin, 'mal'))
+        self.assertEqual(CodigoRecuperacion.objects.count(), 0)
+
+    def test_un_codigo_sirve_una_sola_vez(self):
+        codigo = autenticacion.emitir_codigos_recuperacion(self.admin, CONTRASENA)[0]
+        r = autenticacion.verificar_codigo_recuperacion(self.admin.pk, codigo, ahora=AHORA)
+        self.assertEqual(r.resultado, Resultado.CORRECTO)
+        r = autenticacion.verificar_codigo_recuperacion(self.admin.pk, codigo, ahora=AHORA)
+        self.assertEqual(r.resultado, Resultado.INCORRECTO)
+
+    def test_acepta_minusculas_y_sin_guion(self):
+        codigo = autenticacion.emitir_codigos_recuperacion(self.admin, CONTRASENA)[0]
+        r = autenticacion.verificar_codigo_recuperacion(
+            self.admin.pk, codigo.lower().replace('-', ' '), ahora=AHORA)
+        self.assertEqual(r.resultado, Resultado.CORRECTO)
+
+    def test_emitir_de_nuevo_invalida_los_anteriores(self):
+        viejos = autenticacion.emitir_codigos_recuperacion(self.admin, CONTRASENA)
+        nuevos = autenticacion.emitir_codigos_recuperacion(self.admin, CONTRASENA)
+        self.assertEqual(CodigoRecuperacion.objects.count(), 10)
+        r = autenticacion.verificar_codigo_recuperacion(self.admin.pk, viejos[0], ahora=AHORA)
+        self.assertEqual(r.resultado, Resultado.INCORRECTO)
+        r = autenticacion.verificar_codigo_recuperacion(self.admin.pk, nuevos[0], ahora=AHORA)
+        self.assertEqual(r.resultado, Resultado.CORRECTO)
+
+    def test_comparten_el_contador_de_fallos_y_la_espera(self):
+        codigo = autenticacion.emitir_codigos_recuperacion(self.admin, CONTRASENA)[0]
+        for _ in range(5):
+            r = autenticacion.verificar_codigo_recuperacion(self.admin.pk, 'AAAAA-AAAAA', ahora=AHORA)
+        self.assertTrue(r.aviso_cinco_fallos)
+        r = autenticacion.verificar_codigo_recuperacion(
+            self.admin.pk, codigo, ahora=AHORA + timedelta(seconds=10))
+        self.assertEqual(r.resultado, Resultado.EN_ESPERA)
+        r = autenticacion.verificar_codigo_recuperacion(
+            self.admin.pk, codigo, ahora=AHORA + timedelta(seconds=61))
+        self.assertEqual(r.resultado, Resultado.CORRECTO)
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.fallos_consecutivos, 0)
