@@ -156,6 +156,7 @@ Carpetas transversales:
 | 2026-10-24 (i) | `actualizaciones/2026-10-24i_respaldo-cifrado-y-restauracion/` | Respaldo diario cifrado con `age` y su restauración (ADR-024, ADR-032 d9 y d15): scripts, borradores de systemd, 13 pruebas que ejecutan los scripts de verdad (153 en total) y un trabajo nuevo del flujo; sin correr en GitHub ni en WSL |
 | 2026-10-24 (j) | `actualizaciones/2026-10-24j_despliegue-etapa-a-wsl/` | Despliegue de la etapa A en WSL con Ubuntu 26.04.1 (un solo comando): PostgreSQL por socket con `peer`, Gunicorn con socket de systemd, Nginx con HTTPS autofirmado, respaldo diario con su servicio real; 157 pruebas pasan con Python 3.14; verificaciones repetibles y cuatro hallazgos al desplegar |
 | 2026-10-24 (k) | `actualizaciones/2026-10-24k_gitattributes-configuracion/` | `.gitattributes`: fin de línea LF también para `*.conf`, `*.service`, `*.socket` y `*.timer`, que se copian tal cual a Linux |
+| 2026-10-24 (l) | `actualizaciones/2026-10-24l_pendientes-pequenos-e0/` | Pendientes pequeños de la E0: pantalla de códigos de recuperación nuevos (CA-69), pruebas de concurrencia del contador, todas las vistas exigen sesión, CSRF, sin secretos en los registros, `BigAutoField`, carpeta de documentos privados y `btree_gist`; 181 pruebas pasan, también con Python 3.14 en WSL |
 
 ## Control de versiones
 

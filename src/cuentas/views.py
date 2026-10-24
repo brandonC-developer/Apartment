@@ -198,6 +198,27 @@ def _pedir_token(request, administrador):
     return render(request, 'cuentas/token_registro.html', {'error': error})
 
 
+@never_cache
+@login_required
+@require_http_methods(['GET', 'POST'])
+def codigos_nuevos(request):
+    """Emite 10 códigos de recuperación nuevos desde la sesión iniciada (RF-27, CA-69). Exige la
+    contraseña actual —con el mismo contador de intentos que el inicio de sesión—, invalida los
+    anteriores y deja el aviso de seguridad (evento `codigos_emitidos`, alerta en la pantalla de
+    inicio; el correo llega en la E4). Los códigos se muestran una sola vez."""
+    error = None
+    if request.method == 'POST':
+        contrasena = request.POST.get('contrasena', '')
+        respuesta = autenticacion.comprobar_contrasena(request.user.usuario, contrasena)
+        _auditar_fallo(request, respuesta, request.user)
+        if respuesta.correcto:
+            codigos = autenticacion.emitir_codigos_recuperacion(respuesta.administrador, contrasena)
+            _auditar(request, 'codigos_emitidos', respuesta.administrador)
+            return render(request, 'cuentas/codigos_recuperacion.html', {'codigos': codigos})
+        error = _mensaje_de_fallo(respuesta, 'Contraseña incorrecta.')
+    return render(request, 'cuentas/codigos_nuevos.html', {'error': error})
+
+
 @require_POST
 def cerrar_sesion(request):
     if request.user.is_authenticated:

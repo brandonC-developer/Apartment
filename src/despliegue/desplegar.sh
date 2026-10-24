@@ -158,4 +158,4 @@ http="$(codigo "http://$NOMBRE_SITIO/" --resolve "$NOMBRE_SITIO:80:127.0.0.1")"
 echo "HTTPS /: $https (esperado 302 al inicio de sesión) | HTTP /: $http (esperado 301)"
 [ "$https" = "302" ] && [ "$http" = "301" ] || { echo "desplegar: la comprobación falló" >&2; exit 1; }
 echo
-echo "Despliegue terminado. Cuenta administradora: runuser -u sga_app -- env \$(cat /etc/sga/entorno | xargs) $DESTINO/venv/bin/python $DESTINO/src/manage.py crear_administrador --usuario NOMBRE"
+echo "Despliegue terminado. Cuenta administradora: runuser -u sga_app -- env \$(grep -v '^#' /etc/sga/entorno | xargs) $DESTINO/venv/bin/python $DESTINO/src/manage.py crear_administrador --usuario NOMBRE"

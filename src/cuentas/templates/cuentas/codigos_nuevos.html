@@ -1,0 +1,12 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}Códigos de recuperación nuevos{% endblock %}
+{% block contenido %}
+<h1>Códigos de recuperación nuevos</h1>
+<p>Se generarán 10 códigos nuevos y los anteriores dejarán de servir. Escriba su contraseña actual.</p>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="post">{% csrf_token %}
+  <p><label>Contraseña <input name="contrasena" type="password" autocomplete="current-password" required autofocus></label></p>
+  <button type="submit">Generar códigos nuevos</button>
+</form>
+<p><a href="{% url 'cuentas:inicio' %}">Volver</a></p>
+{% endblock %}

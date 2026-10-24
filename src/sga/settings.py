@@ -102,6 +102,11 @@ DATABASES = {
     }
 }
 
+# Documentos privados (cédulas, fotografías de contratos): una carpeta FUERA de la raíz web y del
+# código, sin URL pública; solo se sirven por una vista con sesión (RNF-03, RNF-14, ADR-003). La usan
+# las entregas E1 y E2; el respaldo y Gunicorn ya la conocen (despliegue/, respaldo/).
+RAIZ_DOCUMENTOS = Path(os.environ.get('SGA_DOCUMENTOS', '/var/lib/sga/documentos'))
+
 # Roles de PostgreSQL (ADR-027): dueño (solo migraciones), aplicación y respaldos. Los nombres son
 # propuesta del asistente; no son secretos. Ver db/roles.sql y `manage.py aplicar_privilegios`.
 ROLES_BD = {

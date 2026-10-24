@@ -38,10 +38,10 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Hash Argon2id únicamente y contraseña de mínimo 15 caracteres (ADR-019; RF-27) (c849f0b)
 - [x] Cookies seguras, HTTPS forzado y `SECURE_PROXY_SSL_HEADER` cuando no es depuración; HSTS en 0 hasta la etapa B (ADR-032 d5, d13) (c849f0b)
 - [x] Sin `django.contrib.admin` (decisión del asistente, sin aprobar) (c849f0b)
-- [~] Versiones fijadas en `requirements.txt`: **fijadas con Python 3.12 en Windows, no con el 3.14 de WSL**; volver a fijarlas y probarlas en WSL (plan, sección 5.2)
+- [x] Versiones fijadas en `requirements.txt` y probadas con Python 3.14.4 en WSL: las cinco dependencias más Gunicorn funcionan sin cambiar ninguna (actualización 2026-10-24j)
 - [x] `CONN_MAX_AGE = 0`, sin pool (ADR-029): ya estaba y ahora tiene su prueba (2026-10-24, actualización 2026-10-24g)
-- [ ] Identificadores `BigAutoField` en todos los modelos (ADR-028); hoy la cuenta usa `id = 1` por su restricción
-- [ ] Almacenamiento privado de archivos fuera de la raíz web (RNF-03, RNF-14); la E1 lo usa
+- [x] Identificadores `BigAutoField` en todos los modelos del proyecto, con una prueba que lo exige para `nucleo` y `cuentas` (ADR-028; actualización 2026-10-24l)
+- [x] Carpeta de documentos privados `RAIZ_DOCUMENTOS` (`/var/lib/sga/documentos`) fuera del código y de cualquier raíz web, sin `MEDIA_ROOT` ni URL pública, no servida por Nginx, con permisos de la aplicación y del respaldo; pruebas que lo exigen (RNF-03, RNF-14). **La vista que sirve los archivos con sesión y su auditoría son de la E1**
 
 ### B. Cuenta única y autenticación (RF-26, RF-27, RN-25, RNF-01, RNF-02; CA-13, CA-48, CA-68, CA-69, CA-70)
 - [x] Modelo `Administrador` sobre `AbstractBaseUser`, sin permisos de Django, con una sola cuenta por restricción de tabla (2026-10-23, 34fb5e9; actualizaciones zz y zzc)
@@ -54,12 +54,12 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Comandos de servidor `crear_administrador` y `rescatar_segundo_factor` (2026-10-24, 26e7895; CA-70)
 - [x] Registro del segundo factor en el primer ingreso y entrega única de los 10 códigos (2026-10-24, a097789; CA-70)
 - [x] Token de registro del segundo factor (un solo uso, 24 h, solo su hash) que imprimen `crear_administrador` y `rescatar_segundo_factor`; sin él, la contraseña sola no permite registrar un segundo factor (2026-10-24, actualización 2026-10-24d; propuesta del asistente derivada de la revisión de código)
-- [ ] Pantalla para emitir códigos de recuperación nuevos con la contraseña actual, desde la sesión iniciada (CA-69; la función existe, la pantalla no)
-- [ ] Todas las funciones administrativas y los archivos privados exigen sesión autenticada: cada vista nueva debe usar `login_required` y tener su prueba de acceso denegado (CA-13, RNF-02)
+- [x] Pantalla `/cuenta/codigos/` para emitir 10 códigos de recuperación nuevos desde la sesión: exige la contraseña actual con el mismo contador de intentos, invalida los anteriores, no se guarda en caché, los muestra una sola vez y deja el aviso (`codigos_emitidos` en la auditoría y alerta en la pantalla de inicio) (CA-69; el correo llega en la E4)
+- [x] Todas las vistas exigen sesión salvo las del inicio de sesión: una prueba recorre **todas** las rutas del proyecto y falla si una vista nueva responde sin sesión y no está en la lista pública (CA-13, RNF-02)
 - [x] Aviso al quinto fallo seguido: evento `cinco_fallos_seguidos` en la auditoría y alerta en la pantalla de inicio con los avisos desde el inicio de sesión anterior (CA-68; HI-01, HI-05); el correo llega en la E4
 - [x] Aviso del rescate por el servidor: constancia `segundo_factor_rescatado` en la auditoría, alerta en la web y aviso impreso por el comando (CA-70; HI-01); el correo a las dos direcciones llega en la E4
 - [ ] Alerta persistente en cada inicio de sesión cuando un aviso de seguridad queda en *fallido* (RF-27, ADR-026) — verificable plenamente en la E4
-- [ ] Prueba de concurrencia del bloqueo de fila del contador de intentos (pendiente declarado en la actualización zzc)
+- [x] Pruebas de concurrencia con conexiones reales en paralelo: 8 fallos simultáneos cuentan exactamente 5 con un solo aviso, y un código TOTP o de recuperación enviado a la vez se acepta una sola vez. **Límite: sin el bloqueo de fila fallan con frecuencia, no siempre (es una carrera)**
 
 ### C. Auditoría base (RF-28, RNF-06; CA-53, CA-71)
 - [x] Modelo `nucleo.Auditoria` de solo inserción y servicio `registrar`: actor, fecha y hora, operación, entidad, campos modificados y valores de campos **no personales**; de los personales y los secretos solo el nombre (RF-28; CA-53) (2026-10-24, actualización 2026-10-24e; la lista de campos personales es propuesta del asistente a partir de RF-28)
@@ -81,7 +81,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Archivo de privilegios idempotente `sga/privilegios.py` + `manage.py aplicar_privilegios`, que el rol dueño ejecuta tras cada `migrate`; parte de cero (`REVOKE ALL`) y concede solo lo que consta (ADR-031 d3; el formato es propuesta del asistente)
 - [x] Prueba que compara las tablas reales con el archivo y exige una entrada por tabla (ADR-031 d3)
 - [x] Prueba de que el rol de la aplicación es rechazado en `UPDATE`, `DELETE` y `TRUNCATE` sobre la auditoría, incluso con SQL directo (ADR-027); queda por repetir en las tablas de movimientos, ajustes y accesos cuando existan (E1 y E3)
-- [ ] Extensión `btree_gist` en una migración (ADR-031 d1; la usa la E2)
+- [x] Extensión `btree_gist` creada por una migración de `nucleo` (ADR-031 d1; la usa la E2); la crea el rol dueño sin ser superusuario, comprobado en WSL
 - [x] `CONNECT` y `TEMPORARY` revocados a `PUBLIC` y concedidos a los tres roles; `listen_addresses = ''` (sin puerto TCP), socket 0770 con el grupo `sga_bd` y `pg_hba.conf` con solo registros `local`+`peer`, comprobados en WSL
 
 ### F. Despliegue en la etapa A: WSL 2 con Ubuntu-26.04, sin contenedores (plan, sección 5.1; ADR-023)
@@ -113,9 +113,9 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Todo repetido en Python 3.14.4 en WSL: 157 pruebas pasan, 0 omitidas (las del respaldo corren con `age` 1.2.1 y `pg_dump` 18.6 reales). **Falta la primera corrida verde en GitHub Actions**
 
 ### I. Pruebas de seguridad de la aplicación de la E0 (EPP, sección 7)
-- [ ] Contraseña de mínimo 15 caracteres y Argon2id (probadas parcialmente en `nucleo`)
-- [ ] CSRF activo en todos los formularios, acceso sin sesión bloqueado y mensajes sin enumerar usuarios (probados en el inicio de sesión)
-- [ ] Ningún dato personal ni secreto en los registros (condición 7)
+- [x] Contraseña de mínimo 15 caracteres sin reglas de composición y Argon2id (`nucleo/tests.py`, `cuentas/tests.py`)
+- [x] CSRF activo en todos los formularios (los cinco rechazan un envío sin token, con y sin sesión), acceso sin sesión bloqueado y primer paso sin distinguir usuario inexistente de contraseña mala (`cuentas/tests_cuenta.py`)
+- [x] Ningún secreto en los registros del programa: una prueba captura todos los registros durante el recorrido completo (inicio, token, registro del segundo factor, códigos nuevos, auditoría) y no aparece ninguna contraseña, código, token, secreto ni lo escrito en el campo de usuario; la auditoría tiene su propia prueba (CA-71) y el registro de Nginx se verificó sin cadena de consulta. **La condición 7 de terminado se cierra con la entrega, porque las entregas siguientes agregan datos personales**
 
 ### J. Criterios de aceptación de la E0
 

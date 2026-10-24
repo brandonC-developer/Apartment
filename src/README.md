@@ -65,3 +65,6 @@ wsl -d Ubuntu -u root -- bash /mnt/e/Proyectos/Portafolio/Apartment/src/desplieg
 wsl -d Ubuntu -u root -- bash /mnt/e/Proyectos/Portafolio/Apartment/src/despliegue/probar.sh
 ```
 `desplegar.sh` es idempotente y acepta `--clave-publica-respaldo ARCHIVO` y `--nombre-sitio NOMBRE`. El sitio queda en `https://localhost/` (certificado autofirmado: el navegador avisará). Para crear la cuenta: `runuser -u sga_app -- env $(grep -v "^#" /etc/sga/entorno | xargs) /opt/sga/venv/bin/python /opt/sga/src/manage.py crear_administrador --usuario NOMBRE`. Los scripts `verificar*.sh` borran los datos de prueba que crean; **no los ejecute sobre datos que quiera conservar**. 157 pruebas en total.
+
+## Pendientes pequeños de la E0 (actualización 2026-10-24l)
+Pantalla `/cuenta/codigos/` (códigos de recuperación nuevos), ajuste `RAIZ_DOCUMENTOS` para los documentos privados y migración de `btree_gist`. 181 pruebas en total. Toda vista nueva debe usar `login_required` o declararse pública en `cuentas/tests_cuenta.py`.
