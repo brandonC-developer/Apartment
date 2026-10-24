@@ -8,13 +8,28 @@ import logging
 
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404, JsonResponse
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_POST
 
-from . import almacenamiento, services
+from . import almacenamiento, selectors, services
 from .models import TAMANO_MAXIMO, AccesoDocumento, DocumentoIdentidad, Inquilino
 
 registro = logging.getLogger('sga.documentos')
+
+
+@never_cache
+@login_required
+@require_GET
+def pagina_fotografias(request, inquilino_id):
+    """Página mínima para subir el frente y el reverso con el script de reducción (RF-50). La ficha completa y los
+    textos definitivos son del grupo F; esta página solo existe para que la subida tenga dónde ocurrir."""
+    try:
+        ficha = selectors.obtener_ficha(inquilino_id)
+    except Inquilino.DoesNotExist:
+        raise Http404
+    return render(request, 'inquilinos/fotografias.html', {
+        'ficha': ficha, 'caras': [('frente', 'Frente', ficha['frente']), ('reverso', 'Reverso', ficha['reverso'])]})
 
 
 def _ip(request):

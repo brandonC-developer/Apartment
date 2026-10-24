@@ -28,11 +28,11 @@ class PoliticaDeContenidoTests(TestCase):
 
 
 class PlantillasSinCodigoEnLineaTests(SimpleTestCase):
-    """La política prohíbe scripts y estilos en línea: ninguna plantilla debe tenerlos."""
+    """La política prohíbe scripts y estilos en línea: ninguna plantilla debe tenerlos (sí un `<script src>` propio)."""
 
     def test_sin_script_style_ni_manejadores_en_linea(self):
         plantillas = list(Path(settings.BASE_DIR).glob('*/templates/**/*.html'))
         self.assertTrue(plantillas)
         for ruta in plantillas:
             texto = ruta.read_text(encoding='utf-8')
-            self.assertIsNone(re.search(r'<script|<style|\sstyle\s*=|\son[a-z]+\s*=|javascript:', texto, re.I), ruta)
+            self.assertIsNone(re.search(r'<script(?![^>]*\ssrc=)|<style|\sstyle\s*=|\son[a-z]+\s*=|javascript:', texto, re.I), ruta)

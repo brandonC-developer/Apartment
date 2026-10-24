@@ -1,0 +1,4 @@
+-r requirements.txt
+# Solo para las pruebas (no se instala en el servidor): pruebas de extremo a extremo con un navegador real
+# (estrategia de pruebas: Selenium con StaticLiveServerTestCase). 4.50.0 es de 2026-09-30.
+selenium==4.50.0

@@ -50,6 +50,16 @@ prueba "el registro de Nginx tiene los campos del formato propio" 'grep -Eq "^[0
 prueba "Gunicorn no tiene registro de acceso (el journal no trae peticiones)" '! journalctl -u sga-gunicorn.service --no-pager 2>/dev/null | grep -q "GET /entrar/"'
 prueba "la rotación de los registros de Nginx es diaria y de 14 días" 'grep -Eq "^\s*daily" /etc/logrotate.d/nginx && grep -Eq "^\s*rotate 14" /etc/logrotate.d/nginx'
 
+echo; echo "== Archivos estáticos"
+estatico="https://localhost/static/inquilinos/reducir_fotografia.js"
+prueba "el script de reducción se sirve por Nginx con tipo JavaScript, nosniff y caché"   'cab="$(curl -ks -D - -o /tmp/sga_js.txt "$estatico")"; echo "$cab" | head -1 | grep -q " 200" && echo "$cab" | grep -qi "^content-type: .*javascript" && echo "$cab" | grep -qi "^x-content-type-options: nosniff" && echo "$cab" | grep -qi "^cache-control: max-age=3600" && grep -q "LADO_MAXIMO" /tmp/sga_js.txt'
+prueba "la carpeta de estáticos es de root y la aplicación no puede escribir en ella"   '[ "$(stat -c %U /opt/sga/static)" = root ] && ! runuser -u sga_app -- touch /opt/sga/static/intruso'
+prueba "no hay lista de archivos de /static/" '[ "$(curl -ks -o /dev/null -w "%{http_code}" https://localhost/static/)" != "200" ]'
+for ataque in "/static../etc/passwd" "/static/../etc/passwd" "/static/%2e%2e/%2e%2e/etc/passwd" "/static/..%2f..%2fetc/passwd" "/static/inquilinos/../../../etc/passwd" "/static/%2e%2e%2f%2e%2e%2fvar/lib/sga/documentos"; do
+  prueba "intento de salir de /static/: $ataque" '! curl -ks --path-as-is "https://localhost$ataque" | grep -q "root:"; [ "$(curl -ks --path-as-is -o /dev/null -w "%{http_code}" "https://localhost$ataque")" != "200" ]'
+done
+prueba "los documentos privados no se sirven por /static/" '[ "$(curl -ks -o /dev/null -w "%{http_code}" https://localhost/static/cedulas/x.jpg)" = "404" ]'
+
 echo; echo "== Limpieza de la cuenta de prueba"
 runuser -u postgres -- psql -X -q -d sga -c "TRUNCATE cuentas_administrador, nucleo_auditoria, inquilinos_accesodocumento, inquilinos_documentoidentidad, inquilinos_consentimiento, inquilinos_textoconsentimiento, inquilinos_inquilino CASCADE; DELETE FROM django_session" >/dev/null && rm -rf /var/lib/sga/documentos/cedulas && ok "datos de prueba y archivos borrados" || mal "no se borraron los datos de prueba"
 

@@ -202,9 +202,9 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Nginx: `client_max_body_size` de 6 MiB solo en la ruta de subida y 1 MiB en el resto, comprobado en WSL con cuerpos reales (201, 413 y 413) (ADR-003)
 
 **E. Reducción en el navegador** (RF-50; CA-73, CA-74)
-- [ ] Script propio sin bibliotecas: lado mayor de 2048 píxeles sin ampliar, JPEG a calidad 0,85 y menor hasta 0,70 si pasa de 2 MB, reducir el lado si pasa de 5 MiB, conservar la orientación; enviar el original si no puede y cumple el límite
-- [ ] Servir el script como archivo estático propio: `collectstatic` y Nginx sirve `/static/` (decisión 4); comprobar que la CSP no lo bloquea y que Nginx no sirve nada fuera de `/static/` ni los documentos privados
-- [ ] Prueba del script en un navegador real con Selenium y `StaticLiveServerTestCase` (decisión de la estrategia de pruebas; se omite donde no haya navegador) (CA-73) y comprobación manual del navegador sin lienzo (CA-74)
+- [x] Script propio sin bibliotecas (`reducir_fotografia.js`): lado mayor de 2048 píxeles sin ampliar, JPEG a calidad 0,85 y menor (0,80, 0,75, 0,70) si pasa de 2 MB, reducción del lado si pasa de 5 MiB, orientación conservada, fondo blanco para PNG con transparencia; si el navegador no puede, envía el original solo si es JPEG o PNG de hasta 5 MiB y si no avisa antes de enviar; mensajes como texto, nunca como HTML (actualización 2026-10-24v)
+- [x] El script es un archivo estático propio: `collectstatic` a `/opt/sga/static` (de root; la aplicación no puede escribir) y Nginx sirve `/static/` con `alias` emparejado; la CSP en modo informe no registra violaciones; verificado en WSL que no se sale de `/static/` (6 intentos) ni se sirven los documentos privados
+- [x] 11 pruebas en un navegador real con Selenium y `StaticLiveServerTestCase` (Chrome y Edge sin ventana; se omiten donde no hay navegador): una foto de 4032x3024 y 6,44 MiB sale de 2048x1536 y 1,47 MiB (CA-73); sin lienzo se envía el original o se avisa (CA-74). La comprobación **manual** del navegador sin lienzo queda para el grupo G
 
 **F. Pantallas** (decisión 6: funcionales y accesibles, sin estilos; los wireframes siguen pendientes)
 - [ ] Lista con búsqueda y filtro, formulario de registro con el texto del consentimiento, ficha con subida del frente y del reverso, desactivar/reactivar y revocar el consentimiento; todas con `login_required` y CSRF (la prueba de todas las vistas ya lo exige)

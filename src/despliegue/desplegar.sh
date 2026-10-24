@@ -107,6 +107,9 @@ como_dueno() {
     "$DESTINO/venv/bin/python" "$DESTINO/src/manage.py" "$@"
 }
 como_dueno migrate --no-input -v 0
+# Archivos estáticos propios: collectstatic los copia a /opt/sga/static (root, solo lectura para la aplicación).
+install -d -m 0755 /opt/sga/static
+env SGA_ESTATICOS=/opt/sga/static SGA_SECRET_KEY=estaticos-no-usa-esta-clave PYTHONDONTWRITEBYTECODE=1   "$DESTINO/venv/bin/python" "$DESTINO/src/manage.py" collectstatic --noinput --clear -v 0
 como_dueno aplicar_privilegios
 
 paso "9. Certificado autofirmado (etapa A)"

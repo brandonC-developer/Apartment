@@ -143,6 +143,9 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+# Archivos estáticos propios (el script de reducción de fotografías): `collectstatic` los copia aquí y Nginx los sirve
+# en /static/ (decisión del solicitante, 24-oct-2026; Django, «Deploying static files»). Solo lectura para la aplicación.
+STATIC_ROOT = os.environ.get('SGA_ESTATICOS', '/opt/sga/static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Sesión: máximo 24 h (CA-48). El cierre por 1 h de inactividad (CA-48) aún no está implementado.

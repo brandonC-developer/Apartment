@@ -1,4 +1,5 @@
 """Esquema físico y almacenamiento privado (ADR-028, ADR-031 decisión 1, RNF-03, RNF-14)."""
+import re
 from pathlib import Path
 
 from django.apps import apps
@@ -38,7 +39,10 @@ class DocumentosPrivadosTests(SimpleTestCase):
 
     def test_nginx_no_sirve_la_carpeta_de_documentos(self):
         sitio = (Path(settings.BASE_DIR) / 'despliegue/nginx/sga-sitio.conf').read_text(encoding='utf-8')
-        self.assertNotIn('alias', sitio)
+        # Desde la E1 Nginx sirve /static/ (decisión del 24-oct-2026): ese es el ÚNICO alias permitido, con las barras
+        # emparejadas, y nada apunta a la carpeta de documentos.
+        self.assertEqual(re.findall(r'^\s*alias\s+(\S+);', sitio, re.M), ['/opt/sga/static/'])
+        self.assertIn('location /static/ {', sitio)
         self.assertNotIn('root ', sitio)
         self.assertNotIn('/var/lib/sga/documentos', sitio)
 

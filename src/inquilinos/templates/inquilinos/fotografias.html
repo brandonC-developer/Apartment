@@ -1,0 +1,26 @@
+{% extends "cuentas/base.html" %}
+{% load static %}
+{% block titulo %}Fotografías del documento{% endblock %}
+{% block contenido %}
+<h1>Fotografías del documento</h1>
+<p><a href="{% url 'cuentas:inicio' %}">Inicio</a></p>
+<noscript><p role="alert">Esta página necesita JavaScript para preparar las fotografías antes de enviarlas.</p></noscript>
+{% if not ficha.puede_crear_contratos %}<p role="alert">El inquilino no tiene un consentimiento vigente: no se pueden guardar fotografías.</p>{% endif %}
+{% for cara, titulo, documento in caras %}
+<section>
+  <h2>{{ titulo }}</h2>
+  {% if documento %}
+    <p>Cargada. <a href="{% url 'inquilinos:ver_documento' documento.pk %}">Ver</a> · <a href="{% url 'inquilinos:descargar_documento' documento.pk %}">Descargar</a></p>
+  {% else %}
+    <p>{% if cara == "frente" %}Falta el frente: es obligatorio antes de asignar un contrato.{% else %}Sin cargar (opcional).{% endif %}</p>
+  {% endif %}
+  <form method="post" action="{% url 'inquilinos:subir_fotografia' ficha.inquilino.pk cara %}" enctype="multipart/form-data" data-sga-fotografia data-cara="{{ cara }}">
+    {% csrf_token %}
+    <p><label>{% if documento %}Reemplazar{% else %}Elegir{% endif %} {{ titulo|lower }} <input type="file" name="archivo" accept="image/jpeg,image/png"></label></p>
+    <button type="submit">Enviar</button>
+    <p role="status" aria-live="polite" data-sga-mensaje></p>
+  </form>
+</section>
+{% endfor %}
+<script src="{% static 'inquilinos/reducir_fotografia.js' %}" defer></script>
+{% endblock %}
