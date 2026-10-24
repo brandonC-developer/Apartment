@@ -1,0 +1,118 @@
+# Integración continua del SGA (ADR-025; condición 2 de terminado del plan de implementación).
+# En cada cambio: pruebas de Django, `check --deploy` y migraciones aplicadas desde cero contra un
+# PostgreSQL 18, más el despliegue de la base (roles y privilegios) como en el servidor.
+# Las acciones van fijadas por SHA completo (guía de endurecimiento de GitHub Actions); el número de
+# versión consta en el comentario. Las versiones tienen más de dos semanas de publicadas.
+name: Integración continua
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Semanal: aparecen vulnerabilidades en las dependencias sin que cambie el código (ADR-032, decisión 10).
+    - cron: '17 11 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    name: Pruebas, check --deploy y migraciones
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18
+        # Base efímera del servicio: solo existe durante la corrida y no es alcanzable desde fuera;
+        # por eso no lleva contraseña (ADR-032, decisión 12: credenciales efímeras en la integración continua).
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      SGA_BD_HOST: localhost
+      SGA_BD_PUERTO: '5432'
+      SGA_BD_USUARIO: postgres
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+    defaults:
+      run:
+        working-directory: src
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: src/requirements.txt
+
+      - name: Instalar dependencias
+        run: python -m pip install -r requirements.txt
+
+      - name: Migraciones del código al día (sin migraciones pendientes de generar)
+        env:
+          SGA_DEBUG: '1'
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Pruebas de Django (aplican todas las migraciones desde cero)
+        env:
+          SGA_DEBUG: '1'
+        run: python manage.py test --verbosity 1
+
+      - name: check --deploy (solo se admite el aviso de HSTS, que se activa en la etapa B)
+        env:
+          # Valores de la corrida, sin valor fuera de ella.
+          SGA_SECRET_KEY: ci-${{ github.run_id }}-${{ github.run_attempt }}-no-es-un-secreto-0123456789abcdef0123456789
+          SGA_HOSTS_PERMITIDOS: localhost
+        run: |
+          set +e
+          salida=$(python manage.py check --deploy 2>&1)
+          codigo=$?
+          echo "$salida"
+          if [ "$codigo" -ne 0 ]; then echo "check --deploy terminó con código $codigo"; exit 1; fi
+          # Cualquier aviso distinto de security.W004 (HSTS, ADR-032 decisión 5) hace fallar la corrida.
+          if echo "$salida" | grep -oE 'security\.[WE][0-9]+' | grep -vx 'security.W004' | grep -q .; then
+            echo "Hay avisos de despliegue distintos de HSTS."; exit 1
+          fi
+
+      - name: Despliegue de la base como en el servidor (roles, migraciones desde cero y privilegios)
+        env:
+          SGA_DEBUG: '1'
+          SGA_BD_NOMBRE: sga_despliegue
+        run: |
+          set -e
+          psql -v ON_ERROR_STOP=1 -v rol_dueno=sga_dueno -v rol_app=sga_app -v rol_respaldos=sga_respaldos \
+            -v base=sga_despliegue -f db/roles.sql
+          SGA_BD_USUARIO=sga_dueno python manage.py migrate --no-input
+          SGA_BD_USUARIO=sga_dueno python manage.py aplicar_privilegios
+          # La aplicación debe poder leer su configuración con el rol sin privilegios de dueño.
+          SGA_BD_USUARIO=sga_app python manage.py shell -c "from nucleo.models import Organizacion; print(Organizacion.objects.get().zona_horaria)"
+
+  auditoria-dependencias:
+    name: Vulnerabilidades de las dependencias (pip-audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: '3.14'
+
+      - name: pip-audit
+        run: |
+          python -m pip install pip-audit==2.10.1
+          python -m pip_audit -r src/requirements.txt

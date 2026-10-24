@@ -38,6 +38,10 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = [h for h in os.environ.get('SGA_ALLOWED_HOSTS', '').split(',') if h]
 
+# Nombres con los que se atiende al sitio, separados por comas (`check --deploy` exige que no esté
+# vacío). Con SGA_DEBUG=1 y sin valor, Django admite localhost.
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('SGA_HOSTS_PERMITIDOS', '').split(',') if h.strip()]
+
 INSTALLED_APPS = [
     # Sin django.contrib.admin: la interfaz es propia (propuesta; reduce la superficie expuesta).
     'django.contrib.auth',

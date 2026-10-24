@@ -49,3 +49,6 @@ Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional proteg
 1. Una vez, como `postgres`: `psql -v ON_ERROR_STOP=1 -v rol_dueno=sga_dueno -v rol_app=sga_app -v rol_respaldos=sga_respaldos -v base=sga -f db/roles.sql`.
 2. Tras cada despliegue, como rol dueño: `SGA_BD_USUARIO=sga_dueno python manage.py migrate` y `SGA_BD_USUARIO=sga_dueno python manage.py aplicar_privilegios`.
 3. Gunicorn y los comandos diarios usan el rol `sga_app`. Toda tabla nueva necesita su entrada en `sga/privilegios.py`; una prueba lo exige. 140 pruebas en total (las de roles necesitan un usuario de conexión que pueda crear roles).
+
+## Integración continua (actualización 2026-10-24h)
+`.github/workflows/integracion-continua.yml` (en la raíz del repositorio). Pasos que puede repetir en local: `python manage.py makemigrations --check --dry-run`, `python manage.py test` y, sin `SGA_DEBUG`, `python manage.py check --deploy` con `SGA_SECRET_KEY` y `SGA_HOSTS_PERMITIDOS` definidos (solo debe quedar el aviso de HSTS). Nota: el aviso `security.W020` (ALLOWED_HOSTS vacío) también aparece sin `SGA_HOSTS_PERMITIDOS`; la afirmación anterior de este archivo de que solo avisaba de HSTS no incluía ese caso.

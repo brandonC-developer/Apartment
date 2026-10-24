@@ -152,6 +152,7 @@ Carpetas transversales:
 | 2026-10-24 (e) | `actualizaciones/2026-10-24e_auditoria-base/` | Auditoría base (RF-28, CA-53, CA-71): modelo de solo inserción, eventos de autenticación con IP, pantalla de consulta de solo lectura y alerta de avisos de seguridad; 100 pruebas pasan en un PostgreSQL desechable; sin rol de PostgreSQL de solo inserción |
 | 2026-10-24 (f) | `actualizaciones/2026-10-24f_organizacion-configuracion-regional/` | Organización y configuración regional (RF-33, RNF-12, RNF-17, CA-18): fila única, zona activa por petición, formato propio de fechas, números, moneda y porcentajes; 121 pruebas pasan en un PostgreSQL desechable |
 | 2026-10-24 (g) | `actualizaciones/2026-10-24g_roles-y-privilegios/` | Tres roles de PostgreSQL (`db/roles.sql`) y archivo de privilegios idempotente (`sga/privilegios.py`, `aplicar_privilegios`); la aplicación es rechazada en `UPDATE` y `DELETE` sobre la auditoría con SQL directo; 140 pruebas pasan y un recorrido real con el rol de la aplicación; sin `peer` real |
+| 2026-10-24 (h) | `actualizaciones/2026-10-24h_integracion-continua/` | Flujo de GitHub Actions (ADR-025): migraciones al día, pruebas, `check --deploy` y despliegue de la base con PostgreSQL 18 y Python 3.14, más `pip-audit`; simulado paso a paso en local, **sin correr aún en GitHub** |
 
 ## Control de versiones
 

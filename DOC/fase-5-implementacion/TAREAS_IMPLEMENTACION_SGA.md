@@ -93,7 +93,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] Usuarios de sistema estáticos para la aplicación y los respaldos; unidades con `NoNewPrivileges` y `ProtectSystem=strict` (ADR-032 d4)
 - [ ] Registros de Nginx con formato propio sin cadena de consulta y Gunicorn sin registro de acceso; rotación diaria de 14 días (ADR-032 d17)
 - [ ] Despliegue repetible con un solo comando (criterio de salida)
-- [ ] `manage.py check --deploy` sin avisos distintos de HSTS (ADR-025)
+- [~] `manage.py check --deploy` sin avisos distintos de HSTS: pasa en local con `SGA_HOSTS_PERMITIDOS` definido (sin él da el aviso W020); falta la corrida en el flujo
 
 ### G. Respaldo cifrado y restauración (ADR-024, ADR-032 d9; RNF-09)
 - [ ] Elegir la herramienta de cifrado de los respaldos: el DAS fija `age` con clave pública (ADR-032 d9); confirmar antes de usarla
@@ -104,9 +104,9 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] Marca del último respaldo correcto, escrita solo al terminar la subida (ADR-032 d15; la vigilancia es RF-53 en la E4)
 
 ### H. Integración continua (ADR-025, ADR-032 d10)
-- [ ] GitHub Actions con PostgreSQL 18: pruebas de Django, `check --deploy` y migraciones aplicadas desde cero
-- [ ] `pip-audit` en la integración continua (ADR-032 d10)
-- [ ] Repetir todo en Python 3.14
+- [~] Flujo de GitHub Actions `.github/workflows/integracion-continua.yml` (PostgreSQL 18, Python 3.14): migraciones al día, pruebas desde cero, `check --deploy` y despliegue de la base con roles y privilegios (ADR-025). **Escrito y simulado paso a paso en local con Python 3.12; sin correr todavía en GitHub: la primera corrida verde es lo que cierra esta tarea** (actualización 2026-10-24h)
+- [~] `pip-audit` en un trabajo propio del flujo, con ejecución semanal además de cada cambio (ADR-032 d10); sin vulnerabilidades en las cinco dependencias al consultarlo en local el 2026-10-24; falta su primera corrida en GitHub
+- [~] Repetir todo en Python 3.14: el flujo usa 3.14, así que su primera corrida lo dirá (pyotp, `psycopg` y `cryptography` no se han probado con 3.14); si algo falla, se vuelven a fijar las versiones (plan, sección 5.2)
 
 ### I. Pruebas de seguridad de la aplicación de la E0 (EPP, sección 7)
 - [ ] Contraseña de mínimo 15 caracteres y Argon2id (probadas parcialmente en `nucleo`)
