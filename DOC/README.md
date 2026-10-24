@@ -158,6 +158,7 @@ Carpetas transversales:
 | 2026-10-24 (k) | `actualizaciones/2026-10-24k_gitattributes-configuracion/` | `.gitattributes`: fin de línea LF también para `*.conf`, `*.service`, `*.socket` y `*.timer`, que se copian tal cual a Linux |
 | 2026-10-24 (l) | `actualizaciones/2026-10-24l_pendientes-pequenos-e0/` | Pendientes pequeños de la E0: pantalla de códigos de recuperación nuevos (CA-69), pruebas de concurrencia del contador, todas las vistas exigen sesión, CSRF, sin secretos en los registros, `BigAutoField`, carpeta de documentos privados y `btree_gist`; 181 pruebas pasan, también con Python 3.14 en WSL |
 | 2026-10-24 (m) | `actualizaciones/2026-10-24m_revision-codigo-sin-cubrir-e0/` | Revisión del código sin cubrir de la E0 (condición 5 de terminado), una autorrevisión: cobertura de 94 % a 99 %, 15 pruebas nuevas, 196 en total; no sustituye la revisión por otra persona |
+| 2026-10-24 (n) | `actualizaciones/2026-10-24n_cierre-e0/` | Cierre de la entrega E0: 9 de 9 condiciones de terminado y 7 de 8 CA (CA-18 con su parte de contratos en USD diferida a la E2 por aceptación del solicitante); integración continua en verde según el solicitante; no empieza la E1 sin su autorización |
 
 ## Control de versiones
 

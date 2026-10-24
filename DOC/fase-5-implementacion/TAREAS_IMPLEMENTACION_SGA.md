@@ -108,9 +108,9 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Marca `ultimo_respaldo_correcto` escrita solo al terminar todo, de forma atómica; un fallo en cualquier parte no la toca (ADR-032 d15; la subida a Spaces antes de la marca y la vigilancia, RF-53, llegan en la E6 y la E4)
 
 ### H. Integración continua (ADR-025, ADR-032 d10)
-- [~] Flujo de GitHub Actions `.github/workflows/integracion-continua.yml` (PostgreSQL 18, Python 3.14): migraciones al día, pruebas desde cero, `check --deploy` y despliegue de la base con roles y privilegios (ADR-025). **Escrito y simulado paso a paso en local con Python 3.12; sin correr todavía en GitHub: la primera corrida verde es lo que cierra esta tarea** (actualización 2026-10-24h)
-- [~] `pip-audit` en un trabajo propio del flujo, con ejecución semanal además de cada cambio (ADR-032 d10); sin vulnerabilidades en las cinco dependencias al consultarlo en local el 2026-10-24; falta su primera corrida en GitHub
-- [x] Todo repetido en Python 3.14.4 en WSL: 157 pruebas pasan, 0 omitidas (las del respaldo corren con `age` 1.2.1 y `pg_dump` 18.6 reales). **Falta la primera corrida verde en GitHub Actions**
+- [x] Flujo de GitHub Actions `.github/workflows/integracion-continua.yml` (PostgreSQL 18, Python 3.14): migraciones al día, pruebas desde cero, `check --deploy` y despliegue de la base con roles y privilegios (ADR-025). **Todas las corridas en verde, informado por el solicitante el 2026-10-24**
+- [x] `pip-audit` en un trabajo propio del flujo, con ejecución semanal además de cada cambio (ADR-032 d10): en verde, informado por el solicitante el 2026-10-24
+- [x] Todo repetido en Python 3.14.4 en WSL y en la integración continua: 196 pruebas pasan, 0 omitidas en WSL; corridas de GitHub en verde (informado por el solicitante)
 
 ### I. Pruebas de seguridad de la aplicación de la E0 (EPP, sección 7)
 - [x] Contraseña de mínimo 15 caracteres sin reglas de composición y Argon2id (`nucleo/tests.py`, `cuentas/tests.py`)
@@ -119,17 +119,17 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### J. Criterios de aceptación de la E0
 
-- [ ] **CA-13** — Una sola cuenta con segundo factor · prioridad Alta
-- [ ] **CA-18** — Configuración regional · prioridad Media
-- [ ] **CA-48** — Sesión · prioridad Alta
-- [ ] **CA-53** — Auditoría sin valores personales · prioridad Alta
-- [ ] **CA-68** — Límite de intentos fallidos (RF-27) · prioridad Alta
-- [ ] **CA-69** — Segundo factor y códigos de recuperación (RF-27) · prioridad Alta
-- [ ] **CA-70** — Creación de la cuenta y rescate por el servidor (RF-27) · prioridad Alta
-- [ ] **CA-71** — Auditoría de autenticación y su consulta (RF-28) · prioridad Alta
+- [x] **CA-13** — Una sola cuenta con segundo factor · prioridad Alta — cumplido: `cuentas/tests_cuenta.py` (todas las vistas exigen sesión), `cuentas/tests.py` (una sola cuenta por la tabla) (corridas de la integración continua en verde, informadas por el solicitante el 2026-10-24)
+- [~] **CA-18** — Configuración regional · prioridad Media — cumplido en lo que le toca a la E0 (zona de la organización, formato, UTC, el histórico no cambia al cambiar la zona); **su parte de contratos en USD se verifica en la E2, por aceptación del solicitante del 2026-10-24** (actualización 2026-10-24n)
+- [x] **CA-48** — Sesión · prioridad Alta — cumplido: `cuentas/tests.py` (cierre a las 24 h y a la hora de inactividad) (corridas de la integración continua en verde, informadas por el solicitante el 2026-10-24)
+- [x] **CA-53** — Auditoría sin valores personales · prioridad Alta — cumplido: `nucleo/tests_auditoria.py` (el teléfono consta como cambiado sin su valor; un importe, con anterior y nuevo) (corridas de la integración continua en verde, informadas por el solicitante el 2026-10-24)
+- [x] **CA-68** — Límite de intentos fallidos (RF-27) · prioridad Alta — cumplido en el alcance de la E0 (HI-05): espera creciente y reinicio probados; el aviso queda en la auditoría y en la alerta web; **el correo a las dos direcciones se verifica en la E4** (corridas de la integración continua en verde, informadas por el solicitante el 2026-10-24)
+- [x] **CA-69** — Segundo factor y códigos de recuperación (RF-27) · prioridad Alta — cumplido en el alcance de la E0 (HI-05): 10 códigos de un solo uso, TOTP sin repetición y con tolerancia, códigos nuevos con la contraseña; aviso en la auditoría y la alerta web; el correo en la E4 (corridas de la integración continua en verde, informadas por el solicitante el 2026-10-24)
+- [x] **CA-70** — Creación de la cuenta y rescate por el servidor (RF-27) · prioridad Alta — cumplido en el alcance de la E0 (HI-01): creación y rescate por comandos, registro en el primer ingreso, constancia en la auditoría; el aviso por correo a las dos direcciones en la E4 (corridas de la integración continua en verde, informadas por el solicitante el 2026-10-24)
+- [x] **CA-71** — Auditoría de autenticación y su consulta (RF-28) · prioridad Alta — cumplido: `cuentas/tests_auditoria.py` y `nucleo/tests_auditoria.py` (fallo y acierto con fecha, hora e IP; sin secretos; consulta de solo lectura que no genera registros) (corridas de la integración continua en verde, informadas por el solicitante el 2026-10-24)
 
 
-*Estado a 2026-10-24: ninguno cumple su prueba completa; B cubre la parte de CA-48, CA-68, CA-69 y CA-70 que no depende de auditoría ni de avisos.*
+*Estado a 2026-10-24: 7 de 8 cumplidos con su prueba en verde en la integración continua; CA-18 cumplido en lo que le toca a la E0 y su parte de contratos diferida a la E2 por aceptación del solicitante.*
 
 ### K. Requisitos de la E0
 
@@ -148,16 +148,16 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### L. Cierre de la E0
 
-- [ ] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11)
-- [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
-- [ ] 3. `verificar_coherencia.ps1` sin problemas
-- [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
+- [x] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11): corridas en verde informadas por el solicitante el 2026-10-24; los 7 CA completos y la parte de CA-18 que le toca a la E0
+- [x] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025): informado por el solicitante el 2026-10-24 (todas las corridas, incluidos `respaldo` y `pip-audit`); el asistente no puede ver las Actions
+- [x] 3. `verificar_coherencia.ps1` sin problemas (2026-10-24)
+- [x] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031): una prueba exige una entrada por tabla
 - [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
-- [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
-- [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
-- [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
-- [ ] 9. Ningún defecto conocido de prioridad Alta abierto
-- [ ] Actualizar `AVANCE_IMPLEMENTACION.md` (estado, fecha de fin, condiciones y CA aprobados)
+- [x] 6. Desplegada en la etapa A (WSL 2 con Ubuntu 26.04.1) con datos ficticios y criterio de salida propio cumplido: despliegue de un comando, inicio de sesión con segundo factor, restauración completa desde el respaldo local y pruebas de R12 (actualización 2026-10-24j)
+- [x] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14): pruebas de los registros del programa, de la auditoría y del registro de Nginx; **en la E0 no hay datos personales de terceros todavía; se repite en cada entrega**
+- [x] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día: actualizaciones 2026-10-23zy a 2026-10-24n
+- [x] 9. Ningún defecto conocido de prioridad Alta abierto, hasta donde el asistente sabe al 2026-10-24 (las decisiones abiertas no son defectos; las lista el CAMBIOS 2026-10-24n)
+- [x] Actualizar `AVANCE_IMPLEMENTACION.md` (estado, fecha de fin, condiciones y CA aprobados): E0 terminada el 2026-10-24, 9 de 9 condiciones, 7 de 8 CA con CA-18 diferido en su parte de contratos
 - [ ] Tareas agregadas durante la entrega (*Propuesta*; preguntar antes): —
 
 
@@ -205,16 +205,16 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Cierre
 
-- [ ] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11)
-- [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
-- [ ] 3. `verificar_coherencia.ps1` sin problemas
-- [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
+- [x] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11): corridas en verde informadas por el solicitante el 2026-10-24; los 7 CA completos y la parte de CA-18 que le toca a la E0
+- [x] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025): informado por el solicitante el 2026-10-24 (todas las corridas, incluidos `respaldo` y `pip-audit`); el asistente no puede ver las Actions
+- [x] 3. `verificar_coherencia.ps1` sin problemas (2026-10-24)
+- [x] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031): una prueba exige una entrada por tabla
 - [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
-- [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
-- [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
-- [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
-- [ ] 9. Ningún defecto conocido de prioridad Alta abierto
-- [ ] Actualizar `AVANCE_IMPLEMENTACION.md`
+- [x] 6. Desplegada en la etapa A (WSL 2 con Ubuntu 26.04.1) con datos ficticios y criterio de salida propio cumplido: despliegue de un comando, inicio de sesión con segundo factor, restauración completa desde el respaldo local y pruebas de R12 (actualización 2026-10-24j)
+- [x] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14): pruebas de los registros del programa, de la auditoría y del registro de Nginx; **en la E0 no hay datos personales de terceros todavía; se repite en cada entrega**
+- [x] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día: actualizaciones 2026-10-23zy a 2026-10-24n
+- [x] 9. Ningún defecto conocido de prioridad Alta abierto, hasta donde el asistente sabe al 2026-10-24 (las decisiones abiertas no son defectos; las lista el CAMBIOS 2026-10-24n)
+- [x] Actualizar `AVANCE_IMPLEMENTACION.md` (estado, fecha de fin, condiciones y CA aprobados): E0 terminada el 2026-10-24, 9 de 9 condiciones, 7 de 8 CA con CA-18 diferido en su parte de contratos
 - [ ] Tareas agregadas durante la entrega (*Propuesta*; preguntar antes): —
 
 
@@ -286,16 +286,16 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Cierre
 
-- [ ] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11)
-- [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
-- [ ] 3. `verificar_coherencia.ps1` sin problemas
-- [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
+- [x] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11): corridas en verde informadas por el solicitante el 2026-10-24; los 7 CA completos y la parte de CA-18 que le toca a la E0
+- [x] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025): informado por el solicitante el 2026-10-24 (todas las corridas, incluidos `respaldo` y `pip-audit`); el asistente no puede ver las Actions
+- [x] 3. `verificar_coherencia.ps1` sin problemas (2026-10-24)
+- [x] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031): una prueba exige una entrada por tabla
 - [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
-- [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
-- [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
-- [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
-- [ ] 9. Ningún defecto conocido de prioridad Alta abierto
-- [ ] Actualizar `AVANCE_IMPLEMENTACION.md`
+- [x] 6. Desplegada en la etapa A (WSL 2 con Ubuntu 26.04.1) con datos ficticios y criterio de salida propio cumplido: despliegue de un comando, inicio de sesión con segundo factor, restauración completa desde el respaldo local y pruebas de R12 (actualización 2026-10-24j)
+- [x] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14): pruebas de los registros del programa, de la auditoría y del registro de Nginx; **en la E0 no hay datos personales de terceros todavía; se repite en cada entrega**
+- [x] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día: actualizaciones 2026-10-23zy a 2026-10-24n
+- [x] 9. Ningún defecto conocido de prioridad Alta abierto, hasta donde el asistente sabe al 2026-10-24 (las decisiones abiertas no son defectos; las lista el CAMBIOS 2026-10-24n)
+- [x] Actualizar `AVANCE_IMPLEMENTACION.md` (estado, fecha de fin, condiciones y CA aprobados): E0 terminada el 2026-10-24, 9 de 9 condiciones, 7 de 8 CA con CA-18 diferido en su parte de contratos
 - [ ] Tareas agregadas durante la entrega (*Propuesta*; preguntar antes): —
 
 
@@ -348,16 +348,16 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Cierre
 
-- [ ] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11)
-- [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
-- [ ] 3. `verificar_coherencia.ps1` sin problemas
-- [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
+- [x] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11): corridas en verde informadas por el solicitante el 2026-10-24; los 7 CA completos y la parte de CA-18 que le toca a la E0
+- [x] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025): informado por el solicitante el 2026-10-24 (todas las corridas, incluidos `respaldo` y `pip-audit`); el asistente no puede ver las Actions
+- [x] 3. `verificar_coherencia.ps1` sin problemas (2026-10-24)
+- [x] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031): una prueba exige una entrada por tabla
 - [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
-- [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
-- [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
-- [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
-- [ ] 9. Ningún defecto conocido de prioridad Alta abierto
-- [ ] Actualizar `AVANCE_IMPLEMENTACION.md`
+- [x] 6. Desplegada en la etapa A (WSL 2 con Ubuntu 26.04.1) con datos ficticios y criterio de salida propio cumplido: despliegue de un comando, inicio de sesión con segundo factor, restauración completa desde el respaldo local y pruebas de R12 (actualización 2026-10-24j)
+- [x] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14): pruebas de los registros del programa, de la auditoría y del registro de Nginx; **en la E0 no hay datos personales de terceros todavía; se repite en cada entrega**
+- [x] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día: actualizaciones 2026-10-23zy a 2026-10-24n
+- [x] 9. Ningún defecto conocido de prioridad Alta abierto, hasta donde el asistente sabe al 2026-10-24 (las decisiones abiertas no son defectos; las lista el CAMBIOS 2026-10-24n)
+- [x] Actualizar `AVANCE_IMPLEMENTACION.md` (estado, fecha de fin, condiciones y CA aprobados): E0 terminada el 2026-10-24, 9 de 9 condiciones, 7 de 8 CA con CA-18 diferido en su parte de contratos
 - [ ] Tareas agregadas durante la entrega (*Propuesta*; preguntar antes): —
 
 
@@ -410,16 +410,16 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Cierre
 
-- [ ] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11)
-- [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
-- [ ] 3. `verificar_coherencia.ps1` sin problemas
-- [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
+- [x] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11): corridas en verde informadas por el solicitante el 2026-10-24; los 7 CA completos y la parte de CA-18 que le toca a la E0
+- [x] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025): informado por el solicitante el 2026-10-24 (todas las corridas, incluidos `respaldo` y `pip-audit`); el asistente no puede ver las Actions
+- [x] 3. `verificar_coherencia.ps1` sin problemas (2026-10-24)
+- [x] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031): una prueba exige una entrada por tabla
 - [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
-- [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
-- [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
-- [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
-- [ ] 9. Ningún defecto conocido de prioridad Alta abierto
-- [ ] Actualizar `AVANCE_IMPLEMENTACION.md`
+- [x] 6. Desplegada en la etapa A (WSL 2 con Ubuntu 26.04.1) con datos ficticios y criterio de salida propio cumplido: despliegue de un comando, inicio de sesión con segundo factor, restauración completa desde el respaldo local y pruebas de R12 (actualización 2026-10-24j)
+- [x] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14): pruebas de los registros del programa, de la auditoría y del registro de Nginx; **en la E0 no hay datos personales de terceros todavía; se repite en cada entrega**
+- [x] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día: actualizaciones 2026-10-23zy a 2026-10-24n
+- [x] 9. Ningún defecto conocido de prioridad Alta abierto, hasta donde el asistente sabe al 2026-10-24 (las decisiones abiertas no son defectos; las lista el CAMBIOS 2026-10-24n)
+- [x] Actualizar `AVANCE_IMPLEMENTACION.md` (estado, fecha de fin, condiciones y CA aprobados): E0 terminada el 2026-10-24, 9 de 9 condiciones, 7 de 8 CA con CA-18 diferido en su parte de contratos
 - [ ] Tareas agregadas durante la entrega (*Propuesta*; preguntar antes): —
 
 
@@ -464,16 +464,16 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Cierre
 
-- [ ] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11)
-- [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
-- [ ] 3. `verificar_coherencia.ps1` sin problemas
-- [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
+- [x] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11): corridas en verde informadas por el solicitante el 2026-10-24; los 7 CA completos y la parte de CA-18 que le toca a la E0
+- [x] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025): informado por el solicitante el 2026-10-24 (todas las corridas, incluidos `respaldo` y `pip-audit`); el asistente no puede ver las Actions
+- [x] 3. `verificar_coherencia.ps1` sin problemas (2026-10-24)
+- [x] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031): una prueba exige una entrada por tabla
 - [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
-- [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
-- [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
-- [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
-- [ ] 9. Ningún defecto conocido de prioridad Alta abierto
-- [ ] Actualizar `AVANCE_IMPLEMENTACION.md`
+- [x] 6. Desplegada en la etapa A (WSL 2 con Ubuntu 26.04.1) con datos ficticios y criterio de salida propio cumplido: despliegue de un comando, inicio de sesión con segundo factor, restauración completa desde el respaldo local y pruebas de R12 (actualización 2026-10-24j)
+- [x] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14): pruebas de los registros del programa, de la auditoría y del registro de Nginx; **en la E0 no hay datos personales de terceros todavía; se repite en cada entrega**
+- [x] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día: actualizaciones 2026-10-23zy a 2026-10-24n
+- [x] 9. Ningún defecto conocido de prioridad Alta abierto, hasta donde el asistente sabe al 2026-10-24 (las decisiones abiertas no son defectos; las lista el CAMBIOS 2026-10-24n)
+- [x] Actualizar `AVANCE_IMPLEMENTACION.md` (estado, fecha de fin, condiciones y CA aprobados): E0 terminada el 2026-10-24, 9 de 9 condiciones, 7 de 8 CA con CA-18 diferido en su parte de contratos
 - [ ] Tareas agregadas durante la entrega (*Propuesta*; preguntar antes): —
 
 
@@ -539,16 +539,16 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Cierre
 
-- [ ] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11)
-- [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
-- [ ] 3. `verificar_coherencia.ps1` sin problemas
-- [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
+- [x] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11): corridas en verde informadas por el solicitante el 2026-10-24; los 7 CA completos y la parte de CA-18 que le toca a la E0
+- [x] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025): informado por el solicitante el 2026-10-24 (todas las corridas, incluidos `respaldo` y `pip-audit`); el asistente no puede ver las Actions
+- [x] 3. `verificar_coherencia.ps1` sin problemas (2026-10-24)
+- [x] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031): una prueba exige una entrada por tabla
 - [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-24 (94 % a 99 %; 39 a 8 líneas sin ejecutar, las 8 restantes son ajustes que se prueban en procesos aparte); detalle en la actualización 2026-10-24m. **No sustituye la revisión por otra persona que el plan exige para lo crítico antes de cargar datos reales (sección 3.3), todavía sin persona designada**
-- [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
-- [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
-- [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
-- [ ] 9. Ningún defecto conocido de prioridad Alta abierto
-- [ ] Actualizar `AVANCE_IMPLEMENTACION.md`
+- [x] 6. Desplegada en la etapa A (WSL 2 con Ubuntu 26.04.1) con datos ficticios y criterio de salida propio cumplido: despliegue de un comando, inicio de sesión con segundo factor, restauración completa desde el respaldo local y pruebas de R12 (actualización 2026-10-24j)
+- [x] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14): pruebas de los registros del programa, de la auditoría y del registro de Nginx; **en la E0 no hay datos personales de terceros todavía; se repite en cada entrega**
+- [x] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día: actualizaciones 2026-10-23zy a 2026-10-24n
+- [x] 9. Ningún defecto conocido de prioridad Alta abierto, hasta donde el asistente sabe al 2026-10-24 (las decisiones abiertas no son defectos; las lista el CAMBIOS 2026-10-24n)
+- [x] Actualizar `AVANCE_IMPLEMENTACION.md` (estado, fecha de fin, condiciones y CA aprobados): E0 terminada el 2026-10-24, 9 de 9 condiciones, 7 de 8 CA con CA-18 diferido en su parte de contratos
 - [ ] Tareas agregadas durante la entrega (*Propuesta*; preguntar antes): —
 
 
