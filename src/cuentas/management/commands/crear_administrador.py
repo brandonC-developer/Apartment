@@ -5,6 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 
+from cuentas.autenticacion import emitir_token_registro
 from cuentas.models import Administrador
 
 
@@ -25,8 +26,10 @@ class Command(BaseCommand):
             validate_password(contrasena)
         except ValidationError as error:
             raise CommandError(' '.join(error.messages))
-        Administrador.objects.crear_administrador(usuario, contrasena)
+        administrador = Administrador.objects.crear_administrador(usuario, contrasena)
+        token = emitir_token_registro(administrador)
         self.stdout.write(self.style.SUCCESS(f'Cuenta «{usuario}» creada. Segundo factor sin registrar.'))
+        self.stdout.write(f'Token de registro del segundo factor (se muestra una sola vez, vale 24 horas): {token}')
 
     def pedir_contrasena(self):
         primera = getpass('Contraseña: ')

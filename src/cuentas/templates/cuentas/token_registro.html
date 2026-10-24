@@ -1,0 +1,11 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}Token de registro{% endblock %}
+{% block contenido %}
+<h1>Token de registro</h1>
+<p>Escriba el token que mostró el comando del servidor al crear la cuenta o al rescatar el segundo factor.</p>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="post">{% csrf_token %}
+  <p><label>Token <input name="token" autocomplete="off" required autofocus></label></p>
+  <button type="submit">Continuar</button>
+</form>
+{% endblock %}

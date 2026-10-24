@@ -35,6 +35,9 @@ class Administrador(AbstractBaseUser):
     fallos_consecutivos = models.PositiveIntegerField(default=0)
     espera_hasta = models.DateTimeField(null=True, blank=True)
     ultimo_intervalo_totp = models.BigIntegerField(null=True, blank=True)
+    # Token de un solo uso para registrar el segundo factor (solo su hash); actualización 2026-10-24d.
+    token_registro_hash = models.CharField(max_length=64, blank=True, default='')
+    token_registro_vence = models.DateTimeField(null=True, blank=True)
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 

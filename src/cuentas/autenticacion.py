@@ -29,6 +29,7 @@ class Resultado(Enum):
     CORRECTO = 'correcto'
     INCORRECTO = 'incorrecto'
     EN_ESPERA = 'en_espera'
+    TOKEN_INVALIDO = 'token_invalido'
 
 
 class Respuesta:
@@ -88,7 +89,7 @@ def _intervalo_aceptado(secreto, codigo, ahora):
     """Intervalo del código si coincide con el actual o con uno anterior o posterior; si no, None."""
     totp = pyotp.TOTP(secreto, digits=DIGITOS_TOTP, interval=INTERVALO_TOTP)
     actual = int(ahora.timestamp()) // INTERVALO_TOTP
-    codigo = (codigo or '').strip()
+    codigo = ''.join((codigo or '').split())  # '123 456', como lo muestran las aplicaciones
     aceptado = None
     for intervalo in (actual - 1, actual, actual + 1):
         esperado = totp.at(intervalo * INTERVALO_TOTP)
@@ -181,8 +182,54 @@ def verificar_codigo_recuperacion(administrador_id, codigo, ahora=None):
         return Respuesta(Resultado.CORRECTO, administrador=administrador)
 
 
-def activar_segundo_factor(administrador_id, secreto, codigo, ahora=None):
-    """Registro del segundo factor en el primer ingreso (RF-27). Comprueba el código contra el
+# Token de registro del segundo factor (propuesta del asistente, actualización 2026-10-24d): sin él,
+# quien conozca solo la contraseña podría registrar su propio segundo factor mientras la cuenta no
+# tenga uno. Lo imprimen los comandos de creación y de rescate; se guarda solo su hash.
+VIGENCIA_TOKEN_REGISTRO = timedelta(hours=24)
+
+
+def hash_token(token):
+    return hashlib.sha256(''.join((token or '').split()).encode('utf-8')).hexdigest()
+
+
+def emitir_token_registro(administrador, ahora=None):
+    """Genera un token de un solo uso, lo guarda con hash y lo devuelve en claro (única vez)."""
+    ahora = ahora or timezone.now()
+    token = secrets.token_urlsafe(16)
+    administrador.token_registro_hash = hash_token(token)
+    administrador.token_registro_vence = ahora + VIGENCIA_TOKEN_REGISTRO
+    administrador.save(update_fields=['token_registro_hash', 'token_registro_vence', 'actualizado_en'])
+    return token
+
+
+def _token_vigente(administrador, hash_recibido, ahora):
+    return bool(
+        administrador.token_registro_hash
+        and administrador.token_registro_vence is not None
+        and ahora <= administrador.token_registro_vence
+        and hmac.compare_digest(hash_recibido, administrador.token_registro_hash)
+    )
+
+
+def comprobar_token_registro(administrador_id, token, ahora=None):
+    """Prueba de que quien registra el segundo factor tiene acceso al servidor. Un token
+    incorrecto suma al contador compartido; uno correcto no lo reinicia (solo lo hace un
+    segundo factor correcto)."""
+    ahora = ahora or timezone.now()
+    with transaction.atomic():
+        administrador = Administrador.objects.select_for_update().get(pk=administrador_id)
+        if administrador.segundo_factor_activo:
+            return Respuesta(Resultado.INCORRECTO)
+        if _en_espera(administrador, ahora):
+            return Respuesta(Resultado.EN_ESPERA, espera_hasta=administrador.espera_hasta)
+        if not _token_vigente(administrador, hash_token(token), ahora):
+            return _registrar_fallo(administrador, ahora)
+        return Respuesta(Resultado.CORRECTO, administrador=administrador)
+
+
+def activar_segundo_factor(administrador_id, secreto, codigo, hash_del_token, ahora=None):
+    """Registro del segundo factor en el primer ingreso (RF-27). Exige el token de registro
+    (se vuelve a comprobar aquí, bajo bloqueo, y se consume). Comprueba el código contra el
     `secreto` propuesto con las mismas reglas y el mismo contador de intentos que el inicio de
     sesión; si es correcto lo guarda cifrado, lo activa y emite los 10 códigos de recuperación.
     Nunca reemplaza un segundo factor ya activo (eso exige la sesión y la contraseña). Devuelve
@@ -194,6 +241,8 @@ def activar_segundo_factor(administrador_id, secreto, codigo, ahora=None):
             return Respuesta(Resultado.INCORRECTO), None
         if _en_espera(administrador, ahora):
             return Respuesta(Resultado.EN_ESPERA, espera_hasta=administrador.espera_hasta), None
+        if not _token_vigente(administrador, hash_del_token or '', ahora):
+            return Respuesta(Resultado.TOKEN_INVALIDO), None
         aceptado = _intervalo_aceptado(secreto, codigo, ahora)
         if aceptado is None:
             return _registrar_fallo(administrador, ahora), None
@@ -202,6 +251,8 @@ def activar_segundo_factor(administrador_id, secreto, codigo, ahora=None):
         administrador.ultimo_intervalo_totp = aceptado
         administrador.fallos_consecutivos = 0
         administrador.espera_hasta = None
+        administrador.token_registro_hash = ''
+        administrador.token_registro_vence = None
         administrador.save()
         codigos = _generar_codigos(administrador)
         return Respuesta(Resultado.CORRECTO, administrador=administrador), codigos

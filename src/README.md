@@ -35,3 +35,6 @@ Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional proteg
 
 ## Comandos de gestión (actualización 2026-10-24a)
 `python manage.py crear_administrador --usuario X` y `python manage.py rescatar_segundo_factor`. 56 pruebas en total. Una cuenta recién creada registra su segundo factor en el primer ingreso (actualización 2026-10-24b, 64 pruebas), sin código QR.
+
+## Token de registro del segundo factor (actualización 2026-10-24d)
+`crear_administrador` y `rescatar_segundo_factor` imprimen un token de un solo uso (24 h) que la pantalla de registro pide antes de mostrar la clave. 78 pruebas en total.

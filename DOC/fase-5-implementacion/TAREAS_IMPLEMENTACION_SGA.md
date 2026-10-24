@@ -52,10 +52,11 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Vista de inicio de sesión en dos pasos: la contraseña sola no inicia sesión (2026-10-24, 1ee8ab6; RF-26, RNF-01)
 - [x] Sesión con cierre a las 24 h y por inactividad de 1 h (1ee8ab6; CA-48)
 - [x] Comandos de servidor `crear_administrador` y `rescatar_segundo_factor` (2026-10-24, 26e7895; CA-70)
-- [x] Registro del segundo factor en el primer ingreso y entrega única de los 10 códigos (2026-10-24, **código escrito y 64 pruebas pasan; sin commit**; CA-70)
+- [x] Registro del segundo factor en el primer ingreso y entrega única de los 10 códigos (2026-10-24, a097789; CA-70)
+- [x] Token de registro del segundo factor (un solo uso, 24 h, solo su hash) que imprimen `crear_administrador` y `rescatar_segundo_factor`; sin él, la contraseña sola no permite registrar un segundo factor (2026-10-24, actualización 2026-10-24d; propuesta del asistente derivada de la revisión de código)
 - [ ] Pantalla para emitir códigos de recuperación nuevos con la contraseña actual, desde la sesión iniciada (CA-69; la función existe, la pantalla no)
 - [ ] Todas las funciones administrativas y los archivos privados exigen sesión autenticada: cada vista nueva debe usar `login_required` y tener su prueba de acceso denegado (CA-13, RNF-02)
-- [ ] Aviso al quinto fallo seguido: en la E0 se registra y se muestra como alerta en la web; el correo llega en la E4 (CA-68; HI-01, HI-05)
+- [~] Aviso al quinto fallo seguido: en la E0 se registra y se muestra como alerta en la web; el correo llega en la E4 (CA-68; HI-01, HI-05). **Hoy solo queda una línea en el registro del servidor (`sga.seguridad`, sin datos personales), común a la contraseña, el segundo paso, el token y el registro; falta la auditoría y la alerta en la web**
 - [ ] Aviso del rescate por el servidor: constancia en la auditoría y alerta en la web (CA-70; HI-01); el comando hoy solo lo advierte
 - [ ] Alerta persistente en cada inicio de sesión cuando un aviso de seguridad queda en *fallido* (RF-27, ADR-026) — verificable plenamente en la E4
 - [ ] Prueba de concurrencia del bloqueo de fila del contador de intentos (pendiente declarado en la actualización zzc)

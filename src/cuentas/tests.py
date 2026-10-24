@@ -16,6 +16,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import IntegrityError, transaction
 from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from . import autenticacion, cifrado, views
 from .autenticacion import Resultado
@@ -24,6 +25,7 @@ from .models import Administrador, CodigoRecuperacion
 CLAVE_A = Fernet.generate_key().decode()
 CLAVE_B = Fernet.generate_key().decode()
 CONTRASENA = 'una contrasena de prueba larga'
+CLAVE_SECRETO = 'secreto_registro_cifrado'
 AHORA = datetime(2026, 10, 23, 12, 0, 0, tzinfo=utc.utc)
 
 
@@ -441,7 +443,9 @@ class ComandosTests(TestCase):
 class RegistroSegundoFactorTests(TestCase):
     def setUp(self):
         self.admin = Administrador.objects.crear_administrador('admin', CONTRASENA)
+        self.token = autenticacion.emitir_token_registro(self.admin)
         self.client.post('/entrar/', {'usuario': 'admin', 'contrasena': CONTRASENA})
+        self.client.post('/entrar/registro/', {'token': self.token})
 
     def secreto(self):
         r = self.client.get('/entrar/registro/')
@@ -496,7 +500,8 @@ class RegistroSegundoFactorTests(TestCase):
         self.admin.segundo_factor_activo = True
         self.admin.save()
         secreto = pyotp.random_base32()
-        respuesta, codigos = autenticacion.activar_segundo_factor(self.admin.pk, secreto, pyotp.TOTP(secreto).now())
+        respuesta, codigos = autenticacion.activar_segundo_factor(
+            self.admin.pk, secreto, pyotp.TOTP(secreto).now(), autenticacion.hash_token(self.token))
         self.assertEqual(respuesta.resultado, Resultado.INCORRECTO)
         self.assertIsNone(codigos)
         r = self.client.get('/entrar/registro/')
@@ -508,3 +513,141 @@ class RegistroSegundoFactorTests(TestCase):
         self.client.post('/salir/')
         self.client.post('/entrar/', {'usuario': 'admin', 'contrasena': CONTRASENA})
         self.assertEqual(self.client.get('/entrar/codigo/').status_code, 200)
+
+
+@override_settings(CLAVES_CIFRADO=[CLAVE_A])
+class TokenDeRegistroTests(TestCase):
+    """Actualización 2026-10-24d: correcciones de la revisión de código."""
+
+    def setUp(self):
+        self.admin = Administrador.objects.crear_administrador('admin', CONTRASENA)
+        self.token = autenticacion.emitir_token_registro(self.admin)
+
+    def entrar(self):
+        self.client.post('/entrar/', {'usuario': 'admin', 'contrasena': CONTRASENA})
+
+    def con_token(self):
+        self.entrar()
+        self.client.post('/entrar/registro/', {'token': self.token})
+
+    def secreto(self):
+        r = self.client.get('/entrar/registro/')
+        return re.search(r'<code>([A-Z2-7]{32})</code>', r.content.decode()).group(1)
+
+    def test_con_solo_la_contrasena_no_se_ve_la_clave_ni_se_activa(self):
+        self.entrar()
+        r = self.client.get('/entrar/registro/')
+        self.assertContains(r, 'name="token"')
+        self.assertNotContains(r, 'otpauth://')
+        self.assertNotIn(CLAVE_SECRETO, self.client.session)
+        r = self.client.post('/entrar/registro/', {'codigo': '123456'})
+        self.assertNotContains(r, 'otpauth://')
+        self.admin.refresh_from_db()
+        self.assertFalse(self.admin.segundo_factor_activo)
+        self.assertEqual(self.client.get('/').status_code, 302)
+
+    def test_token_incorrecto_suma_fallos_y_produce_espera(self):
+        self.entrar()
+        r = self.client.post('/entrar/registro/', {'token': 'incorrecto'})
+        self.assertContains(r, 'incorrecto o vencido')
+        for _ in range(4):
+            self.client.post('/entrar/registro/', {'token': 'incorrecto'})
+        r = self.client.post('/entrar/registro/', {'token': self.token})
+        self.assertContains(r, 'Espere')
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.fallos_consecutivos, 5)
+
+    def test_token_vencido_se_rechaza(self):
+        r = autenticacion.comprobar_token_registro(
+            self.admin.pk, self.token, ahora=timezone.now() + timedelta(hours=24, seconds=1))
+        self.assertEqual(r.resultado, Resultado.INCORRECTO)
+        self.admin.refresh_from_db()
+        self.admin.fallos_consecutivos = 0
+        self.admin.espera_hasta = None
+        self.admin.save()
+        r = autenticacion.comprobar_token_registro(self.admin.pk, self.token)
+        self.assertEqual(r.resultado, Resultado.CORRECTO)
+
+    def test_el_token_solo_guarda_el_hash(self):
+        self.admin.refresh_from_db()
+        self.assertNotIn(self.token, self.admin.token_registro_hash)
+        self.assertEqual(self.admin.token_registro_hash, autenticacion.hash_token(self.token))
+
+    def test_el_token_se_consume_al_activar(self):
+        self.con_token()
+        self.client.post('/entrar/registro/', {'codigo': pyotp.TOTP(self.secreto()).now()})
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.segundo_factor_activo)
+        self.assertEqual(self.admin.token_registro_hash, '')
+
+    def test_activar_sin_token_valido_no_activa(self):
+        secreto = pyotp.random_base32()
+        for hash_token in (None, '', autenticacion.hash_token('otro')):
+            respuesta, codigos = autenticacion.activar_segundo_factor(
+                self.admin.pk, secreto, pyotp.TOTP(secreto).now(), hash_token)
+            self.assertEqual(respuesta.resultado, Resultado.TOKEN_INVALIDO)
+            self.assertIsNone(codigos)
+        self.admin.refresh_from_db()
+        self.assertFalse(self.admin.segundo_factor_activo)
+
+    def test_codigo_con_espacios_internos_se_acepta(self):
+        self.con_token()
+        codigo = pyotp.TOTP(self.secreto()).now()
+        r = self.client.post('/entrar/registro/', {'codigo': f'{codigo[:3]} {codigo[3:]}'})
+        self.assertContains(r, 'Códigos de recuperación')
+
+    def test_los_codigos_no_se_guardan_en_cache(self):
+        self.con_token()
+        r = self.client.post('/entrar/registro/', {'codigo': pyotp.TOTP(self.secreto()).now()})
+        self.assertIn('no-store', r['Cache-Control'])
+
+    def test_la_pantalla_de_registro_no_se_guarda_en_cache(self):
+        self.con_token()
+        self.assertIn('no-store', self.client.get('/entrar/registro/')['Cache-Control'])
+
+    def test_cuenta_borrada_a_mitad_no_da_error(self):
+        self.con_token()
+        Administrador.objects.all().delete()
+        r = self.client.get('/entrar/registro/')
+        self.assertRedirects(r, '/entrar/', fetch_redirect_response=False)
+        self.assertNotIn('primer_paso_administrador', self.client.session)
+
+    def test_secreto_guardado_ilegible_se_regenera(self):
+        self.con_token()
+        sesion = self.client.session
+        sesion[CLAVE_SECRETO] = 'basura-no-fernet'
+        sesion.save()
+        r = self.client.get('/entrar/registro/')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'otpauth://')
+
+    def test_el_secreto_no_sobrevive_a_un_nuevo_primer_paso(self):
+        self.con_token()
+        primero = self.secreto()
+        self.entrar()
+        self.assertNotIn(CLAVE_SECRETO, self.client.session)
+        self.client.post('/entrar/registro/', {'token': self.token})
+        self.assertNotEqual(self.secreto(), primero)
+
+    def test_el_quinto_fallo_deja_aviso_en_el_registro_del_servidor(self):
+        self.entrar()
+        with self.assertLogs('sga.seguridad', 'WARNING') as registro:
+            for _ in range(5):
+                self.client.post('/entrar/registro/', {'token': 'incorrecto'})
+        self.assertEqual(len(registro.output), 1)
+
+    def test_los_comandos_imprimen_un_token_que_sirve(self):
+        Administrador.objects.all().delete()
+        salida = StringIO()
+        with patch('cuentas.management.commands.crear_administrador.getpass',
+                   side_effect=[CONTRASENA, CONTRASENA]):
+            call_command('crear_administrador', usuario='admin', stdout=salida)
+        token = re.search(r'24 horas\): (\S+)', salida.getvalue()).group(1)
+        a = Administrador.objects.get()
+        self.assertEqual(a.token_registro_hash, autenticacion.hash_token(token))
+        salida = StringIO()
+        call_command('rescatar_segundo_factor', confirmar=True, stdout=salida)
+        nuevo = re.search(r'24 horas\): (\S+)', salida.getvalue()).group(1)
+        self.assertNotEqual(nuevo, token)
+        a.refresh_from_db()
+        self.assertEqual(a.token_registro_hash, autenticacion.hash_token(nuevo))
