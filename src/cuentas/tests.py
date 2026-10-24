@@ -3,12 +3,16 @@
 Necesitan PostgreSQL (restricción de la tabla, bloqueo de fila).
 """
 import time
+from io import StringIO
 from datetime import datetime, timedelta, timezone as utc
 from unittest.mock import patch
 
 import pyotp
 from cryptography.fernet import Fernet
 from django.contrib.auth import authenticate
+from django.contrib.sessions.models import Session
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.db import IntegrityError, transaction
 from django.test import TestCase, override_settings
 
@@ -376,3 +380,55 @@ class InicioDeSesionTests(CuentaTestCase):
         del sesion['sesion_inicio']
         sesion.save()
         self.assertEqual(self.client.get('/').status_code, 302)
+
+
+class ComandosTests(TestCase):
+    def llamar(self, nombre, *args, contrasenas=(), **opciones):
+        salida = StringIO()
+        with patch('cuentas.management.commands.crear_administrador.getpass', side_effect=list(contrasenas)):
+            call_command(nombre, *args, stdout=salida, stderr=StringIO(), **opciones)
+        return salida.getvalue()
+
+    def test_crear_administrador(self):
+        self.llamar('crear_administrador', usuario='admin', contrasenas=[CONTRASENA, CONTRASENA])
+        a = Administrador.objects.get()
+        self.assertTrue(a.check_password(CONTRASENA))
+        self.assertFalse(a.segundo_factor_activo)
+
+    def test_crear_rechaza_contrasena_corta_o_distinta_o_segunda_cuenta(self):
+        with self.assertRaises(CommandError):
+            self.llamar('crear_administrador', usuario='admin', contrasenas=['corta', 'corta'])
+        with self.assertRaises(CommandError):
+            self.llamar('crear_administrador', usuario='admin', contrasenas=[CONTRASENA, CONTRASENA + 'x'])
+        self.assertEqual(Administrador.objects.count(), 0)
+        self.llamar('crear_administrador', usuario='admin', contrasenas=[CONTRASENA, CONTRASENA])
+        with self.assertRaises(CommandError):
+            self.llamar('crear_administrador', usuario='otro', contrasenas=[CONTRASENA, CONTRASENA])
+
+    @override_settings(CLAVES_CIFRADO=[CLAVE_A])
+    def test_rescate_desactiva_el_segundo_factor_y_cierra_sesiones(self):
+        a = Administrador.objects.crear_administrador('admin', CONTRASENA)
+        a.fijar_secreto_segundo_factor(pyotp.random_base32())
+        a.segundo_factor_activo = True
+        a.fallos_consecutivos = 7
+        a.ultimo_intervalo_totp = 5
+        a.save()
+        autenticacion.emitir_codigos_recuperacion(a, CONTRASENA)
+        self.client.force_login(a, backend='cuentas.backends.BackendAdministrador')
+        self.assertEqual(Session.objects.count(), 1)
+        self.llamar('rescatar_segundo_factor', confirmar=True)
+        a.refresh_from_db()
+        self.assertFalse(a.segundo_factor_activo)
+        self.assertEqual((a.secreto_segundo_factor, a.fallos_consecutivos, a.ultimo_intervalo_totp), ('', 0, None))
+        self.assertEqual(CodigoRecuperacion.objects.count(), 0)
+        self.assertEqual(Session.objects.count(), 0)
+        self.assertTrue(a.check_password(CONTRASENA))
+
+    def test_rescate_pide_confirmacion(self):
+        Administrador.objects.crear_administrador('admin', CONTRASENA)
+        with patch('builtins.input', return_value='no'), self.assertRaises(CommandError):
+            self.llamar('rescatar_segundo_factor')
+
+    def test_rescate_sin_cuenta(self):
+        with self.assertRaises(CommandError):
+            self.llamar('rescatar_segundo_factor', confirmar=True)

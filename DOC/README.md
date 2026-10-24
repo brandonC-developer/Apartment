@@ -145,6 +145,7 @@ Carpetas transversales:
 | 2026-10-23 (zzc) | `actualizaciones/2026-10-23zzc_cuentas-administrador/` | Implementación de `cuentas.Administrador` (modelo, cifrado Fernet, TOTP con pyotp, límite de intentos, backend, migración): 32 pruebas pasan en un PostgreSQL desechable; sin vista de inicio de sesión, códigos de recuperación ni comando de creación |
 | 2026-10-24 (zzd) | `actualizaciones/2026-10-23zzd_codigos-recuperacion/` | Códigos de recuperación (RF-27, CA-69): modelo, emisión con contraseña, verificación con límite de intentos compartido; 38 pruebas pasan en un PostgreSQL desechable |
 | 2026-10-24 | `actualizaciones/2026-10-24_vista-inicio-sesion/` | Vista de inicio de sesión de dos pasos (contraseña y luego TOTP o código de recuperación) y límites de sesión de 24 h y 1 h de inactividad (RF-26, RF-27, CA-48): 51 pruebas pasan en un PostgreSQL desechable; sin aviso por correo, auditoría ni comando de creación |
+| 2026-10-24 (a) | `actualizaciones/2026-10-24a_comandos-creacion-rescate/` | Comandos `crear_administrador` y `rescatar_segundo_factor` (RF-27): 56 pruebas pasan en un PostgreSQL desechable; sin registro del segundo factor en el primer ingreso, auditoría ni aviso por correo |
 
 ## Control de versiones
 
