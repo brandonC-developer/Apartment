@@ -163,6 +163,7 @@ Carpetas transversales:
 | 2026-10-24 (p) | `actualizaciones/2026-10-24p_inicio-e1/` | Inicio de la entrega E1 (Inquilinos) por autorización expresa del solicitante: CLAUDE.md, registro de avance y plan de trabajo en siete grupos; corrige un error en la lista de tareas que marcaba como hechos los cierres de E1 a E6 |
 | 2026-10-24 (q) | `actualizaciones/2026-10-24q_decisiones-e1/` | Decisiones de la E1 con su trazabilidad: borrador del texto del consentimiento por el asistente, Pillow 12.3.0 que vuelve a codificar, `/static/` servido por Nginx, punto de extensión para el bloqueo de desactivar (CA-29, bloqueo real en la E2 y la E3 por aceptación del solicitante) y pantallas sin estilos |
 | 2026-10-24 (r) | `actualizaciones/2026-10-24r_e1-grupo-a-modelos/` | E1, grupo A: aplicación `inquilinos` con sus cinco modelos, restricciones del modelo de datos y privilegios mínimos (accesos solo `INSERT`); base reutilizable `RegistroProtegido`; 237 pruebas pasan, también en WSL con Python 3.14; hallazgo sobre el acceso a las fotografías de contrato (ciclo ADR-030) para la E2 |
+| 2026-10-24 (s) | `actualizaciones/2026-10-24s_e1-grupo-b-servicios/` | E1, grupo B: servicios y lecturas de inquilinos (registrar con consentimiento, advertencia de duplicado, actualizar, desactivar con punto de extensión de bloqueos, lista con búsqueda y filtro «sin frente», ficha), auditoría sin valores personales; 273 pruebas pasan, también en WSL con Python 3.14; sin pantallas |
 
 ## Control de versiones
 

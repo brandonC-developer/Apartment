@@ -183,11 +183,11 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Pruebas con SQL directo de que el rol de la aplicación es rechazado en `UPDATE`, `DELETE` y `TRUNCATE` sobre los accesos a documentos y de que solo puede tocar las columnas permitidas de los consentimientos y las fotografías (ADR-027); 5 pruebas nuevas en `nucleo/tests_privilegios.py`
 
 **B. Registro, ficha y estado del inquilino**
-- [ ] Registrar un inquilino (nombre, tipo y número de documento obligatorios; teléfono y correo opcionales) con el consentimiento, en una transacción con su auditoría; sin fotografía todavía (RF-01, CA-01)
-- [ ] Advertir de un documento duplicado entre inquilinos activos antes de guardar, sin bloquear (RF-01, CA-25)
-- [ ] Buscar, consultar y actualizar la ficha; los cambios de identificación se validan y se auditan sin valores personales (RF-03, RF-05, RF-28, CA-53)
-- [ ] La ficha indica cuándo falta el frente y la lista filtra «Sin frente»; sin alertas ni correos (RF-03, decisión del 23-oct-2026)
-- [ ] Desactivar y reactivar (RF-04, CA-29) con un **punto de extensión** de comprobaciones de bloqueo (decisión 5): la E1 lo prueba con una comprobación falsa; el bloqueo real por contrato vigente se verifica en la E2 y el de saldos pendientes en la E3
+- [x] Registrar un inquilino (nombre, tipo y número de documento obligatorios; teléfono y correo opcionales) con el consentimiento, en una transacción con su auditoría; sin fotografía todavía (RF-01, CA-01): `services.registrar_inquilino` (servicio probado; la pantalla es del grupo F; el texto del consentimiento, del grupo C) (actualización 2026-10-24s)
+- [x] Advertir de un documento duplicado entre inquilinos activos antes de guardar, sin bloquear (RF-01, CA-25): `DocumentoDuplicado` sin guardar hasta confirmar; también al cambiar la identificación y al reactivar
+- [x] Buscar (nombre, documento, teléfono y correo, en una sola consulta), consultar y actualizar la ficha; solo se guarda y se audita lo que cambia, sin valores personales (RF-03, RF-05, RF-28, CA-53): `selectors.listar_inquilinos`, `selectors.obtener_ficha`, `services.actualizar_inquilino`. **RF-05 se completa con el contrato vigente y las obligaciones en la E2 y la E3**
+- [x] La ficha indica cuándo falta el frente (`falta_frente`) y la lista filtra «Sin frente», que incluye a quien solo tiene el reverso; sin alertas ni correos (RF-03). Los textos de las pantallas, en el grupo F
+- [x] Desactivar y reactivar (RF-04, CA-29) con un **punto de extensión** (`inquilinos.bloqueos`): la E1 lo prueba con comprobaciones falsas; el bloqueo real por contrato vigente se verifica en la E2 y el de saldos pendientes en la E3. Desactivar no borra nada del historial
 
 **C. Consentimiento** (RF-39, OL-13; DP-21 abierta)
 - [ ] Texto informativo con los ocho puntos del art. 5 de la Ley 8968 como versión inmutable (`TextoConsentimiento`), **borrador del asistente que el sistema muestra como «sin validar por abogado»** (decisión 1); el consentimiento apunta a la versión mostrada, con medio y fecha (CA-67, primera parte)

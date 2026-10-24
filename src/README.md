@@ -80,3 +80,6 @@ Para medir la cobertura: instalar `coverage` en el entorno virtual (no está en 
 
 ## E1, grupo A: modelos de `inquilinos` (actualización 2026-10-24r)
 Aplicación `inquilinos` (inquilino, texto y consentimiento, fotografía del documento y acceso a documentos). `nucleo.models.RegistroProtegido` es la base de las tablas que no se editan; toda tabla nueva necesita su entrada en `sga/privilegios.py`. 237 pruebas en total.
+
+## E1, grupo B: servicios de inquilinos (actualización 2026-10-24s)
+`inquilinos/services.py` (escribe), `selectors.py` (lee) y `bloqueos.py` (punto de extensión para el bloqueo de desactivar). Aún sin pantallas ni rutas. 273 pruebas en total.
