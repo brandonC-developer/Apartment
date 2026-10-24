@@ -1,0 +1,6 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<h1>Sesión iniciada</h1>
+<form method="post" action="{% url 'cuentas:cerrar_sesion' %}">{% csrf_token %}<button type="submit">Salir</button></form>
+{% endblock %}

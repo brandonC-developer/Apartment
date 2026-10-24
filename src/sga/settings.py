@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'cuentas.middleware.LimiteDeSesion',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -134,6 +135,7 @@ if not DEBUG:
 # permisos de Django (decisión del solicitante, 23-oct-2026, actualización zz).
 AUTH_USER_MODEL = 'cuentas.Administrador'
 AUTHENTICATION_BACKENDS = ['cuentas.backends.BackendAdministrador']
+LOGIN_URL = 'cuentas:iniciar_sesion'
 
 # Claves de Fernet para cifrar el secreto del segundo factor (actualización zzb). Lista separada
 # por comas: se cifra con la primera y se descifra con cualquiera (MultiFernet) para rotar.

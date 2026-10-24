@@ -2,7 +2,9 @@
 
 Necesitan PostgreSQL (restricción de la tabla, bloqueo de fila).
 """
+import time
 from datetime import datetime, timedelta, timezone as utc
+from unittest.mock import patch
 
 import pyotp
 from cryptography.fernet import Fernet
@@ -10,7 +12,7 @@ from django.contrib.auth import authenticate
 from django.db import IntegrityError, transaction
 from django.test import TestCase, override_settings
 
-from . import autenticacion, cifrado
+from . import autenticacion, cifrado, views
 from .autenticacion import Resultado
 from .models import Administrador, CodigoRecuperacion
 
@@ -271,3 +273,106 @@ class CodigosRecuperacionTests(CuentaTestCase):
         self.assertEqual(r.resultado, Resultado.CORRECTO)
         self.admin.refresh_from_db()
         self.assertEqual(self.admin.fallos_consecutivos, 0)
+
+
+class InicioDeSesionTests(CuentaTestCase):
+    def primer_paso(self, contrasena=CONTRASENA):
+        return self.client.post('/entrar/', {'usuario': 'admin', 'contrasena': contrasena})
+
+    def codigo_actual(self):
+        return pyotp.TOTP(self.secreto).now()
+
+    def segundo_paso(self, codigo):
+        return self.client.post('/entrar/codigo/', {'codigo': codigo})
+
+    def test_la_pagina_protegida_exige_iniciar_sesion(self):
+        r = self.client.get('/')
+        self.assertRedirects(r, '/entrar/?next=/', fetch_redirect_response=False)
+
+    def test_la_contrasena_sola_no_inicia_sesion(self):
+        r = self.primer_paso()
+        self.assertRedirects(r, '/entrar/codigo/', fetch_redirect_response=False)
+        self.assertNotIn('_auth_user_id', self.client.session)
+        self.assertEqual(self.client.get('/').status_code, 302)
+
+    def test_el_segundo_paso_sin_primer_paso_vuelve_al_inicio(self):
+        r = self.client.get('/entrar/codigo/')
+        self.assertRedirects(r, '/entrar/', fetch_redirect_response=False)
+        r = self.segundo_paso(self.codigo_actual())
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_contrasena_y_totp_inician_sesion_y_cerrar_la_termina(self):
+        self.primer_paso()
+        r = self.segundo_paso(self.codigo_actual())
+        self.assertRedirects(r, '/', fetch_redirect_response=False)
+        self.assertEqual(self.client.get('/').status_code, 200)
+        self.client.post('/salir/')
+        self.assertEqual(self.client.get('/').status_code, 302)
+
+    def test_contrasena_y_codigo_de_recuperacion_inician_sesion(self):
+        codigo = autenticacion.emitir_codigos_recuperacion(self.admin, CONTRASENA)[0]
+        self.primer_paso()
+        self.segundo_paso(codigo)
+        self.assertEqual(self.client.get('/').status_code, 200)
+
+    def test_totp_incorrecto_no_inicia_sesion(self):
+        self.primer_paso()
+        r = self.segundo_paso('000000')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(self.client.get('/').status_code, 302)
+
+    def test_contrasena_incorrecta_da_el_mismo_mensaje_que_usuario_inexistente(self):
+        a = self.client.post('/entrar/', {'usuario': 'admin', 'contrasena': 'mal'})
+        b = self.client.post('/entrar/', {'usuario': 'nadie', 'contrasena': 'mal'})
+        self.assertContains(a, views.MENSAJE_PRIMER_PASO)
+        self.assertContains(b, views.MENSAJE_PRIMER_PASO)
+
+    def test_sin_segundo_factor_activo_no_hay_acceso(self):
+        self.admin.segundo_factor_activo = False
+        self.admin.save()
+        r = self.primer_paso()
+        self.assertEqual(r.status_code, 200)
+        self.assertNotIn('primer_paso_administrador', self.client.session)
+
+    def test_el_primer_paso_caduca(self):
+        self.primer_paso()
+        with patch('cuentas.views.time.time', return_value=time.time() + 6 * 60):
+            r = self.segundo_paso(self.codigo_actual())
+        self.assertRedirects(r, '/entrar/', fetch_redirect_response=False)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_los_fallos_del_segundo_paso_cuentan_y_producen_espera(self):
+        self.primer_paso()
+        for _ in range(5):
+            self.segundo_paso('000000')
+        r = self.segundo_paso(self.codigo_actual())
+        self.assertContains(r, 'Espere')
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def iniciar(self):
+        self.primer_paso()
+        self.segundo_paso(self.codigo_actual())
+
+    def test_una_hora_de_inactividad_cierra_la_sesion(self):
+        self.iniciar()
+        with patch('cuentas.middleware.time.time', return_value=time.time() + 3601):
+            self.assertEqual(self.client.get('/').status_code, 302)
+        self.assertEqual(self.client.get('/').status_code, 302)
+
+    def test_la_actividad_mantiene_la_sesion_pero_a_las_24_horas_se_cierra(self):
+        self.iniciar()
+        inicio = time.time()
+        for horas in range(1, 24):
+            with patch('cuentas.middleware.time.time', return_value=inicio + horas * 3000):
+                if horas * 3000 > 24 * 3600:
+                    break
+                self.assertEqual(self.client.get('/').status_code, 200, horas)
+        with patch('cuentas.middleware.time.time', return_value=inicio + 24 * 3600 + 1):
+            self.assertEqual(self.client.get('/').status_code, 302)
+
+    def test_una_sesion_sin_marcas_de_tiempo_se_cierra(self):
+        self.iniciar()
+        sesion = self.client.session
+        del sesion['sesion_inicio']
+        sesion.save()
+        self.assertEqual(self.client.get('/').status_code, 302)

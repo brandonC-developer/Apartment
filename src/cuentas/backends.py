@@ -8,8 +8,8 @@ class BackendAdministrador(BaseBackend):
     """Verifica solo la contraseña y el contador de intentos.
 
     ADVERTENCIA: una contraseña correcta NO basta para iniciar sesión (RNF-01): la vista debe
-    exigir también `autenticacion.verificar_totp` antes de llamar a `login()`. Esa vista aún no
-    existe. Sin PermissionsMixin, este backend no concede permisos.
+    exigir también `autenticacion.verificar_totp` antes de llamar a `login()` (lo hace `views.segundo_paso`). No
+    llame a `authenticate()` + `login()` en otro sitio. Sin PermissionsMixin, este backend no concede permisos.
     """
 
     def authenticate(self, request, usuario=None, contrasena=None, **kwargs):
