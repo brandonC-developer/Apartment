@@ -207,7 +207,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] 11 pruebas en un navegador real con Selenium y `StaticLiveServerTestCase` (Chrome y Edge sin ventana; se omiten donde no hay navegador): una foto de 4032x3024 y 6,44 MiB sale de 2048x1536 y 1,47 MiB (CA-73); sin lienzo se envía el original o se avisa (CA-74). La comprobación **manual** del navegador sin lienzo queda para el grupo G
 
 **F. Pantallas** (decisión 6: funcionales y accesibles, sin estilos; los wireframes siguen pendientes)
-- [ ] Lista con búsqueda y filtro, formulario de registro con el texto del consentimiento, ficha con subida del frente y del reverso, desactivar/reactivar y revocar el consentimiento; todas con `login_required` y CSRF (la prueba de todas las vistas ya lo exige)
+- [x] Lista con búsqueda (nombre, documento, teléfono, correo), filtro de estado y «Sin frente»; registro con el texto informativo a la vista, medio y fecha del consentimiento y confirmación obligatoria; ficha con datos, fotografías (ver y descargar) y consentimientos; editar; desactivar y reactivar con confirmación (el motivo de bloqueo se muestra); revocar el consentimiento con confirmación y sin tocar datos. Todas con `login_required`, CSRF y `no-store`; 35 pruebas propias y un recorrido real por HTTPS en WSL (actualización 2026-10-24w)
 
 **G. Medición, despliegue y cierre**
 - [ ] Medir y registrar el peso de fotos reales de un iPhone y dos teléfonos Android tras la reducción (**necesita fotos tuyas**); comparar con el objetivo de 2 MB (CA-73)

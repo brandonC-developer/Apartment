@@ -1,0 +1,36 @@
+{# Campos de la ficha, compartidos por el registro y la edición. `valores` y `errores` vienen de la vista. #}
+{% if errores.inquilino %}<p role="alert">{{ errores.inquilino|join:" " }}</p>{% endif %}
+<p>
+  <label for="id_nombre_completo">Nombre completo (obligatorio)</label><br>
+  <input id="id_nombre_completo" name="nombre_completo" maxlength="200" required value="{{ valores.nombre_completo }}"{% if errores.nombre_completo %} aria-invalid="true" aria-describedby="e_nombre_completo"{% endif %}>
+  {% if errores.nombre_completo %}<span id="e_nombre_completo" role="alert">{{ errores.nombre_completo|join:" " }}</span>{% endif %}
+</p>
+<p>
+  <label for="id_tipo_documento">Tipo de documento (obligatorio)</label><br>
+  <select id="id_tipo_documento" name="tipo_documento" required{% if errores.tipo_documento %} aria-invalid="true" aria-describedby="e_tipo_documento"{% endif %}>
+    {% for valor, nombre in tipos %}<option value="{{ valor }}"{% if valor == valores.tipo_documento %} selected{% endif %}>{{ nombre }}</option>{% endfor %}
+  </select>
+  {% if errores.tipo_documento %}<span id="e_tipo_documento" role="alert">{{ errores.tipo_documento|join:" " }}</span>{% endif %}
+</p>
+<p>
+  <label for="id_numero_documento">Número de documento (obligatorio)</label><br>
+  <input id="id_numero_documento" name="numero_documento" maxlength="60" required value="{{ valores.numero_documento }}"{% if errores.numero_documento %} aria-invalid="true" aria-describedby="e_numero_documento"{% endif %}>
+  {% if errores.numero_documento %}<span id="e_numero_documento" role="alert">{{ errores.numero_documento|join:" " }}</span>{% endif %}
+</p>
+<p>
+  <label for="id_telefono">Teléfono (opcional)</label><br>
+  <input id="id_telefono" name="telefono" type="tel" maxlength="40" value="{{ valores.telefono }}"{% if errores.telefono %} aria-invalid="true" aria-describedby="e_telefono"{% endif %}>
+  {% if errores.telefono %}<span id="e_telefono" role="alert">{{ errores.telefono|join:" " }}</span>{% endif %}
+</p>
+<p>
+  <label for="id_correo">Correo electrónico (opcional)</label><br>
+  <input id="id_correo" name="correo" type="email" maxlength="254" value="{{ valores.correo }}"{% if errores.correo %} aria-invalid="true" aria-describedby="e_correo"{% endif %}>
+  {% if errores.correo %}<span id="e_correo" role="alert">{{ errores.correo|join:" " }}</span>{% endif %}
+</p>
+{% if duplicados %}
+<section role="alert">
+  <h2>Ya hay un inquilino activo con este documento</h2>
+  <ul>{% for d in duplicados %}<li><a href="{% url 'inquilinos:ficha' d.pk %}">{{ d.nombre_completo }}</a> ({{ d.get_tipo_documento_display }} {{ d.numero_documento }})</li>{% endfor %}</ul>
+  <p><label><input type="checkbox" name="confirmar_duplicado" value="1"> Guardar de todos modos</label></p>
+</section>
+{% endif %}

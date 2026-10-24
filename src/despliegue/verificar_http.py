@@ -110,7 +110,7 @@ from io import BytesIO
 from PIL import Image
 
 from inquilinos import services as servicios_inquilinos
-from inquilinos.models import AccesoDocumento, DocumentoIdentidad, TextoConsentimiento
+from inquilinos.models import AccesoDocumento, DocumentoIdentidad, Inquilino, TextoConsentimiento
 
 texto_consentimiento = TextoConsentimiento.objects.create(
     version=1, contenido='Texto de la verificación', vigente_desde=timezone.now())
@@ -183,6 +183,34 @@ estado, _ = subir('reverso', os.urandom(7 * 1024 * 1024))
 comprobar(estado == 413, f'Nginx rechaza más de 6 MiB incluso en la ruta de subida ({estado})')
 estado, _ = subir('reverso', os.urandom(2 * 1024 * 1024), ruta='/entrar/')
 comprobar(estado == 413, f'Nginx rechaza más de 1 MiB en el resto de las rutas ({estado})')
+
+# 2b. Pantallas de inquilinos por HTTPS (E1, grupo F)
+estado, cab, html = pedir('/inquilinos/')
+comprobar(estado == 200 and 'Persona de Prueba' in html and 'Sin frente' not in html.split('Persona de Prueba')[1].split('</tr>')[0],
+          'la lista muestra al inquilino de prueba con su frente')
+comprobar('no-store' in cab.get('Cache-Control', ''), 'la lista no se guarda en caché')
+estado, _, html = pedir('/inquilinos/?q=9-9999')
+comprobar(estado == 200 and 'Persona de Prueba' in html, 'la búsqueda por documento lo encuentra')
+estado, _, html = pedir('/inquilinos/nuevo/')
+comprobar(estado == 200 and 'Texto de la verificación' in html, 'el registro muestra el texto informativo vigente')
+estado, cab, html = formulario('/inquilinos/nuevo/', nombre_completo='Segunda Persona', tipo_documento='cedula',
+                             numero_documento='8-8888-8888', telefono='', correo='', medio='fisico', otorgado_en='', confirma='1')
+comprobar(estado == 302, f'el registro por HTTPS redirige a la ficha ({estado})')
+_, _, html = pedir(cab['Location'].replace(BASE, ''))
+comprobar('Inquilino registrado' in html and 'Segunda Persona' in html, 'la ficha creada muestra el aviso y los datos')
+segundo = Inquilino.objects.get(numero_documento='8-8888-8888')
+estado, _, html = formulario('/inquilinos/nuevo/', nombre_completo='Tercera', tipo_documento='cedula',
+                             numero_documento='7-7777-7777', telefono='', correo='', medio='fisico', otorgado_en='')
+comprobar(estado == 400 and not Inquilino.objects.filter(numero_documento='7-7777-7777').exists(),
+          f'sin confirmar el consentimiento no se registra ({estado})')
+estado, cab, _ = formulario(f'/inquilinos/{segundo.pk}/desactivar/')
+_, _, html = pedir(cab['Location'].replace(BASE, ''))
+comprobar(estado == 302 and 'Inquilino desactivado' in html, 'desactivar por HTTPS')
+estado, _, _ = pedir(f'/inquilinos/{segundo.pk}/desactivar/', {'csrfmiddlewaretoken': 'falso'})
+comprobar(estado == 403, f'un envío con token falso se rechaza ({estado})')
+estado, cab, _ = formulario(f'/inquilinos/{inquilino.pk}/consentimiento/revocar/')
+_, _, html = pedir(cab['Location'].replace(BASE, ''))
+comprobar(estado == 302 and 'Consentimiento revocado' in html, 'revocar el consentimiento por HTTPS')
 
 # 3. Cierre de sesión y acceso denegado
 formulario_cierre = pedir('/')

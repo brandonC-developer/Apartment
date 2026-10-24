@@ -1,0 +1,51 @@
+{% extends "cuentas/base.html" %}
+{% load formato %}
+{% block titulo %}Ficha del inquilino{% endblock %}
+{% block contenido %}
+{% with i=ficha.inquilino %}
+<h1>{{ i.nombre_completo|default:"Inquilino desasociado" }}</h1>
+<p><a href="{% url 'inquilinos:lista' %}">Inquilinos</a></p>
+{% if ficha.consentimiento_revocado %}<p role="alert"><strong>Consentimiento revocado.</strong> No se pueden guardar fotografías ni crear contratos nuevos con este inquilino.</p>{% endif %}
+{% if ficha.falta_frente and not i.desasociado_en %}<p role="alert"><strong>Falta el frente del documento:</strong> es obligatorio antes de asignar un contrato.</p>{% endif %}
+{% if i.desasociado_en %}<p role="alert">Desasociado el {{ i.desasociado_en|fecha_hora }}: no conserva datos personales.</p>{% endif %}
+
+<section aria-labelledby="t_datos">
+  <h2 id="t_datos">Datos</h2>
+  <dl>
+    <dt>Estado</dt><dd>{% if i.activo %}Activo{% else %}Desactivado{% endif %}</dd>
+    <dt>Documento</dt><dd>{{ i.get_tipo_documento_display }} {{ i.numero_documento|default_if_none:"" }}</dd>
+    <dt>Teléfono</dt><dd>{{ i.telefono|default_if_none:"" }}</dd>
+    <dt>Correo</dt><dd>{{ i.correo|default_if_none:"" }}</dd>
+    <dt>Registrado</dt><dd>{{ i.creado_en|fecha_hora }}</dd>
+  </dl>
+  {% if not i.desasociado_en %}
+  <p><a href="{% url 'inquilinos:editar' i.pk %}">Editar datos</a> ·
+  {% if i.activo %}<a href="{% url 'inquilinos:desactivar' i.pk %}">Desactivar</a>{% else %}<a href="{% url 'inquilinos:reactivar' i.pk %}">Reactivar</a>{% endif %}</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="t_fotos">
+  <h2 id="t_fotos">Fotografías del documento</h2>
+  <ul>
+    <li>Frente: {% if ficha.frente %}cargada · <a href="{% url 'inquilinos:ver_documento' ficha.frente.pk %}">Ver</a> · <a href="{% url 'inquilinos:descargar_documento' ficha.frente.pk %}">Descargar</a>{% else %}falta{% endif %}</li>
+    <li>Reverso: {% if ficha.reverso %}cargada · <a href="{% url 'inquilinos:ver_documento' ficha.reverso.pk %}">Ver</a> · <a href="{% url 'inquilinos:descargar_documento' ficha.reverso.pk %}">Descargar</a>{% else %}sin cargar (opcional){% endif %}</li>
+  </ul>
+  {% if not i.desasociado_en %}<p><a href="{% url 'inquilinos:fotografias' i.pk %}">Cargar o reemplazar fotografías</a></p>{% endif %}
+</section>
+
+<section aria-labelledby="t_consentimiento">
+  <h2 id="t_consentimiento">Consentimiento</h2>
+  {% for c in ficha.consentimientos %}
+    <p>Versión {{ c.texto.version }}{% if c.texto.borrador %} (borrador sin validar por un abogado){% endif %}, {{ c.get_medio_display|lower }}, otorgado el {{ c.otorgado_en|fecha_hora }}{% if c.revocado_en %}; <strong>revocado el {{ c.revocado_en|fecha_hora }}</strong>{% else %}; vigente{% endif %}.</p>
+  {% empty %}
+    <p>Sin consentimientos registrados.</p>
+  {% endfor %}
+  {% if ficha.consentimiento_vigente %}<p><a href="{% url 'inquilinos:revocar_consentimiento' i.pk %}">Revocar el consentimiento</a></p>{% endif %}
+</section>
+
+<section aria-labelledby="t_pendiente">
+  <h2 id="t_pendiente">Contrato, obligaciones e historial</h2>
+  <p>Aparecerán cuando estén hechas las entregas de contratos y de cobros.</p>
+</section>
+{% endwith %}
+{% endblock %}

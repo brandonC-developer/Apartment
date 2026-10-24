@@ -1,0 +1,38 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}Inquilinos{% endblock %}
+{% block contenido %}
+<h1>Inquilinos</h1>
+<p><a href="{% url 'cuentas:inicio' %}">Inicio</a> · <a href="{% url 'inquilinos:nuevo' %}">Registrar inquilino</a></p>
+<form method="get" role="search">
+  <p><label for="id_q">Buscar por nombre, documento, teléfono o correo</label><br>
+  <input id="id_q" name="q" type="search" value="{{ filtros.q }}"></p>
+  <p><label for="id_estado">Estado</label>
+  <select id="id_estado" name="estado">{% for valor, nombre in estados %}<option value="{{ valor }}"{% if valor == filtros.estado %} selected{% endif %}>{{ nombre }}</option>{% endfor %}</select>
+  <label><input type="checkbox" name="sin_frente" value="1"{% if filtros.sin_frente %} checked{% endif %}> Sin frente del documento</label></p>
+  <button type="submit">Buscar</button>
+</form>
+<p role="status">{{ pagina.paginator.count }} inquilino{{ pagina.paginator.count|pluralize }}.</p>
+<table>
+  <caption>Lista de inquilinos</caption>
+  <thead><tr><th scope="col">Nombre</th><th scope="col">Documento</th><th scope="col">Teléfono</th><th scope="col">Correo</th><th scope="col">Estado</th><th scope="col">Fotografía</th></tr></thead>
+  <tbody>
+  {% for i in pagina %}
+    <tr>
+      <th scope="row"><a href="{% url 'inquilinos:ficha' i.pk %}">{{ i.nombre_completo }}</a></th>
+      <td>{{ i.get_tipo_documento_display }} {{ i.numero_documento }}</td>
+      <td>{{ i.telefono|default_if_none:"" }}</td>
+      <td>{{ i.correo|default_if_none:"" }}</td>
+      <td>{% if i.activo %}Activo{% else %}Desactivado{% endif %}</td>
+      <td>{% if i.tiene_frente %}Con frente{% else %}<strong>Sin frente</strong>{% endif %}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6">Ningún inquilino coincide.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<nav aria-label="Páginas">
+{% if pagina.has_previous %}<a href="?{% if consulta %}{{ consulta }}&amp;{% endif %}pagina={{ pagina.previous_page_number }}">Anterior</a>{% endif %}
+Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+{% if pagina.has_next %}<a href="?{% if consulta %}{{ consulta }}&amp;{% endif %}pagina={{ pagina.next_page_number }}">Siguiente</a>{% endif %}
+</nav>
+{% endblock %}

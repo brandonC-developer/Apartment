@@ -1,5 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block titulo %}SGA{% endblock %}</title></head>
-<body>{% block contenido %}{% endblock %}</body>
+<body>
+{% if messages %}<ul role="status">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+{% block contenido %}{% endblock %}</body>
 </html>

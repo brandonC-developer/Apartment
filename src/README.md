@@ -92,3 +92,6 @@ Nueva dependencia: Pillow 12.3.0. Rutas: `POST /inquilinos/<id>/fotografias/<car
 
 ## E1, grupo E: reducción en el navegador (actualización 2026-10-24v)
 El script `inquilinos/static/inquilinos/reducir_fotografia.js` se sirve con `collectstatic` (`SGA_ESTATICOS`, por defecto `/opt/sga/static`) y Nginx `/static/`. Pruebas del navegador: `pip install -r requirements-pruebas.txt` (Selenium); usan Chrome, Edge o Firefox y se omiten si no hay (`SGA_NAVEGADOR=chrome|edge|firefox` fuerza uno). 368 pruebas en Windows; 357 en WSL.
+
+## E1, grupo F: pantallas (actualización 2026-10-24w)
+Las pantallas están en `inquilinos/pantallas.py` y sus plantillas; sin estilos hasta los wireframes. Rutas: `/inquilinos/`, `/inquilinos/nuevo/`, `/inquilinos/<id>/` y, bajo ella, `editar/`, `desactivar/`, `reactivar/` y `consentimiento/revocar/`. Para registrar a alguien debe existir un texto de consentimiento cargado (`manage.py cargar_texto_consentimiento`). **Las pruebas que suben archivos deben usar una carpeta temporal en `RAIZ_DOCUMENTOS`** (como `Pantallas` y `Base`). 404 pruebas en Windows; 393 en WSL.

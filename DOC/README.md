@@ -167,6 +167,7 @@ Carpetas transversales:
 | 2026-10-24 (t) | `actualizaciones/2026-10-24t_e1-grupo-c-consentimiento/` | E1, grupo C: borrador sin validar del texto informativo con los ocho puntos del art. 5 (leído en la copia del MICITT), carga de versiones inmutables por comando, revocación sin efecto retroactivo con ganchos para la E2 y la E5; 297 pruebas pasan, también en WSL con Python 3.14; el texto espera al abogado (DP-21) |
 | 2026-10-24 (u) | `actualizaciones/2026-10-24u_e1-grupo-d-fotografias/` | E1, grupo D: fotografías del documento en el servidor (Pillow 12.3.0 vuelve a escribir cada imagen sin metadatos, almacenamiento privado, subida de un archivo por petición, entrega solo con sesión con su registro de accesos, límite de cuerpo en Nginx); 347 pruebas pasan, también en WSL con Python 3.14, y un recorrido real por HTTPS |
 | 2026-10-24 (v) | `actualizaciones/2026-10-24v_e1-grupo-e-navegador/` | E1, grupo E: script propio que reduce la fotografía en el navegador (RF-50), servido como archivo estático por Nginx, con 11 pruebas en un navegador real (una foto de 6,44 MiB queda en 1,47 MiB); 368 pruebas en Windows, 357 en WSL; 7 mutaciones detectadas |
+| 2026-10-24 (w) | `actualizaciones/2026-10-24w_e1-grupo-f-pantallas/` | E1, grupo F: pantallas de los inquilinos (lista con búsqueda y «Sin frente», registro con el texto del consentimiento, ficha, edición, desactivar, reactivar y revocar con confirmación); 404 pruebas en Windows y 393 en WSL, 7 mutaciones detectadas y un recorrido real por HTTPS |
 
 ## Control de versiones
 

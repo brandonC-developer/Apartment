@@ -1,0 +1,37 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}Registrar inquilino{% endblock %}
+{% block contenido %}
+<h1>Registrar inquilino</h1>
+<p><a href="{% url 'inquilinos:lista' %}">Inquilinos</a></p>
+{% if not texto %}
+<p role="alert">Todavía no hay un texto informativo de consentimiento cargado, así que no se puede registrar a nadie. Cárguelo en el servidor con <code>manage.py cargar_texto_consentimiento</code>.</p>
+{% else %}
+<form method="post">
+  {% csrf_token %}
+  {% include "inquilinos/_campos.html" %}
+  <section aria-labelledby="t_consentimiento">
+    <h2 id="t_consentimiento">Consentimiento (versión {{ texto.version }})</h2>
+    {% if texto.borrador %}<p role="alert"><strong>Este texto es un borrador sin validar por un abogado.</strong></p>{% endif %}
+    <div tabindex="0" role="region" aria-label="Texto informativo del consentimiento">{{ texto.contenido|linebreaks }}</div>
+    <p>
+      <label for="id_medio">Cómo se dio el consentimiento</label>
+      <select id="id_medio" name="medio" required{% if errores.medio %} aria-invalid="true"{% endif %}>
+        <option value=""{% if not valores.medio %} selected{% endif %}>(elija)</option>
+        {% for valor, nombre in medios %}<option value="{{ valor }}"{% if valor == valores.medio %} selected{% endif %}>{{ nombre }}</option>{% endfor %}
+      </select>
+      {% if errores.medio %}<span role="alert">{{ errores.medio|join:" " }}</span>{% endif %}
+    </p>
+    <p>
+      <label for="id_otorgado_en">Fecha en que lo dio (vacía = hoy)</label>
+      <input id="id_otorgado_en" name="otorgado_en" type="date" value="{{ valores.otorgado_en }}">
+      {% if errores.otorgado_en %}<span role="alert">{{ errores.otorgado_en|join:" " }}</span>{% endif %}
+    </p>
+    <p>
+      <label><input type="checkbox" name="confirma" value="1" required{% if valores.confirma %} checked{% endif %}> Se mostró este texto a la persona y dio su consentimiento.</label>
+      {% if errores.consentimiento %}<span role="alert">{{ errores.consentimiento|join:" " }}</span>{% endif %}
+    </p>
+  </section>
+  <button type="submit">Registrar</button>
+</form>
+{% endif %}
+{% endblock %}

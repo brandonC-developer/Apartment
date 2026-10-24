@@ -1,0 +1,27 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<h1>{{ titulo }}</h1>
+<p><a href="{% url 'inquilinos:ficha' ficha.inquilino.pk %}">Cancelar y volver a la ficha</a></p>
+<p>{{ ficha.inquilino.nombre_completo|default:"Inquilino desasociado" }}</p>
+<p>{{ aviso }}</p>
+{% if errores %}<p role="alert">{% for mensajes in errores.values %}{{ mensajes|join:" " }} {% endfor %}</p>{% endif %}
+{% if motivos %}
+<section role="alert">
+  <h2>No se puede desactivar</h2>
+  <ul>{% for m in motivos %}<li>{{ m }}</li>{% endfor %}</ul>
+</section>
+{% else %}
+<form method="post">
+  {% csrf_token %}
+  {% if duplicados %}
+  <section role="alert">
+    <h2>Ya hay un inquilino activo con este documento</h2>
+    <ul>{% for d in duplicados %}<li><a href="{% url 'inquilinos:ficha' d.pk %}">{{ d.nombre_completo }}</a></li>{% endfor %}</ul>
+    <p><label><input type="checkbox" name="confirmar_duplicado" value="1" required> Reactivar de todos modos</label></p>
+  </section>
+  {% endif %}
+  <button type="submit">{{ boton }}</button>
+</form>
+{% endif %}
+{% endblock %}

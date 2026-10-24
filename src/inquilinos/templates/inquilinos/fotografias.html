@@ -3,7 +3,7 @@
 {% block titulo %}Fotografías del documento{% endblock %}
 {% block contenido %}
 <h1>Fotografías del documento</h1>
-<p><a href="{% url 'cuentas:inicio' %}">Inicio</a></p>
+<p><a href="{% url 'inquilinos:ficha' ficha.inquilino.pk %}">Volver a la ficha</a></p>
 <noscript><p role="alert">Esta página necesita JavaScript para preparar las fotografías antes de enviarlas.</p></noscript>
 {% if not ficha.puede_crear_contratos %}<p role="alert">El inquilino no tiene un consentimiento vigente: no se pueden guardar fotografías.</p>{% endif %}
 {% for cara, titulo, documento in caras %}

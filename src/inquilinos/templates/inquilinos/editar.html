@@ -1,0 +1,15 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}Editar inquilino{% endblock %}
+{% block contenido %}
+<h1>Editar inquilino</h1>
+<p><a href="{% url 'inquilinos:ficha' ficha.inquilino.pk %}">Volver a la ficha</a></p>
+{% if ficha.inquilino.desasociado_en %}
+<p role="alert">El inquilino ya fue desasociado: no se puede modificar.</p>
+{% else %}
+<form method="post">
+  {% csrf_token %}
+  {% include "inquilinos/_campos.html" %}
+  <button type="submit">Guardar</button>
+</form>
+{% endif %}
+{% endblock %}
