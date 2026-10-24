@@ -2,5 +2,12 @@
 {% block titulo %}Inicio{% endblock %}
 {% block contenido %}
 <h1>Sesión iniciada</h1>
+{% if avisos %}
+<section role="alert">
+  <h2>Avisos de seguridad desde su inicio de sesión anterior</h2>
+  <ul>{% for a in avisos %}<li>{{ a.ocurrido_en|date:"d/m/Y H:i" }} — {{ a.accion }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
+<p><a href="{% url 'nucleo:auditoria' %}">Auditoría</a></p>
 <form method="post" action="{% url 'cuentas:cerrar_sesion' %}">{% csrf_token %}<button type="submit">Salir</button></form>
 {% endblock %}

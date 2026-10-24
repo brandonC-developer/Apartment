@@ -121,6 +121,10 @@ SESSION_COOKIE_AGE = 24 * 60 * 60
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 
+# Cabecera con la IP del cliente que pone Nginx (`proxy_set_header X-Real-IP $remote_addr;`); sin ella
+# se usa REMOTE_ADDR (desarrollo). Gunicorn solo es alcanzable por el socket de Nginx (ADR-032, decisión 13).
+IP_ORIGEN_CABECERA = None if DEBUG else 'HTTP_X_REAL_IP'
+
 if not DEBUG:
     # Nginx termina HTTPS y envía X-Forwarded-Proto (ADR-032, decisión 13).
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

@@ -149,6 +149,7 @@ Carpetas transversales:
 | 2026-10-24 (b) | `actualizaciones/2026-10-24b_registro-segundo-factor/` | Pantalla de registro del segundo factor en el primer ingreso (RF-27, CA-69): clave y dirección otpauth, activación con TOTP, 10 códigos de recuperación mostrados una vez; 64 pruebas pasan en un PostgreSQL desechable; sin QR, aviso por correo ni auditoría |
 | 2026-10-24 (c) | `actualizaciones/2026-10-24c_lista-de-tareas-implementacion/` | Lista de tareas de la implementación (TAR-SGA-001) generada de la ERS, el plan, el DAS y la estrategia de pruebas: E0 detallada con lo hecho marcado; E1 a E6 con sus RF, RNF y CA |
 | 2026-10-24 (d) | `actualizaciones/2026-10-24d_correcciones-revision-codigo/` | Seis correcciones de la revisión de código del registro del segundo factor, con un token de registro de un solo uso impreso por los comandos del servidor; 78 pruebas pasan en un PostgreSQL desechable |
+| 2026-10-24 (e) | `actualizaciones/2026-10-24e_auditoria-base/` | Auditoría base (RF-28, CA-53, CA-71): modelo de solo inserción, eventos de autenticación con IP, pantalla de consulta de solo lectura y alerta de avisos de seguridad; 100 pruebas pasan en un PostgreSQL desechable; sin rol de PostgreSQL de solo inserción |
 
 ## Control de versiones
 

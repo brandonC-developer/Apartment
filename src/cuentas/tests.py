@@ -629,12 +629,13 @@ class TokenDeRegistroTests(TestCase):
         self.client.post('/entrar/registro/', {'token': self.token})
         self.assertNotEqual(self.secreto(), primero)
 
-    def test_el_quinto_fallo_deja_aviso_en_el_registro_del_servidor(self):
+    def test_el_quinto_fallo_del_token_queda_en_la_auditoria(self):
         self.entrar()
-        with self.assertLogs('sga.seguridad', 'WARNING') as registro:
-            for _ in range(5):
-                self.client.post('/entrar/registro/', {'token': 'incorrecto'})
-        self.assertEqual(len(registro.output), 1)
+        for _ in range(5):
+            self.client.post('/entrar/registro/', {'token': 'incorrecto'})
+        from nucleo.models import Auditoria
+        self.assertEqual(Auditoria.objects.filter(accion='cinco_fallos_seguidos').count(), 1)
+        self.assertEqual(Auditoria.objects.filter(accion='inicio_sesion_fallido').count(), 5)
 
     def test_los_comandos_imprimen_un_token_que_sirve(self):
         Administrador.objects.all().delete()

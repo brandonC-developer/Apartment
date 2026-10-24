@@ -6,7 +6,6 @@ Paso 2: código TOTP o código de recuperación. Solo entonces se llama a `login
 Si la cuenta aún no tiene segundo factor, el paso 2 es el registro (actualización 2026-10-24d):
 primero el token que imprimen los comandos del servidor y después el código de la aplicación.
 """
-import logging
 import time
 
 import pyotp
@@ -17,13 +16,14 @@ from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_POST
 
+from nucleo import auditoria
+
 from . import autenticacion, cifrado
 from .autenticacion import Resultado
 from .middleware import marcar_inicio
 from .models import Administrador
 
-registro = logging.getLogger('sga.seguridad')
-
+ACTOR_ANONIMO = 'anonimo'  # no se guarda lo escrito en el campo de usuario: puede ser una contraseña
 CLAVE_PENDIENTE = 'primer_paso_administrador'
 CLAVE_PENDIENTE_HASTA = 'primer_paso_hasta'
 CLAVE_SECRETO_REGISTRO = 'secreto_registro_cifrado'
@@ -54,12 +54,25 @@ def _administrador_pendiente(request):
     return None
 
 
-def _avisar_cinco_fallos(respuesta):
-    """Marca provisional del aviso de seguridad al quinto fallo seguido (CA-68). El aviso real
-    (alerta en la web y auditoría en la E0, correo en la E4; HI-01, HI-05) depende de la auditoría,
-    que aún no existe: por ahora solo queda en el registro del servidor, sin datos personales."""
+def _auditar(request, accion, administrador=None, actor=None):
+    """Registra un evento de autenticación o de seguridad de la cuenta (RF-28, CA-71), con la IP
+    de origen y sin contraseñas, códigos ni tokens."""
+    auditoria.registrar(
+        accion, 'administrador', registro_id=administrador.pk if administrador else None,
+        actor=actor or (administrador.usuario if administrador else ACTOR_ANONIMO),
+        ip_origen=auditoria.ip_de_origen(request))
+
+
+def _auditar_fallo(request, respuesta, administrador=None):
+    """Un intento fallido (contraseña, TOTP, código de recuperación, token o código de registro) y,
+    si es el quinto seguido, el evento que la pantalla de inicio muestra como alerta (CA-68,
+    HI-01, HI-05; el correo llega en la E4). Un intento hecho durante la espera no se registra
+    (propuesta del asistente: el límite de solicitudes de Nginx es la defensa contra el abuso)."""
+    if respuesta.correcto or respuesta.resultado is Resultado.EN_ESPERA:
+        return
+    _auditar(request, 'inicio_sesion_fallido', administrador)
     if respuesta.aviso_cinco_fallos:
-        registro.warning('Cinco intentos fallidos seguidos en la cuenta administradora.')
+        _auditar(request, 'cinco_fallos_seguidos', administrador)
 
 
 def _mensaje_de_fallo(respuesta, texto):
@@ -75,7 +88,7 @@ def iniciar_sesion(request):
         _olvidar_primer_paso(request)
         respuesta = autenticacion.comprobar_contrasena(
             request.POST.get('usuario', ''), request.POST.get('contrasena', ''))
-        _avisar_cinco_fallos(respuesta)
+        _auditar_fallo(request, respuesta)
         if respuesta.correcto:
             request.session[CLAVE_PENDIENTE] = respuesta.administrador.pk
             request.session[CLAVE_PENDIENTE_HASTA] = time.time() + VIGENCIA_PRIMER_PASO
@@ -99,15 +112,19 @@ def segundo_paso(request):
     if request.method == 'POST':
         codigo = request.POST.get('codigo', '')
         normalizado = ''.join(codigo.split())
-        if len(normalizado) == autenticacion.DIGITOS_TOTP and normalizado.isdigit():
-            respuesta = autenticacion.verificar_totp(administrador.pk, normalizado)
-        else:
+        con_recuperacion = not (len(normalizado) == autenticacion.DIGITOS_TOTP and normalizado.isdigit())
+        if con_recuperacion:
             respuesta = autenticacion.verificar_codigo_recuperacion(administrador.pk, codigo)
-        _avisar_cinco_fallos(respuesta)
+        else:
+            respuesta = autenticacion.verificar_totp(administrador.pk, normalizado)
+        _auditar_fallo(request, respuesta, administrador)
         if respuesta.correcto:
             _olvidar_primer_paso(request)
             login(request, respuesta.administrador, backend=BACKEND)
             marcar_inicio(request)
+            if con_recuperacion:
+                _auditar(request, 'codigo_recuperacion_usado', administrador)
+            _auditar(request, 'inicio_sesion', administrador)
             return redirect('cuentas:inicio')
         error = _mensaje_de_fallo(respuesta, 'Código incorrecto.')
     return render(request, 'cuentas/segundo_paso.html', {'error': error})
@@ -149,11 +166,13 @@ def registro_segundo_factor(request):
         respuesta, codigos = autenticacion.activar_segundo_factor(
             administrador.pk, secreto, request.POST.get('codigo', ''),
             request.session[CLAVE_TOKEN_VERIFICADO])
-        _avisar_cinco_fallos(respuesta)
+        _auditar_fallo(request, respuesta, administrador)
         if respuesta.correcto:
             _olvidar_primer_paso(request)
             login(request, respuesta.administrador, backend=BACKEND)
             marcar_inicio(request)
+            for accion in ('segundo_factor_registrado', 'codigos_emitidos', 'inicio_sesion'):
+                _auditar(request, accion, administrador)
             return render(request, 'cuentas/codigos_recuperacion.html', {'codigos': codigos})
         if respuesta.resultado is Resultado.TOKEN_INVALIDO:
             request.session.pop(CLAVE_TOKEN_VERIFICADO, None)
@@ -171,7 +190,7 @@ def _pedir_token(request, administrador):
     if request.method == 'POST':
         token = request.POST.get('token', '')
         respuesta = autenticacion.comprobar_token_registro(administrador.pk, token)
-        _avisar_cinco_fallos(respuesta)
+        _auditar_fallo(request, respuesta, administrador)
         if respuesta.correcto:
             request.session[CLAVE_TOKEN_VERIFICADO] = autenticacion.hash_token(token)
             return redirect('cuentas:registro_segundo_factor')
@@ -181,6 +200,8 @@ def _pedir_token(request, administrador):
 
 @require_POST
 def cerrar_sesion(request):
+    if request.user.is_authenticated:
+        _auditar(request, 'cierre_sesion', request.user)
     logout(request)
     return redirect('cuentas:iniciar_sesion')
 
@@ -188,4 +209,5 @@ def cerrar_sesion(request):
 @login_required
 def inicio(request):
     """Página provisional protegida; las pantallas reales llegan en entregas posteriores."""
-    return render(request, 'cuentas/inicio.html')
+    return render(request, 'cuentas/inicio.html', {
+        'avisos': auditoria.eventos_de_seguridad_desde_el_inicio_anterior()})

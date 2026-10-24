@@ -5,6 +5,7 @@ from django.db import transaction
 
 from cuentas.autenticacion import emitir_token_registro
 from cuentas.models import Administrador, CodigoRecuperacion
+from nucleo import auditoria
 
 
 class Command(BaseCommand):
@@ -33,8 +34,10 @@ class Command(BaseCommand):
             CodigoRecuperacion.objects.filter(administrador=administrador).delete()
             Session.objects.all().delete()
             token = emitir_token_registro(administrador)
+            auditoria.registrar(
+                'segundo_factor_rescatado', 'administrador', registro_id=administrador.pk,
+                actor='servidor')
         self.stdout.write(self.style.SUCCESS('Segundo factor desactivado y sesiones cerradas.'))
         self.stdout.write(f'Token de registro del segundo factor (se muestra una sola vez, vale 24 horas): {token}')
         self.stdout.write(self.style.WARNING(
-            'Pendiente de implementar: constancia en la auditoría y aviso a las dos direcciones '
-            '(RF-27); regístrelo a mano.'))
+            'Queda constancia en la auditoría; el aviso a las dos direcciones (RF-27) llega en la E4.'))

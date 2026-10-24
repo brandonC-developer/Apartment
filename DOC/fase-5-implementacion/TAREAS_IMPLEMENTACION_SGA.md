@@ -56,19 +56,19 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Token de registro del segundo factor (un solo uso, 24 h, solo su hash) que imprimen `crear_administrador` y `rescatar_segundo_factor`; sin él, la contraseña sola no permite registrar un segundo factor (2026-10-24, actualización 2026-10-24d; propuesta del asistente derivada de la revisión de código)
 - [ ] Pantalla para emitir códigos de recuperación nuevos con la contraseña actual, desde la sesión iniciada (CA-69; la función existe, la pantalla no)
 - [ ] Todas las funciones administrativas y los archivos privados exigen sesión autenticada: cada vista nueva debe usar `login_required` y tener su prueba de acceso denegado (CA-13, RNF-02)
-- [~] Aviso al quinto fallo seguido: en la E0 se registra y se muestra como alerta en la web; el correo llega en la E4 (CA-68; HI-01, HI-05). **Hoy solo queda una línea en el registro del servidor (`sga.seguridad`, sin datos personales), común a la contraseña, el segundo paso, el token y el registro; falta la auditoría y la alerta en la web**
-- [ ] Aviso del rescate por el servidor: constancia en la auditoría y alerta en la web (CA-70; HI-01); el comando hoy solo lo advierte
+- [x] Aviso al quinto fallo seguido: evento `cinco_fallos_seguidos` en la auditoría y alerta en la pantalla de inicio con los avisos desde el inicio de sesión anterior (CA-68; HI-01, HI-05); el correo llega en la E4
+- [x] Aviso del rescate por el servidor: constancia `segundo_factor_rescatado` en la auditoría, alerta en la web y aviso impreso por el comando (CA-70; HI-01); el correo a las dos direcciones llega en la E4
 - [ ] Alerta persistente en cada inicio de sesión cuando un aviso de seguridad queda en *fallido* (RF-27, ADR-026) — verificable plenamente en la E4
 - [ ] Prueba de concurrencia del bloqueo de fila del contador de intentos (pendiente declarado en la actualización zzc)
 
 ### C. Auditoría base (RF-28, RNF-06; CA-53, CA-71)
-- [ ] Modelo de auditoría de solo inserción: actor, fecha y hora, operación, entidad, campos modificados, valores anteriores y nuevos de campos **no personales**, y solo *que cambió* en los personales (RF-28; CA-53)
-- [ ] Eventos de autenticación: inicios de sesión correctos y fallidos, cierres de sesión y los siete eventos de RF-27, con dirección IP de origen y sin contraseñas, códigos ni tokens (RF-28; CA-71)
-- [ ] Tipo de actor *proceso* para el proceso diario, con la ejecución que lo originó (RF-28, HT-06) — la ejecución llega en la E2; dejar el campo preparado
-- [ ] Pantalla de consulta de solo lectura con filtros por fecha, tipo de evento, entidad y actor; consultarla no genera registro (CA-71)
-- [ ] Guarda en el modelo (error claro al editar o borrar) y bloqueo de `update()` y `delete()` masivos; sin sitio de administración sobre estas tablas (ADR-027)
-- [ ] La auditoría no se borra automáticamente (RF-28; plazo de conservación en DP-18)
-- [ ] Obtener la dirección IP de origen detrás de Nginx sin confiar en cabeceras falsificables (propuesta del asistente; verificar al desplegar)
+- [x] Modelo `nucleo.Auditoria` de solo inserción y servicio `registrar`: actor, fecha y hora, operación, entidad, campos modificados y valores de campos **no personales**; de los personales y los secretos solo el nombre (RF-28; CA-53) (2026-10-24, actualización 2026-10-24e; la lista de campos personales es propuesta del asistente a partir de RF-28)
+- [~] Eventos de autenticación con IP y sin secretos: `inicio_sesion`, `inicio_sesion_fallido`, `cierre_sesion`, `cuenta_creada`, `codigo_recuperacion_usado`, `codigos_emitidos`, `segundo_factor_registrado`, `segundo_factor_rescatado` y `cinco_fallos_seguidos` (RF-28; CA-71). **Faltan** los de cambio y restablecimiento de contraseña y de cambio de una dirección de correo (E4) y el de emisión de códigos nuevos desde la sesión (pantalla pendiente)
+- [x] Tipo de actor *proceso* con su restricción R19 (actor «sistema» y ejecución obligatoria; el administrador no lleva ejecución); `ejecucion_id` sin clave foránea hasta la E2 (RF-28, HT-06)
+- [x] Pantalla `/auditoria/` de solo lectura con filtros por fecha, tipo de evento, entidad y actor, de 50 en 50; consultarla no genera registro (CA-71)
+- [~] Guardas en el modelo (error claro al editar o borrar) y bloqueo de `update()` y `delete()` masivos; sin sitio de administración (ADR-027). **Falta la defensa real: el rol de PostgreSQL de la aplicación solo con `SELECT` e `INSERT` (sección E)**
+- [x] La auditoría no se borra automáticamente: ningún código la borra (RF-28; plazo de conservación en DP-18)
+- [~] Dirección IP de origen detrás de Nginx: se lee la cabecera `X-Real-IP` solo si `IP_ORIGEN_CABECERA` la declara de confianza (fuera de depuración) y se descarta lo que no sea una IP; **falta configurar Nginx con `proxy_set_header X-Real-IP $remote_addr;` y comprobarlo al desplegar** (propuesta del asistente)
 
 ### D. Organización y configuración regional (RF-33, RNF-12, RNF-17; CA-18)
 - [ ] Entidad ORGANIZACIÓN con moneda predeterminada CRC y zona `America/Costa_Rica` (RF-33; modelo de datos)

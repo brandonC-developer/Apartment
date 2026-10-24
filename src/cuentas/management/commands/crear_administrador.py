@@ -7,6 +7,11 @@ from django.core.management.base import BaseCommand, CommandError
 
 from cuentas.autenticacion import emitir_token_registro
 from cuentas.models import Administrador
+from nucleo import auditoria
+
+
+# Quien ejecuta el comando es el solicitante, en el servidor (propuesta del asistente).
+ACTOR_SERVIDOR = 'servidor'
 
 
 class Command(BaseCommand):
@@ -28,6 +33,8 @@ class Command(BaseCommand):
             raise CommandError(' '.join(error.messages))
         administrador = Administrador.objects.crear_administrador(usuario, contrasena)
         token = emitir_token_registro(administrador)
+        auditoria.registrar(
+            'cuenta_creada', 'administrador', registro_id=administrador.pk, actor=ACTOR_SERVIDOR)
         self.stdout.write(self.style.SUCCESS(f'Cuenta «{usuario}» creada. Segundo factor sin registrar.'))
         self.stdout.write(f'Token de registro del segundo factor (se muestra una sola vez, vale 24 horas): {token}')
 

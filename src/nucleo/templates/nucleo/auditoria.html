@@ -1,0 +1,36 @@
+{% extends "cuentas/base.html" %}
+{% block titulo %}Auditoría{% endblock %}
+{% block contenido %}
+<h1>Auditoría</h1>
+<p><a href="{% url 'cuentas:inicio' %}">Inicio</a></p>
+<form method="get">
+  <label>Desde <input type="date" name="desde" value="{{ filtros.desde }}"></label>
+  <label>Hasta <input type="date" name="hasta" value="{{ filtros.hasta }}"></label>
+  <label>Tipo de evento
+    <select name="accion"><option value="">(todos)</option>
+      {% for a in acciones %}<option value="{{ a }}"{% if a == filtros.accion %} selected{% endif %}>{{ a }}</option>{% endfor %}
+    </select></label>
+  <label>Entidad <input name="entidad" value="{{ filtros.entidad }}"></label>
+  <label>Actor <input name="actor" value="{{ filtros.actor }}"></label>
+  <button type="submit">Filtrar</button>
+</form>
+<table>
+  <thead><tr><th>Fecha y hora</th><th>Evento</th><th>Entidad</th><th>Actor</th><th>IP</th><th>Campos</th><th>Antes</th><th>Después</th></tr></thead>
+  <tbody>
+  {% for r in pagina %}
+    <tr>
+      <td>{{ r.ocurrido_en|date:"d/m/Y H:i:s" }}</td><td>{{ r.accion }}</td><td>{{ r.entidad }}{% if r.registro_id %} #{{ r.registro_id }}{% endif %}</td>
+      <td>{{ r.actor }}</td><td>{{ r.ip_origen|default_if_none:"" }}</td>
+      <td>{{ r.campos_modificados|join:", " }}</td><td>{{ r.valor_anterior|default_if_none:"" }}</td><td>{{ r.valor_nuevo|default_if_none:"" }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="8">Sin registros.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p>
+  {% if pagina.has_previous %}<a href="?{{ consulta }}&amp;pagina={{ pagina.previous_page_number }}">Anterior</a>{% endif %}
+  Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+  {% if pagina.has_next %}<a href="?{{ consulta }}&amp;pagina={{ pagina.next_page_number }}">Siguiente</a>{% endif %}
+</p>
+{% endblock %}

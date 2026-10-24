@@ -38,3 +38,6 @@ Rutas `/entrar/`, `/entrar/codigo/`, `/salir/` y `/` (página provisional proteg
 
 ## Token de registro del segundo factor (actualización 2026-10-24d)
 `crear_administrador` y `rescatar_segundo_factor` imprimen un token de un solo uso (24 h) que la pantalla de registro pide antes de mostrar la clave. 78 pruebas en total.
+
+## Auditoría base (actualización 2026-10-24e)
+`nucleo.Auditoria` (solo inserción), `nucleo.auditoria.registrar` y la pantalla `/auditoria/`; los eventos de autenticación y de la cuenta se registran con la IP de origen. Detrás de Nginx hace falta `proxy_set_header X-Real-IP $remote_addr;` (la configuración lee `X-Real-IP` cuando no es depuración). 100 pruebas en total.
