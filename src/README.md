@@ -101,3 +101,6 @@ Las pantallas están en `inquilinos/pantallas.py` y sus plantillas; sin estilos 
 
 ## E2, grupo A: modelos de `alquileres` (actualización 2026-10-26g)
 Aplicación `alquileres` (propiedades, contratos, condiciones, obligaciones, ajustes, fotografías del contrato, accesos y ejecuciones del proceso diario), sin servicios ni pantallas todavía. El solape de contratos (R2) es una restricción de exclusión de PostgreSQL y necesita la extensión `btree_gist` (migración de `nucleo`). Las pruebas de modelos corren contra las migraciones: para mutar una restricción hay que cambiar la migración. 467 pruebas en Windows; 456 en WSL.
+
+## E2, grupo B: cálculo de períodos y prorrateo (actualización 2026-10-26h)
+`alquileres/calculo.py` reúne las funciones puras de períodos, vencimientos, fecha límite, condición aplicable y prorrateo (RN-03, RN-05, RN-06, RN-12, RN-13). No usa la base ni el reloj: las fechas son `date` y los importes `Decimal` (un `float` se rechaza). El redondeo es siempre `ROUND_HALF_UP` y se hace una sola vez al final. 508 pruebas en Windows; 497 en WSL.

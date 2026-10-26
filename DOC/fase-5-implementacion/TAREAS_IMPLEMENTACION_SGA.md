@@ -287,8 +287,8 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Privilegios mínimos y guardas: `AjusteObligacion` solo `SELECT` e `INSERT`; `Obligacion` sin tocar `importe_inicial`; entradas en `sga/privilegios.py` con su prueba (R12, ADR-027): ocho entradas nuevas en `sga/privilegios.py` (el despliegue aplica 23 tablas); el contrato solo actualiza `fecha_fin`, `anulado_en` y `motivo_anulacion`, y la obligación solo `anulada_en` y `motivo_anulacion`; probado con SQL directo como el rol de la aplicación
 
 **B. Cálculo de períodos e importes** (funciones puras, sin base de datos)
-- [ ] Período de alquiler (RN-03), vencimiento (RN-05), fecha límite con días de gracia (RN-06) y prorrateo del último período con redondeo explícito (RN-12): fin de mes, año bisiesto, 29, 30 y 31, CRC sin decimales y USD a dos
-- [ ] Cálculo guardado en `datos_calculo` para reconstruir la regla (RN-13)
+- [x] Período de alquiler (RN-03), vencimiento (RN-05), fecha límite con días de gracia (RN-06) y prorrateo del último período con redondeo explícito (RN-12): fin de mes, año bisiesto, 29, 30 y 31, CRC sin decimales y USD a dos. Hecho el 2026-10-26 (actualización 2026-10-26h): `alquileres/calculo.py`, 41 pruebas, 100 % de cobertura, 9 mutaciones detectadas; **el redondeo es `ROUND_HALF_UP` explícito y un solo redondeo al final**
+- [x] Cálculo guardado en `datos_calculo` para reconstruir la regla (RN-13): `Prorrateo.datos_calculo()` devuelve la regla, los días cobrables y del período, el importe previo (cociente exacto con 6 decimales) y el final
 
 **C. Propiedades y contratos** (RF-06 a RF-09, RF-36, RF-48; RN-02, RN-30)
 - [ ] Servicios de propiedad: alias único, inactiva con bloqueo si hay contrato vigente, futuro o por decidir, y sin contratos nuevos mientras esté inactiva (CA-63)

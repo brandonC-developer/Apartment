@@ -175,6 +175,7 @@ Carpetas transversales:
 | 2026-10-26 (e) | `actualizaciones/2026-10-26e_inicio-e2/` | Inicio de la entrega E2 (Contratos y obligaciones) por autorización expresa del solicitante: CLAUDE.md, registro de avance y plan de trabajo en ocho grupos; lo que la E2 hereda de la E1 (CA-29 real, CA-67 completo, CA-18 en USD, CA-82, ciclo de migraciones del acceso a la fotografía del contrato); sin código |
 | 2026-10-26 (f) | `actualizaciones/2026-10-26f_decisiones-e2/` | Decisión 1 de la E2 con su trazabilidad: el acceso a la fotografía del contrato va en una tabla propia `AccesoDocumentoContrato` en `alquileres`, sin ciclo de migraciones con `inquilinos`; R23 se cumple por construcción |
 | 2026-10-26 (g) | `actualizaciones/2026-10-26g_e2-grupo-a-modelos/` | E2, grupo A: aplicación `alquileres` con ocho modelos y 32 restricciones (solape de contratos con `btree_gist`, R1, R3, R20 a R22, R27, R28), anulación que se completa una sola vez con un disparador, privilegios mínimos a 23 tablas y la tabla propia de accesos a la fotografía del contrato; 467 pruebas en Windows y 456 en WSL, 5 mutaciones detectadas |
+| 2026-10-26 (h) | `actualizaciones/2026-10-26h_e2-grupo-b-calculo/` | E2, grupo B: cálculo de períodos (día ancla, mes corto, año bisiesto), vencimiento, fecha límite, condición aplicable y prorrateo del último período con redondeo explícito y un solo redondeo; funciones puras con 41 pruebas, 100 % de cobertura y 9 mutaciones detectadas; 508 pruebas en Windows y 497 en WSL |
 
 ## Control de versiones
 
