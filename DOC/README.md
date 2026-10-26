@@ -168,6 +168,7 @@ Carpetas transversales:
 | 2026-10-24 (u) | `actualizaciones/2026-10-24u_e1-grupo-d-fotografias/` | E1, grupo D: fotografías del documento en el servidor (Pillow 12.3.0 vuelve a escribir cada imagen sin metadatos, almacenamiento privado, subida de un archivo por petición, entrega solo con sesión con su registro de accesos, límite de cuerpo en Nginx); 347 pruebas pasan, también en WSL con Python 3.14, y un recorrido real por HTTPS |
 | 2026-10-24 (v) | `actualizaciones/2026-10-24v_e1-grupo-e-navegador/` | E1, grupo E: script propio que reduce la fotografía en el navegador (RF-50), servido como archivo estático por Nginx, con 11 pruebas en un navegador real (una foto de 6,44 MiB queda en 1,47 MiB); 368 pruebas en Windows, 357 en WSL; 7 mutaciones detectadas |
 | 2026-10-24 (w) | `actualizaciones/2026-10-24w_e1-grupo-f-pantallas/` | E1, grupo F: pantallas de los inquilinos (lista con búsqueda y «Sin frente», registro con el texto del consentimiento, ficha, edición, desactivar, reactivar y revocar con confirmación); 404 pruebas en Windows y 393 en WSL, 7 mutaciones detectadas y un recorrido real por HTTPS |
+| 2026-10-26 (a) | `actualizaciones/2026-10-26a_e1-grupo-g-medicion-de-fotografias/` | E1, grupo G (parcial): herramienta que mide con un navegador real el peso y los metadatos tras la reducción, buenas prácticas por dispositivo (HEIC, Ultra HDR, orientación) con sus fuentes y su nivel de validación; la carpeta `img/` no trae fotos de teléfono, así que **CA-73 y CA-82 siguen sin medirse** |
 
 ## Control de versiones
 

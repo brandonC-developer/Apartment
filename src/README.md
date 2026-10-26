@@ -95,3 +95,6 @@ El script `inquilinos/static/inquilinos/reducir_fotografia.js` se sirve con `col
 
 ## E1, grupo F: pantallas (actualización 2026-10-24w)
 Las pantallas están en `inquilinos/pantallas.py` y sus plantillas; sin estilos hasta los wireframes. Rutas: `/inquilinos/`, `/inquilinos/nuevo/`, `/inquilinos/<id>/` y, bajo ella, `editar/`, `desactivar/`, `reactivar/` y `consentimiento/revocar/`. Para registrar a alguien debe existir un texto de consentimiento cargado (`manage.py cargar_texto_consentimiento`). **Las pruebas que suben archivos deben usar una carpeta temporal en `RAIZ_DOCUMENTOS`** (como `Pantallas` y `Base`). 404 pruebas en Windows; 393 en WSL.
+
+## E1, grupo G: medición de fotografías (actualización 2026-10-26a)
+`cd src; .venv\Scripts\python despliegue\medir_reduccion.py CARPETA [--guardar SALIDA]` abre un navegador real, aplica el script de reducción a cada imagen de la carpeta e imprime peso, píxeles, calidad y metadatos (sin valores). Las fotos son datos personales: no las copie al repositorio; `img/` no está versionada.

@@ -210,8 +210,8 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Lista con búsqueda (nombre, documento, teléfono, correo), filtro de estado y «Sin frente»; registro con el texto informativo a la vista, medio y fecha del consentimiento y confirmación obligatoria; ficha con datos, fotografías (ver y descargar) y consentimientos; editar; desactivar y reactivar con confirmación (el motivo de bloqueo se muestra); revocar el consentimiento con confirmación y sin tocar datos. Todas con `login_required`, CSRF y `no-store`; 35 pruebas propias y un recorrido real por HTTPS en WSL (actualización 2026-10-24w)
 
 **G. Medición, despliegue y cierre**
-- [ ] Medir y registrar el peso de fotos reales de un iPhone y dos teléfonos Android tras la reducción (**necesita fotos tuyas**); comparar con el objetivo de 2 MB (CA-73)
-- [ ] Desplegar en WSL, verificar, actualizar la CI y repetir las pruebas con Python 3.14
+- [ ] Medir y registrar el peso de fotos reales de un iPhone y dos teléfonos Android tras la reducción (**necesita fotos tuyas**; la carpeta `img/` solo trae dos diagramas PNG y una imagen de WhatsApp, que ya viene recomprimida y sin metadatos). **La herramienta `src/despliegue/medir_reduccion.py` está lista y probada**; falta correrla con las fotos originales. Comparar con el objetivo de 2 MB (CA-73)
+- [x] Desplegar en WSL, verificar, actualizar la CI y repetir las pruebas con Python 3.14 (hecho con cada grupo; en el último despliegue: 393 pruebas en WSL y `verificar.sh` sin fallos; **el resultado de GitHub Actions lo confirma el solicitante**)
 - [ ] Cierre con las nueve condiciones comunes y el registro de avance
 
 **Decisiones del solicitante de la E1 (24-oct-2026; actualización 2026-10-24q)**
