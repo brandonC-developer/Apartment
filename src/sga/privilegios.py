@@ -37,6 +37,23 @@ PRIVILEGIOS = {
     'inquilinos_documentoidentidad': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('eliminado_en',)}},
     # R12: solo inserción.
     'inquilinos_accesodocumento': {'tabla': ('SELECT', 'INSERT')},
+    # --- alquileres (E2)
+    # Sin DELETE: la propiedad se marca inactiva, no se borra (RF-06).
+    'alquileres_propiedad': {'tabla': ('SELECT', 'INSERT', 'UPDATE')},
+    # Del contrato solo cambian la fecha de fin (RF-09) y la anulación, que se completa una sola vez (R21; disparador).
+    'alquileres_contrato': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('fecha_fin', 'anulado_en', 'motivo_anulacion')}},
+    # El historial de condiciones no se edita: una corrección es una fila nueva (ADR-014).
+    'alquileres_condicioncontrato': {'tabla': ('SELECT', 'INSERT')},
+    # `importe_inicial` no se actualiza nunca (R12); solo se completa la anulación, una vez.
+    'alquileres_obligacion': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('anulada_en', 'motivo_anulacion')}},
+    # R12: los ajustes de importe son solo inserción (ADR-016).
+    'alquileres_ajusteobligacion': {'tabla': ('SELECT', 'INSERT')},
+    # Sin eliminado_en: la conservación depende de DP-28 (abierta).
+    'alquileres_documentocontrato': {'tabla': ('SELECT', 'INSERT')},
+    # R12: solo inserción (decisión 1 de la E2).
+    'alquileres_accesodocumentocontrato': {'tabla': ('SELECT', 'INSERT')},
+    # Al terminar solo se completan el instante, el resultado y el detalle.
+    'alquileres_ejecucionproceso': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('terminada_en', 'resultado', 'detalle')}},
     # --- Django
     # DELETE por clearsessions y por el cierre de sesiones (ADR-031, corrección a ADR-027).
     'django_session': {'tabla': ('SELECT', 'INSERT', 'UPDATE', 'DELETE')},

@@ -138,6 +138,37 @@ class RolesYPrivilegiosTests(TestCase):
         self.como('app', 'UPDATE inquilinos_inquilino SET activo = activo')
         self.rechazado('app', 'DELETE FROM inquilinos_inquilino')
 
+    # --- alquileres (E2)
+    def test_propiedad_se_actualiza_pero_nunca_se_borra(self):
+        self.como('app', 'UPDATE alquileres_propiedad SET inactiva = inactiva')
+        self.rechazado('app', 'DELETE FROM alquileres_propiedad')
+
+    def test_del_contrato_solo_cambian_la_fecha_de_fin_y_la_anulacion(self):
+        self.como('app', 'UPDATE alquileres_contrato SET fecha_fin = fecha_fin, anulado_en = anulado_en, motivo_anulacion = motivo_anulacion')
+        for columna in ('fecha_inicio', 'moneda', 'propiedad_id', 'inquilino_id', 'destino'):
+            self.rechazado('app', f'UPDATE alquileres_contrato SET {columna} = {columna}')
+        self.rechazado('app', 'DELETE FROM alquileres_contrato')
+
+    def test_las_condiciones_y_los_ajustes_de_importe_son_de_solo_insercion(self):
+        """R12 y ADR-016: el historial de importes no se edita ni se borra."""
+        for tabla in ('alquileres_condicioncontrato', 'alquileres_ajusteobligacion', 'alquileres_accesodocumentocontrato',
+                      'alquileres_documentocontrato'):
+            self.como('app', f'SELECT count(*) FROM {tabla}')
+            self.rechazado('app', f'UPDATE {tabla} SET id = id')
+            self.rechazado('app', f'DELETE FROM {tabla}')
+            self.rechazado('app', f'TRUNCATE {tabla}')
+
+    def test_de_la_obligacion_solo_se_completa_la_anulacion_y_el_importe_inicial_no_cambia(self):
+        self.como('app', 'UPDATE alquileres_obligacion SET anulada_en = anulada_en, motivo_anulacion = motivo_anulacion')
+        for columna in ('importe_inicial', 'fecha_vencimiento', 'fecha_limite', 'periodo_inicio', 'contrato_id', 'moneda'):
+            self.rechazado('app', f'UPDATE alquileres_obligacion SET {columna} = {columna}')
+        self.rechazado('app', 'DELETE FROM alquileres_obligacion')
+
+    def test_de_la_ejecucion_del_proceso_solo_se_completa_el_cierre(self):
+        self.como('app', 'UPDATE alquileres_ejecucionproceso SET terminada_en = now(), resultado = resultado, detalle = detalle')
+        self.rechazado('app', 'UPDATE alquileres_ejecucionproceso SET fecha_local = fecha_local')
+        self.rechazado('app', 'DELETE FROM alquileres_ejecucionproceso')
+
     def test_organizacion_se_lee_y_se_actualiza_pero_no_se_borra(self):
         self.como('app', "UPDATE nucleo_organizacion SET zona_horaria = 'America/Costa_Rica'")
         self.rechazado('app', 'DELETE FROM nucleo_organizacion')
@@ -181,7 +212,7 @@ class RolesYPrivilegiosTests(TestCase):
             with connection.cursor() as c:
                 c.execute("SELECT relname, relacl::text, (SELECT string_agg(attname || ':' || attacl::text, ',' "
                           "ORDER BY attname) FROM pg_attribute WHERE attrelid = pg_class.oid AND attacl IS NOT NULL) "
-                          "FROM pg_class WHERE relname LIKE ANY (ARRAY['nucleo_%%', 'cuentas_%%', 'django_%%', "
+                          "FROM pg_class WHERE relname LIKE ANY (ARRAY['nucleo_%%', 'cuentas_%%', 'inquilinos_%%', 'alquileres_%%', 'django_%%', "
                           "'auth_%%']) AND relkind = 'r' ORDER BY relname")
                 return c.fetchall()
         antes = acls()

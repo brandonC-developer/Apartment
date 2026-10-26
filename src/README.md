@@ -98,3 +98,6 @@ Las pantallas están en `inquilinos/pantallas.py` y sus plantillas; sin estilos 
 
 ## E1, grupo G: medición de fotografías (actualización 2026-10-26a)
 `cd src; .venv\Scripts\python despliegue\medir_reduccion.py CARPETA [--guardar SALIDA]` abre un navegador real, aplica el script de reducción a cada imagen de la carpeta e imprime peso, píxeles, calidad y metadatos (sin valores). Las fotos son datos personales: no las copie al repositorio; `img/` no está versionada.
+
+## E2, grupo A: modelos de `alquileres` (actualización 2026-10-26g)
+Aplicación `alquileres` (propiedades, contratos, condiciones, obligaciones, ajustes, fotografías del contrato, accesos y ejecuciones del proceso diario), sin servicios ni pantallas todavía. El solape de contratos (R2) es una restricción de exclusión de PostgreSQL y necesita la extensión `btree_gist` (migración de `nucleo`). Las pruebas de modelos corren contra las migraciones: para mutar una restricción hay que cambiar la migración. 467 pruebas en Windows; 456 en WSL.

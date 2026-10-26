@@ -282,9 +282,9 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Plan de trabajo de la E2 (propuesta del asistente derivada de los RF, RN, CA, el modelo de datos v0.7 y el diseño técnico; sin aprobar)
 **A. Modelos y esquema** (MDD v0.7; ADR-027, ADR-028, ADR-030, ADR-031)
-- [ ] Aplicación `alquileres` y sus modelos: `Propiedad`, `Contrato`, `CondicionContrato`, `Obligacion`, `AjusteObligacion`, `DocumentoContrato` y `EjecucionProceso`, con las restricciones del modelo (R1, R2 con exclusión de PostgreSQL y `btree_gist`, R3, R20, R21, R22, R28) (RF-06, RF-07, RF-10, RF-11, RF-12, RF-52)
-- [ ] Acceso a la fotografía del contrato: tabla propia `AccesoDocumentoContrato` en `alquileres` con su clave foránea (decisión 1 de la E2), solo `SELECT` e `INSERT` (R12, R23)
-- [ ] Privilegios mínimos y guardas: `AjusteObligacion` solo `SELECT` e `INSERT`; `Obligacion` sin tocar `importe_inicial`; entradas en `sga/privilegios.py` con su prueba (R12, ADR-027)
+- [x] Aplicación `alquileres` y sus modelos: `Propiedad`, `Contrato`, `CondicionContrato`, `Obligacion`, `AjusteObligacion`, `DocumentoContrato` y `EjecucionProceso`, con las restricciones del modelo (R1, R2 con exclusión de PostgreSQL y `btree_gist`, R3, R20, R21, R22, R28) (RF-06, RF-07, RF-10, RF-11, RF-12, RF-52). Hecho el 2026-10-26 (actualización 2026-10-26g): ocho tablas con 32 restricciones de tabla, el solape con `btree_gist` probado en un día compartido, el relevo contiguo, el contrato abierto y el anulado; la anulación se completa una sola vez con un disparador
+- [x] Acceso a la fotografía del contrato: tabla propia `AccesoDocumentoContrato` en `alquileres` con su clave foránea (decisión 1 de la E2), solo `SELECT` e `INSERT` (R12, R23)
+- [x] Privilegios mínimos y guardas: `AjusteObligacion` solo `SELECT` e `INSERT`; `Obligacion` sin tocar `importe_inicial`; entradas en `sga/privilegios.py` con su prueba (R12, ADR-027): ocho entradas nuevas en `sga/privilegios.py` (el despliegue aplica 23 tablas); el contrato solo actualiza `fecha_fin`, `anulado_en` y `motivo_anulacion`, y la obligación solo `anulada_en` y `motivo_anulacion`; probado con SQL directo como el rol de la aplicación
 
 **B. Cálculo de períodos e importes** (funciones puras, sin base de datos)
 - [ ] Período de alquiler (RN-03), vencimiento (RN-05), fecha límite con días de gracia (RN-06) y prorrateo del último período con redondeo explícito (RN-12): fin de mes, año bisiesto, 29, 30 y 31, CRC sin decimales y USD a dos

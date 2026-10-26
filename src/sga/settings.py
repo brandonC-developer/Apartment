@@ -50,10 +50,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Aplicaciones del DAS (ADR-030): nucleo y cuentas (E0), inquilinos (E1).
+    # Aplicaciones del DAS (ADR-030): nucleo y cuentas (E0), inquilinos (E1), alquileres (E2).
     'nucleo',
     'cuentas',
     'inquilinos',
+    'alquileres',
 ]
 
 MIDDLEWARE = [
