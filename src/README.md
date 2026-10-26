@@ -88,7 +88,7 @@ Aplicación `inquilinos` (inquilino, texto y consentimiento, fotografía del doc
 Antes de usar el sistema con un inquilino: `python manage.py configurar_organizacion --nombre-responsable ... --direccion-responsable ...` y luego `python manage.py cargar_texto_consentimiento`. El texto es un **borrador sin validar por abogado**; el texto definitivo se carga con `--archivo ... --validado`. 297 pruebas en total.
 
 ## E1, grupo D: fotografías del documento (actualización 2026-10-24u)
-Nueva dependencia: Pillow 12.3.0. Rutas: `POST /inquilinos/<id>/fotografias/<cara>/` (un archivo por petición), `GET /inquilinos/documentos/<id>/ver/` y `.../descargar/`. Los archivos van en `RAIZ_DOCUMENTOS/cedulas` y solo salen por esa vista. **Al editar scripts de shell desde Python en Windows, escribir con `newline='\n'`**: un CRLF no corre en Linux. 347 pruebas en total.
+Nueva dependencia: Pillow (13.0.0 desde la actualización 2026-10-26c; antes 12.3.0). Rutas: `POST /inquilinos/<id>/fotografias/<cara>/` (un archivo por petición), `GET /inquilinos/documentos/<id>/ver/` y `.../descargar/`. Los archivos van en `RAIZ_DOCUMENTOS/cedulas` y solo salen por esa vista. **Al editar scripts de shell desde Python en Windows, escribir con `newline='\n'`**: un CRLF no corre en Linux. 347 pruebas en total.
 
 ## E1, grupo E: reducción en el navegador (actualización 2026-10-24v)
 El script `inquilinos/static/inquilinos/reducir_fotografia.js` se sirve con `collectstatic` (`SGA_ESTATICOS`, por defecto `/opt/sga/static`) y Nginx `/static/`. Pruebas del navegador: `pip install -r requirements-pruebas.txt` (Selenium); usan Chrome, Edge o Firefox y se omiten si no hay (`SGA_NAVEGADOR=chrome|edge|firefox` fuerza uno). 368 pruebas en Windows; 357 en WSL.

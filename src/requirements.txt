@@ -7,5 +7,5 @@ pyotp==2.10.0
 cryptography==50.0.2
 # Servidor de aplicaciones (ADR-023, ADR-032 decisión 13); 26.2.0 es de 2026-08-24.
 gunicorn==26.2.0
-# Validación y limpieza de las fotografías del documento (E1, ADR-003; actualización 2026-10-24u). 12.3.0 es de 2026-07-01.
-pillow==12.3.0
+# Validación y limpieza de las fotografías del documento (E1, ADR-003; actualizaciones 2026-10-24u y 2026-10-26c). 13.0.0 es de 2026-10-16: se sube por las 37 vulnerabilidades de 12.3.0 (excepción a la regla de las dos semanas).
+pillow==13.0.0

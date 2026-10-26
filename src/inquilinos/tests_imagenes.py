@@ -126,6 +126,36 @@ class ImagenesTests(SimpleTestCase):
         self.assertEqual((resultado.ancho, resultado.alto), (20, 40))  # girada 90°
         self.assertEqual(Image.open(BytesIO(resultado.contenido)).getexif().get(0x0112), None)
 
+    def _mpo(self, orientacion=1, ancho=64, alto=48):
+        """Un JPEG con varias imágenes (MPO), como el de un iPhone, un Pixel o un Samsung: la primera es la foto y la
+        segunda hace de mapa de ganancia o miniatura."""
+        exif = Image.Exif()
+        exif[0x010F] = 'MarcaDelTelefono'
+        exif[0x0112] = orientacion
+        salida = BytesIO()
+        degradado(ancho, alto).save(salida, 'MPO', save_all=True, append_images=[degradado(16, 12)], exif=exif)
+        return salida.getvalue()
+
+    def test_un_jpeg_con_varias_imagenes_mpo_se_acepta_y_solo_queda_la_primera(self):
+        """Hallazgo con fotos reales de un iPhone 14 Pro, un Galaxy S23 y un Pixel 8 (actualización 2026-10-26b):
+        Pillow los llama «MPO» y antes esto fallaba con un KeyError (error 500)."""
+        original = self._mpo()
+        self.assertEqual(Image.open(BytesIO(original)).format, 'MPO')
+        self.assertEqual(Image.open(BytesIO(original)).n_frames, 2)
+        for orientacion in (1, 6):
+            resultado = procesar_imagen(self._mpo(orientacion))
+            self.assertEqual(resultado.tipo, 'image/jpeg')
+            guardada = Image.open(BytesIO(resultado.contenido))
+            self.assertEqual(guardada.format, 'JPEG')       # un JPEG común, no un MPO
+            self.assertEqual(getattr(guardada, 'n_frames', 1), 1)
+            self.assertNotIn(b'MarcaDelTelefono', resultado.contenido)
+            self.assertNotIn(b'MPF', resultado.contenido)    # sin la extensión de varias imágenes
+        self.assertEqual((procesar_imagen(self._mpo(6, 40, 20)).ancho, procesar_imagen(self._mpo(6, 40, 20)).alto), (20, 40))
+
+    def test_un_mpo_truncado_se_rechaza_como_cualquier_jpeg(self):
+        with self.assertRaises(ImagenInvalida):
+            procesar_imagen(self._mpo(ancho=400, alto=300)[:300])
+
     @staticmethod
     def _exif_orientacion(valor):
         exif = Image.Exif()

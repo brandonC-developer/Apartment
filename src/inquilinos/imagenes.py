@@ -8,7 +8,7 @@ Cada archivo que llega pasa por aquí, con o sin la reducción del navegador (qu
 3. tope de píxeles (60 millones) comprobado ANTES de decodificar, contra las «bombas de descompresión»;
 4. decodificación completa: un archivo truncado o dañado se rechaza (CA-83);
 5. se aplica la orientación EXIF y se escribe un archivo NUEVO sin metadatos (ubicación, cámara, fecha, comentarios,
-   XMP): lo que se guarda no es el archivo recibido. Se conserva el perfil de color ICC, que no es un dato personal.
+   XMP, imágenes adicionales de un MPO): lo que se guarda no es el archivo recibido. Se conserva el perfil de color ICC, que no es un dato personal.
 
 Esto sigue la recomendación de OWASP de decodificar y volver a codificar, y sus límites: «rewriting does not
 guarantee that all malicious content is removed, and the image processor itself handles untrusted input». Por eso
@@ -26,7 +26,12 @@ MAX_PIXELES = 60_000_000  # propuesta del asistente: un iPhone de 48 MP cabe
 Image.MAX_IMAGE_PIXELS = MAX_PIXELES
 ImageFile.LOAD_TRUNCATED_IMAGES = False  # un archivo truncado se rechaza
 
-_TIPOS = {'JPEG': 'image/jpeg', 'PNG': 'image/png'}
+# Pillow llama «MPO» a un JPEG que lleva una extensión de varias imágenes (miniaturas, mapa de profundidad o de ganancia
+# HDR): es lo normal en un iPhone, un Pixel o un Samsung recientes. Sigue siendo un JPEG; solo se guarda la primera
+# imagen, de modo que las demás (y sus metadatos) no pasan al archivo nuevo.
+_TIPOS = {'JPEG': 'image/jpeg', 'MPO': 'image/jpeg', 'PNG': 'image/png'}
+# Para abrir solo JPEG y PNG; un JPEG con varias imágenes se abre como JPEG y Pillow lo devuelve como «MPO».
+_FORMATOS_DE_ENTRADA = ['JPEG', 'PNG']
 _EXTENSIONES = {'image/jpeg': 'jpg', 'image/png': 'png'}
 
 
@@ -54,8 +59,9 @@ def procesar_imagen(datos):
     try:
         with warnings.catch_warnings():
             warnings.simplefilter('error', Image.DecompressionBombWarning)
-            imagen = Image.open(BytesIO(datos), formats=list(_TIPOS))
-            tipo = _TIPOS[imagen.format]
+            imagen = Image.open(BytesIO(datos), formats=_FORMATOS_DE_ENTRADA)
+            formato = imagen.format
+            tipo = _TIPOS[formato]
             if imagen.width * imagen.height > MAX_PIXELES:
                 raise ImagenInvalida('La imagen tiene demasiados píxeles.')
             imagen.load()  # decodificación completa (CA-83)
@@ -73,7 +79,7 @@ def procesar_imagen(datos):
     salida = BytesIO()
     argumentos = {'icc_profile': icc} if icc else {}
     try:
-        if tipo == 'image/jpeg' and orientacion in (1, None) and imagen.mode in ('RGB', 'L', 'CMYK'):
+        if formato == 'JPEG' and orientacion in (1, None) and imagen.mode in ('RGB', 'L', 'CMYK'):
             # Sin girar se guarda con las mismas tablas de calidad y submuestreo («keep»), así el peso y el aspecto casi
             # no cambian; NO es una transcodificación sin pérdida (Pillow vuelve a codificar desde los píxeles). Se
             # vacía `info` porque Pillow copia de ahí, por ejemplo, el comentario.
@@ -87,7 +93,8 @@ def procesar_imagen(datos):
             if tipo == 'image/jpeg':
                 if limpia.mode not in ('RGB', 'L', 'CMYK'):
                     limpia = limpia.convert('RGB')
-                limpia.save(salida, 'JPEG', quality=95, **argumentos)
+                # Un MPO no admite «keep» (Pillow lo exige de un JPEG simple): se vuelve a codificar a 90 (propuesta).
+                limpia.save(salida, 'JPEG', quality=90 if formato == 'MPO' else 95, **argumentos)
             else:
                 limpia.save(salida, 'PNG', optimize=True, **argumentos)
             imagen = limpia
