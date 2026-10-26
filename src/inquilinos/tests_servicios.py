@@ -353,3 +353,13 @@ class LecturasTests(Base):
         TextoConsentimiento.objects.create(version=2, contenido='v2', vigente_desde=AHORA)
         self.assertEqual(selectors.texto_vigente(), nuevo)
         TextoConsentimiento.objects.all()  # sin versiones no hay texto: se prueba en la ficha de registro (grupo C)
+
+
+class CasosLimiteDeLosServiciosTests(TestCase):
+    def test_buscar_duplicados_sin_numero_no_devuelve_nada(self):
+        self.assertEqual(list(services.buscar_duplicados('cedula', '')), [])
+        self.assertEqual(list(services.buscar_duplicados('cedula', None)), [])
+
+    def test_una_accion_de_acceso_desconocida_se_rechaza(self):
+        with self.assertRaises(ValueError):
+            services.registrar_acceso(None, actor='admin', accion='borrar')

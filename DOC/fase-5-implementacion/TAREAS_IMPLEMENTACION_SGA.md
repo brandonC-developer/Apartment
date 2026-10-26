@@ -164,17 +164,17 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 ---
 
 ## E1 Inquilinos
-**Aplicaciones:** inquilinos · **Estado:** en curso desde 2026-10-24 (autorizada por el solicitante)
+**Aplicaciones:** inquilinos · **Estado:** terminada el 2026-10-26 (9 de 9 condiciones, 8 de 8 CA; CA-29 solo en su mecanismo) · iniciada el 2026-10-24 (autorizada por el solicitante)
 **Contenido (plan):** Inquilino, cédulas privadas, consentimiento con el texto de cada versión, accesos a documentos y su auditoría, reducción de la fotografía en el navegador y subida de cada archivo por separado
 **Criterio de salida:** Cédula servida solo por la vista con autorización y registrada; acceso denegado sin sesión; peso de fotos reales de un iPhone y dos Android medido y registrado
 
 ### Tareas específicas (del criterio de salida, los hallazgos y el plan)
 
-- [ ] Cédula servida solo por la vista con autorización y registrada; acceso denegado sin sesión (criterio de salida; CA-11, CA-26)
-- [ ] Medir y registrar el peso de fotos reales de un iPhone y de dos Android tras la reducción (criterio de salida; CA-73)
-- [ ] Probar que un fallo al guardar no deja un archivo huérfano (HI-07; borrado en la misma petición, propuesta)
-- [ ] Comprobar a mano el navegador que no puede reducir la imagen (CA-74)
-- [ ] CA-67: en la E1 solo el texto de cada versión y el aviso en la ficha; el rechazo de contratos nuevos con un inquilino que revocó va en la E2 (HI-04)
+- [x] Cédula servida solo por la vista con autorización y registrada; acceso denegado sin sesión (criterio de salida; CA-11, CA-26): pruebas y recorrido real por HTTPS en WSL (302 sin sesión; un acceso registrado por consulta)
+- [x] Medir y registrar el peso de fotos reales de un iPhone y de dos Android tras la reducción (criterio de salida; CA-73): **con la desviación aceptada por el solicitante el 2026-10-26** (muestras públicas de 2 iPhone 14 Pro, un Galaxy S23 y un Pixel 8, más una foto de su propio Motorola moto g72): de 0,34 a 1,28 MiB, todas bajo 2 MB (actualizaciones 2026-10-26b y 2026-10-26d)
+- [x] Probar que un fallo al guardar no deja un archivo huérfano (HI-07; borrado en la misma petición, propuesta): pruebas del servicio y del almacenamiento (fallo de `fsync`)
+- [x] Comprobar el navegador que no puede reducir la imagen (CA-74): **no se hizo a mano**; lo cubre una prueba automática con un navegador real al que se le quita el lienzo (propuesta del asistente: el solicitante puede exigir la comprobación manual)
+- [x] CA-67: en la E1 solo el texto de cada versión y el aviso en la ficha; el rechazo de contratos nuevos con un inquilino que revocó va en la E2 (HI-04): hecho el texto, la revocación sin cambiar datos y el aviso
 
 ### Plan de trabajo de la E1 (propuesta del asistente derivada de los RF, CA, el modelo de datos v0.7 y el diseño técnico; sin aprobar)
 **A. Modelos y esquema** (MDD v0.7; ADR-027, ADR-028, ADR-031)
@@ -210,9 +210,9 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Lista con búsqueda (nombre, documento, teléfono, correo), filtro de estado y «Sin frente»; registro con el texto informativo a la vista, medio y fecha del consentimiento y confirmación obligatoria; ficha con datos, fotografías (ver y descargar) y consentimientos; editar; desactivar y reactivar con confirmación (el motivo de bloqueo se muestra); revocar el consentimiento con confirmación y sin tocar datos. Todas con `login_required`, CSRF y `no-store`; 35 pruebas propias y un recorrido real por HTTPS en WSL (actualización 2026-10-24w)
 
 **G. Medición, despliegue y cierre**
-- [ ] Medir y registrar el peso de fotos reales de un iPhone y dos teléfonos Android tras la reducción (CA-73). **Hecho con muestras públicas de Wikimedia Commons** (iPhone 14 Pro x2, Galaxy S23, Pixel 8 de 50 MP): 0,36 a 1,28 MiB, todas bajo el objetivo de 2 MB (actualización 2026-10-26b). **Falta que el solicitante acepte que las muestras públicas sustituyen al iPhone y a un segundo Android** y una foto de su propio teléfono (no se marca hasta entonces)
+- [x] Medir y registrar el peso de fotos reales (CA-73): hecho con muestras públicas de teléfonos y una foto del solicitante, **desviación aceptada por él el 2026-10-26**; herramienta `src/despliegue/medir_reduccion.py`; de 0,34 a 1,28 MiB tras la reducción (actualizaciones 2026-10-26b y 2026-10-26d)
 - [x] Desplegar en WSL, verificar, actualizar la CI y repetir las pruebas con Python 3.14 (hecho con cada grupo; en el último despliegue: 393 pruebas en WSL y `verificar.sh` sin fallos; **el resultado de GitHub Actions lo confirma el solicitante**)
-- [ ] Cierre con las nueve condiciones comunes y el registro de avance
+- [x] Cierre con las nueve condiciones comunes y el registro de avance (actualización 2026-10-26d)
 
 **Decisiones del solicitante de la E1 (24-oct-2026; actualización 2026-10-24q)**
 1. **Texto informativo del consentimiento:** borrador redactado por el asistente, marcado «sin validar por abogado» (DP-21); versión inmutable que el abogado reemplazará con una versión nueva.
@@ -240,27 +240,27 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Criterios de aceptación (con la prioridad de la estrategia de pruebas)
 
-- [ ] **CA-01** — Registro de inquilino · prioridad Media
-- [ ] **CA-11** — Protección de cédula · prioridad Alta
-- [ ] **CA-25** — Documento duplicado · prioridad Media
-- [ ] **CA-26** — Auditoría de acceso a cédula · prioridad Alta
-- [ ] **CA-29** — Desactivar con contrato vigente · prioridad Media
-- [ ] **CA-73** — Reducción de la fotografía en el navegador (RF-50) · prioridad Media
-- [ ] **CA-74** — Envío sin reducción y un archivo por petición (RF-50, RF-02) · prioridad Alta
-- [ ] **CA-83** — Imagen que no se puede decodificar (RF-02) · prioridad Media
+- [x] **CA-01** — Registro de inquilino · prioridad Media — cumplido: `inquilinos/tests_pantallas.py` y `tests_servicios.py` (con campos obligatorios y consentimiento; sin consentimiento, error y nada guardado; sin teléfono ni correo se guarda)
+- [x] **CA-11** — Protección de cédula · prioridad Alta — cumplido: `inquilinos/tests_fotografias.py` (sin sesión 302, sin URL pública) y recorrido real por HTTPS en WSL
+- [x] **CA-25** — Documento duplicado · prioridad Media — cumplido: `tests_servicios.py` y `tests_pantallas.py` (advierte antes de guardar y solo guarda si se confirma)
+- [x] **CA-26** — Auditoría de acceso a cédula · prioridad Alta — cumplido: `tests_fotografias.py` (un registro por consulta o descarga, sin la imagen; si el registro falla no se entrega) y WSL (2 accesos)
+- [x] **CA-29** — Desactivar con contrato vigente · prioridad Media — cumplido **solo en el mecanismo** (punto de extensión probado con un motivo registrado); **el bloqueo real por contrato vigente va en la E2 y por saldos pendientes en la E3**, por aceptación del solicitante (actualización 2026-10-24 (q))
+- [x] **CA-73** — Reducción de la fotografía en el navegador (RF-50) · prioridad Media — cumplido: `tests_navegador.py` (4032x3024 de 6,44 MiB a 2048x1536 de 1,47 MiB; 1200x800 no se amplía; orientación) y medición con fotos de teléfono, **con la desviación aceptada por el solicitante** (actualización 2026-10-26d)
+- [x] **CA-74** — Envío sin reducción y un archivo por petición (RF-50, RF-02) · prioridad Alta — cumplido: `tests_navegador.py` (sin lienzo se envía el original o se avisa) y `tests_fotografias.py` (el servidor rechaza lo que pesa más de 5 MiB o no es JPEG/PNG; un rechazo no descarta el otro archivo)
+- [x] **CA-83** — Imagen que no se puede decodificar (RF-02) · prioridad Media — cumplido: `tests_imagenes.py` (truncados y dañados, JPEG y MPO) y `tests_fotografias.py`
 
 ### Cierre
 
-- [ ] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11)
-- [ ] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025)
-- [ ] 3. `verificar_coherencia.ps1` sin problemas
-- [ ] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031)
-- [ ] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9)
-- [ ] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido
-- [ ] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14)
-- [ ] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día
-- [ ] 9. Ningún defecto conocido de prioridad Alta abierto
-- [ ] Actualizar `AVANCE_IMPLEMENTACION.md`
+- [x] 1. Pruebas de los CA asignados en la integración continua con PostgreSQL 18; ninguna Alta sin escribir (EPP, sección 11): los 8 CA tienen pruebas; corridas de la integración continua en verde informadas por el solicitante el 2026-10-26 (tras el cambio a Pillow 13.0.0); 410 pruebas en Windows y 399 en WSL
+- [x] 2. Integración continua en verde: pruebas, `check --deploy` y migraciones desde cero (ADR-025): informado por el solicitante el 2026-10-26 («Git pasó las pruebas»); **el asistente no ve las corridas**, y la del commit de cierre la confirma el solicitante
+- [x] 3. `verificar_coherencia.ps1` sin problemas (2026-10-26)
+- [x] 4. Tablas y secuencias nuevas en el archivo de privilegios, con su prueba (ADR-027, ADR-031): las cinco tablas de `inquilinos` están en `sga/privilegios.py` y la prueba exige una entrada por tabla
+- [x] 5. Código sin cubrir de los módulos críticos revisado, sin umbral numérico (EPP, sección 9): **autorrevisión** del autor con la herramienta de cobertura el 2026-10-26 (de 706 líneas de `inquilinos`, 5 sin ejecutar: 4 defensas inalcanzables de `imagenes.py` y 1 rama) tras añadir 4 pruebas; **no es una revisión independiente**
+- [x] 6. Desplegada en la etapa A (WSL 2 con Ubuntu-26.04) con datos ficticios y criterio de salida propio cumplido: despliegue de un comando, recorrido real por HTTPS (registro, ficha, subida de cédula con GPS sin metadatos guardados, entrega solo con sesión, accesos registrados, límites de Nginx, estáticos) y fotos de teléfono reducidas y aceptadas por el servidor
+- [x] 7. Ningún dato personal ni secreto en los registros ni en la auditoría (RF-28, RNF-06, R14): pruebas de la auditoría (solo nombres de campos cambiados), registro de Nginx sin la cadena de consulta (la búsqueda va en ella) y Gunicorn sin registro de acceso, comprobados en WSL; el nombre del archivo de cédula es un UUID
+- [x] 8. `CAMBIOS.md` de la entrega y trazabilidad (RF, CA, ADR) al día: actualizaciones 2026-10-24p a 2026-10-24w y 2026-10-26a a 2026-10-26d
+- [x] 9. Ningún defecto conocido de prioridad Alta abierto, hasta donde el asistente sabe al 2026-10-26: el defecto del MPO se corrigió; las decisiones abiertas (ciclo ACCESO_DOCUMENTO / DOCUMENTO_CONTRATO para la E2, revisor independiente, abogado) no son defectos
+- [x] Actualizar `AVANCE_IMPLEMENTACION.md` (estado, fecha de fin, condiciones y CA aprobados): E1 terminada el 2026-10-26, 9 de 9 condiciones, 8 de 8 CA (CA-29 solo en su mecanismo)
 - [ ] Tareas agregadas durante la entrega (*Propuesta*; preguntar antes): —
 
 

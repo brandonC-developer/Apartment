@@ -265,3 +265,14 @@ class AlmacenamientoTests(SimpleTestCase):
         self.assertEqual(modo_archivo & 0o007, 0)   # nada para otros
         self.assertEqual(modo_carpeta & 0o007, 0)
         self.assertEqual(modo_archivo & 0o200, 0o200)
+
+
+class AlmacenamientoConFalloTests(SimpleTestCase):
+    def test_si_falla_al_escribir_no_queda_un_archivo_parcial(self):
+        """Un disco lleno o un fallo de `fsync` no deja un archivo huérfano en el almacenamiento privado."""
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as carpeta, override_settings(RAIZ_DOCUMENTOS=carpeta):
+            with patch('inquilinos.almacenamiento.os.fsync', side_effect=OSError('disco lleno')):
+                with self.assertRaises(OSError):
+                    almacenamiento.guardar(b'contenido', 'jpg')
+            self.assertEqual([p for p in Path(carpeta).rglob('*') if p.is_file()], [])

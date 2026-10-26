@@ -142,6 +142,14 @@ class ComandoTests(TestCase):
         versiones = list(TextoConsentimiento.objects.order_by('version').values_list('borrador', flat=True))
         self.assertEqual(versiones, [True, False])
 
+    def test_un_archivo_vacio_se_rechaza_y_no_carga_nada(self):
+        with tempfile.TemporaryDirectory() as carpeta:
+            vacio = Path(carpeta, 'vacio.txt')
+            vacio.write_text('   ', encoding='utf-8')
+            with self.assertRaises(CommandError):
+                correr('--archivo', str(vacio))
+        self.assertEqual(TextoConsentimiento.objects.count(), 0)
+
     def test_validado_sin_archivo_y_un_archivo_inexistente_se_rechazan(self):
         with self.assertRaises(CommandError):
             correr('--validado')
