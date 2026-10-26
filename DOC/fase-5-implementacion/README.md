@@ -1,6 +1,6 @@
 # Fase 5 — Plan de implementación
 
-**Estado:** iniciada (plan v0.1 en borrador, sin revisar). La implementación está autorizada solo para la E0 (terminada el 24-oct-2026) y la E1 (en curso desde el 24-oct-2026).
+**Estado:** iniciada (plan v0.1 en borrador, sin revisar). La implementación está autorizada solo para la E0 (terminada el 24-oct-2026), la E1 (terminada el 26-oct-2026) y la E2 (en curso desde el 26-oct-2026).
 
 **Qué define:** módulos, tareas, dependencias, entregas y prioridades, con trazabilidad hasta los requisitos.
 
@@ -8,7 +8,7 @@
 |---|---|---|
 | Plan de implementación (entregas E0 a E6, criterios de salida, condiciones antes de datos reales) | `PLAN_IMPLEMENTACION_SGA_001_v0.1_borrador.md` (vigente) | Borrador v0.1; no aprobado |
 | Lista de verificación de la revisión por otra persona (53 puntos en nueve áreas) | `LISTA_REVISION_CRITICA_SGA_001_v0.1_borrador.md` (vigente) | Borrador v0.1; no aprobado; sin persona revisora designada |
-| Registro de avance (una entrega a la vez; estados; bloqueo si falta una prueba Alta) | `AVANCE_IMPLEMENTACION.md` | Registro vivo, solo de adiciones; E0 *terminada* (24-oct-2026), E1 *en curso*, las demás *no iniciada* |
+| Registro de avance (una entrega a la vez; estados; bloqueo si falta una prueba Alta) | `AVANCE_IMPLEMENTACION.md` | Registro vivo, solo de adiciones; E0 *terminada* (24-oct-2026), E1 *terminada* (26-oct-2026), E2 *en curso*, las demás *no iniciada* |
 | Lista de tareas por entrega (RF, RNF y CA generados de la ERS; E0 detallada; casillas para marcar) | `TAREAS_IMPLEMENTACION_SGA.md` | Lista viva; no versionada ni aprobada |
 
 **Entradas:** ERS v1.16, DAS v0.15 (módulos de la sección 5 y ADR-002, 022 a 032), diseño técnico (fase 3) y estrategia de pruebas (fase 4).
@@ -20,4 +20,4 @@
 - Integración con el canal de WhatsApp: fuera de la v1 (DP-04).
 - Entregas incrementales, para poder iterar (ver `../metodologia/EVALUACION_METODOLOGIA_v1.md`).
 
-**Implementación:** el solicitante autorizó la E0 el 23-oct-2026 y la E1 el 24-oct-2026, sin aprobar la ERS ni la arquitectura; la E0 terminó el 24-oct-2026. **Las demás entregas requieren su autorización expresa** (CLAUDE.md).
+**Implementación:** el solicitante autorizó la E0 el 23-oct-2026, la E1 el 24-oct-2026 y la E2 el 26-oct-2026, sin aprobar la ERS ni la arquitectura; la E0 terminó el 24-oct-2026. **Las demás entregas requieren su autorización expresa** (CLAUDE.md).

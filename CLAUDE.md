@@ -1,10 +1,10 @@
 # Sistema de Gestión de Alquileres (SGA) — documentación
 
-Proyecto en fase de **documentación**, con la **implementación autorizada solo para las entregas E0** (esqueleto; terminada el 24-oct-2026) **y E1** (inquilinos; autorizada por el solicitante el 24-oct-2026); el código vive en `src/` y las demás entregas requieren su autorización expresa. Idioma de trabajo y de los documentos: español.
+Proyecto en fase de **documentación**, con la **implementación autorizada solo para las entregas E0** (esqueleto; terminada el 24-oct-2026), **E1** (inquilinos; terminada el 26-oct-2026) **y E2** (contratos y obligaciones; autorizada por el solicitante el 26-oct-2026); el código vive en `src/` y las demás entregas requieren su autorización expresa. Idioma de trabajo y de los documentos: español.
 
 ## Estructura de `DOC/`
 
-- `src/` (fuera de `DOC/`): código del proyecto Django, solo las entregas E0 y E1 por ahora; usa un entorno virtual `src/.venv` (no se versiona). Pruebas: `cd src; $env:SGA_DEBUG=1; .venvScriptspython manage.py test`.
+- `src/` (fuera de `DOC/`): código del proyecto Django, solo las entregas E0, E1 y E2 por ahora; usa un entorno virtual `src/.venv` (no se versiona). Pruebas: `cd src; $env:SGA_DEBUG=1; .venvScriptspython manage.py test`.
 - `fase-1-ers/` a `fase-6-despliegue-operacion/`: un documento por fase, con todas sus versiones en la misma carpeta. Cada carpeta tiene un `README.md` que indica la versión vigente.
 - `actualizaciones/AAAA-MM-DD_<docs y versiones>/`: un `CAMBIOS.md` por actualización (motivo, cambios, decisiones, evidencia, aprobación) y la evidencia de investigación. Plantilla: `DOC/metodologia/plantilla_CAMBIOS.md`.
 - `legal/`: resumen para el abogado y dictámenes.

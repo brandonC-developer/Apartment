@@ -267,7 +267,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 ---
 
 ## E2 Contratos y obligaciones
-**Aplicaciones:** alquileres, nucleo · **Estado:** no iniciada (requiere autorización expresa del solicitante)
+**Aplicaciones:** alquileres, nucleo · **Estado:** en curso desde 2026-10-26 (autorizada por el solicitante)
 **Contenido (plan):** Propiedades, contratos y condiciones, solape (R2), finalizar, anular y sustituir inquilino, alias de la propiedad y su estado inactivo, reajuste y corrección, obligaciones por período, estados, saldo de apertura y proceso diario, perfil de la propiedad con la cédula del inquilino del contrato vigente y la fotografía del contrato
 **Criterio de salida:** Proceso diario idempotente (dos ejecuciones sin duplicados); casos de fin de mes, bisiesto, prorrateo y gracia pasan
 
@@ -279,6 +279,49 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] Fijar las cifras de reducción de la fotografía del contrato (DP-29; hoy parten de 3508 px y calidad 0,85)
 - [ ] CA-67 completo: rechazo de contratos nuevos con un inquilino que revocó el consentimiento (HI-04)
 - [ ] CA-75 y CA-78 (cédula desde el perfil de la propiedad y contrato rechazado sin frente) (HI-08)
+
+### Plan de trabajo de la E2 (propuesta del asistente derivada de los RF, RN, CA, el modelo de datos v0.7 y el diseño técnico; sin aprobar)
+**A. Modelos y esquema** (MDD v0.7; ADR-027, ADR-028, ADR-030, ADR-031)
+- [ ] Aplicación `alquileres` y sus modelos: `Propiedad`, `Contrato`, `CondicionContrato`, `Obligacion`, `AjusteObligacion`, `DocumentoContrato` y `EjecucionProceso`, con las restricciones del modelo (R1, R2 con exclusión de PostgreSQL y `btree_gist`, R3, R20, R21, R22, R28) (RF-06, RF-07, RF-10, RF-11, RF-12, RF-52)
+- [ ] Acceso a la fotografía del contrato: tabla propia `AccesoDocumentoContrato` en `alquileres` con su clave foránea (decisión 1 de la E2), solo `SELECT` e `INSERT` (R12, R23)
+- [ ] Privilegios mínimos y guardas: `AjusteObligacion` solo `SELECT` e `INSERT`; `Obligacion` sin tocar `importe_inicial`; entradas en `sga/privilegios.py` con su prueba (R12, ADR-027)
+
+**B. Cálculo de períodos e importes** (funciones puras, sin base de datos)
+- [ ] Período de alquiler (RN-03), vencimiento (RN-05), fecha límite con días de gracia (RN-06) y prorrateo del último período con redondeo explícito (RN-12): fin de mes, año bisiesto, 29, 30 y 31, CRC sin decimales y USD a dos
+- [ ] Cálculo guardado en `datos_calculo` para reconstruir la regla (RN-13)
+
+**C. Propiedades y contratos** (RF-06 a RF-09, RF-36, RF-48; RN-02, RN-30)
+- [ ] Servicios de propiedad: alias único, inactiva con bloqueo si hay contrato vigente, futuro o por decidir, y sin contratos nuevos mientras esté inactiva (CA-63)
+- [ ] Crear contrato: frente cargado (R26), solape (R2), advertencia por vigencia menor de tres años, condición inicial, auditoría (CA-02, CA-78, CA-32)
+- [ ] Rechazar contratos nuevos con un inquilino que revocó el consentimiento (CA-67 completo, HI-04)
+- [ ] Estado derivado del contrato y de la propiedad (futuro, vigente, por decidir, finalizado, anulado)
+- [ ] Finalizar contrato con prorrateo y anulación de obligaciones futuras sin movimientos; anular contrato sin movimientos; sustituir inquilino (CA-24, CA-31, CA-62)
+- [ ] Registrar en `inquilinos.bloqueos` el motivo real «contrato vigente o futuro» (CA-29, parte de la E2)
+
+**D. Reajuste y corrección** (RF-10; RN-14)
+- [ ] Reajuste con fecha efectiva al inicio del período siguiente, tope digitado con su fuente, advertencia sin bloqueo y rechazo en moneda extranjera (CA-12, CA-39, CA-51)
+- [ ] Corrección retroactiva con motivo y ajustes inmutables; bloqueo si el importe queda bajo lo abonado (CA-22, CA-40, CA-55)
+
+**E. Obligaciones y proceso diario** (RF-11, RF-12, RF-14, RF-42, RF-43; RNF-04, RNF-16)
+- [ ] Generación 30 días antes del período para contratos futuros, vigentes y por decidir, idempotente y segura en paralelo (CA-03, CA-30, CA-14, CA-36, CA-50)
+- [ ] Saldo de apertura con su fecha de vencimiento digitada (CA-49)
+- [ ] Estado de la obligación derivado (pendiente, vencida, pagada, anulada) con la fecha local de la organización
+- [ ] Comando del proceso diario con `EjecucionProceso` y su unidad `systemd` con temporizador (propuesta); dos ejecuciones sin duplicados (criterio de salida)
+
+**F. Fotografías del contrato y cédula desde el perfil** (RF-51, RF-52; CA-75, CA-76, CA-77, CA-82)
+- [ ] Fotografía del contrato: hasta 10, bloqueo de la fila del contrato, reducción en el navegador con lado de 3508 px de partida y entrega solo con sesión, auditada (H18)
+- [ ] Cédula desde el perfil de la propiedad, con «Reemplazar» y acción desactivada sin contrato vigente
+
+**G. Pantallas** (como en la E1: funcionales y accesibles, sin estilos)
+- [ ] Propiedades y su perfil, contratos y sus condiciones, obligaciones por contrato, saldo de apertura, reajuste y corrección
+
+**H. Medición, despliegue y cierre**
+- [ ] Medir con fotos de teléfono el peso de la fotografía del contrato y los metadatos que deja la reducción; fijar las cifras (DP-29, CA-82)
+- [ ] Desplegar en WSL, verificar y repetir las pruebas con Python 3.14; comprobar la versión de Pillow dentro de WSL
+- [ ] Cierre con las nueve condiciones comunes y el registro de avance
+
+**Decisiones del solicitante de la E2 (26-oct-2026; actualización 2026-10-26f)**
+1. **Acceso a la fotografía del contrato:** tabla propia `AccesoDocumentoContrato` en `alquileres`, con clave foránea al `DocumentoContrato` y solo inserción; la cédula sigue en `inquilinos.AccesoDocumento`. R23 se cumple por construcción (cada tabla tiene una sola clave foránea). Descartadas: aplicación neutra con referencia genérica y referencia sin clave foránea.
 
 ### Requisitos funcionales
 
