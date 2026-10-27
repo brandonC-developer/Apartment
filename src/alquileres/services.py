@@ -10,7 +10,8 @@ from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from inquilinos import selectors as selectores_de_inquilinos
@@ -363,25 +364,36 @@ def finalizar_contrato(contrato_id, *, actor, ip_origen=None, fecha_fin, ahora=N
     return Resultado(contrato, tuple(advertencias), anuladas, ajuste)
 
 
-def _prorratear(contrato, obligacion, fin, actor, ip_origen, ahora):
-    """Ajuste inmutable `prorrateo_fin` de la obligación del último período (RN-12, RF-09). El delta puede ser cero
-    cuando el redondeo iguala al importe: en ese caso no se registra ningún ajuste."""
+def _prorratear(contrato, obligacion, fin, actor, ip_origen, ahora, auditoria_extra=None):
+    """Ajuste inmutable `prorrateo_fin` de la obligación del último período (RN-12, RF-09). El prorrateo parte del
+    importe que la obligación tendría sin los ajustes de prorrateo anteriores, así que se puede repetir (al generar, al
+    finalizar y al renovar) sin prorratear lo ya prorrateado: el ajuste lleva el importe vigente al que corresponde a
+    `fin`, que es el importe completo si `fin` es nulo o no cae antes del último día del período. El delta puede ser
+    cero (el redondeo iguala al importe): en ese caso no se registra ningún ajuste."""
     numero = calculo.periodo_que_contiene(contrato.fecha_inicio, obligacion.periodo_inicio).numero
     per = calculo.Periodo(numero, obligacion.periodo_inicio, obligacion.periodo_fin)
     vigente = selectors.importe_vigente(obligacion)
-    resultado = calculo.prorratear_ultimo_periodo(vigente, obligacion.moneda, per, fin)
-    if resultado is None or resultado.importe_delta == 0:
+    previos = AjusteObligacion.objects.filter(obligacion=obligacion, tipo=AjusteObligacion.PRORRATEO_FIN).aggregate(
+        total=Coalesce(Sum('importe_delta'), Decimal('0')))['total']
+    base = vigente - previos
+    resultado = (calculo.prorratear_ultimo_periodo(base, obligacion.moneda, per, fin)
+                 if fin is not None and fin < per.fin else None)
+    objetivo = resultado.importe_final if resultado else base
+    delta = objetivo - vigente
+    if delta == 0:
         return None
-    if resultado.importe_final < movimientos.abonos_validos(obligacion):
+    if objetivo < movimientos.abonos_validos(obligacion):
         raise ErrorDeValidacion({'fecha_fin': [
             'La fecha de fin deja el importe del último período por debajo de lo ya abonado; '
             'elija una fecha posterior o registre antes la reversión.']})
+    motivo = (f'Prorrateo del último período: {resultado.dias_cobrables} de {resultado.dias_del_periodo} días '
+              f'(fin {fin.isoformat()}; importe previo {resultado.importe_previo})' if resultado
+              else 'Se retira el prorrateo del último período: el contrato continúa después de este período')
     ajuste = AjusteObligacion.objects.create(
-        obligacion=obligacion, tipo=AjusteObligacion.PRORRATEO_FIN, importe_delta=resultado.importe_delta,
-        motivo=(f'Prorrateo del último período: {resultado.dias_cobrables} de {resultado.dias_del_periodo} días '
-                f'(fin {fin.isoformat()}; importe previo {resultado.importe_previo})'), registrado_en=ahora)
+        obligacion=obligacion, tipo=AjusteObligacion.PRORRATEO_FIN, importe_delta=delta, motivo=motivo, registrado_en=ahora)
     auditoria.registrar('ajuste_prorrateo_registrado', 'obligacion', registro_id=obligacion.pk, actor=actor,
-                        ip_origen=ip_origen, cambios={'importe_vigente': (vigente, resultado.importe_final)}, ahora=ahora)
+                        ip_origen=ip_origen, cambios={'importe_vigente': (vigente, objetivo)}, ahora=ahora,
+                        **(auditoria_extra or {}))
     return ajuste
 
 
@@ -418,6 +430,12 @@ def renovar_contrato(contrato_id, *, actor, ip_origen=None, nueva_fecha_fin, mot
         raise ErrorDeValidacion({'fechas': ['Las fechas se solapan con otro contrato de la propiedad.']})
     _auditar('contrato_renovado', contrato, actor, ip_origen,
              {'fecha_fin': (anterior, nueva), 'motivo': (None, _texto(motivo))}, ahora)
+    # La obligación del último período se generó prorrateada si el contrato ya tenía fin: se ajusta al nuevo fin
+    # (completa si el contrato continúa después de ese período).
+    con_prorrateo = AjusteObligacion.objects.filter(
+        obligacion__contrato=contrato, tipo=AjusteObligacion.PRORRATEO_FIN).values('obligacion_id')
+    for obligacion in Obligacion.objects.select_for_update().filter(pk__in=con_prorrateo, anulada_en__isnull=True):
+        _prorratear(contrato, obligacion, nueva, actor, ip_origen, ahora)
     return Resultado(contrato)
 
 

@@ -1,0 +1,13 @@
+# Proceso diario a las 07:00 hora de Costa Rica (13:00 UTC), después del reinicio de las 04:00 y del respaldo de las
+# 05:00 (ADR-032, decisión 15). `Persistent=true` lo ejecuta al arrancar si el servidor estaba apagado a esa hora; el
+# proceso es idempotente (RNF-16), así que una ejecución repetida no produce nada nuevo. La zona dentro de OnCalendar
+# exige una versión de systemd que se verifica en WSL (estrategia de pruebas, sección 7).
+[Unit]
+Description=Proceso diario del SGA (07:00 America/Costa_Rica)
+
+[Timer]
+OnCalendar=*-*-* 07:00:00 America/Costa_Rica
+Persistent=true
+
+[Install]
+WantedBy=timers.target

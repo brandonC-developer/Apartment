@@ -154,6 +154,12 @@ else
   echo "SIN respaldo: falta la clave pública (--clave-publica-respaldo). El temporizador NO se activó."
 fi
 
+paso "12b. Proceso diario de obligaciones (RF-11, RNF-16)"
+install -m 0644 "$AQUI/systemd/sga-proceso-diario.service" "$AQUI/systemd/sga-proceso-diario.timer" /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now sga-proceso-diario.timer >/dev/null 2>&1
+echo "temporizador del proceso diario activo"
+
 paso "13. Comprobación"
 # Se pide «/» y no «/entrar/»: la zona de autenticación de Nginx limita las peticiones a /entrar/ (6 por minuto).
 codigo() { curl -ks -o /dev/null -w '%{http_code}' --max-time 15 "$@" || true; }

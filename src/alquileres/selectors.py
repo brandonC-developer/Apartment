@@ -6,8 +6,10 @@ from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
+from . import movimientos
 from .models import AjusteObligacion, Contrato, Propiedad
 
+PENDIENTE, VENCIDA, PAGADA, ANULADA = 'pendiente', 'vencida', 'pagada', 'anulada'  # estados de la obligación (RF-14)
 FUTURO, VIGENTE, POR_DECIDIR, FINALIZADO, ANULADO = 'futuro', 'vigente', 'por_decidir', 'finalizado', 'anulado'
 ESTADOS_DE_CONTRATO = (FUTURO, VIGENTE, POR_DECIDIR, FINALIZADO, ANULADO)
 DISPONIBLE, OCUPADA, INACTIVA = 'disponible', 'ocupada', 'inactiva'
@@ -102,6 +104,23 @@ def historial_de_importes(obligacion):
                       'anterior': actual, 'nuevo': actual + ajuste.importe_delta})
         actual += ajuste.importe_delta
     return pasos
+
+
+def saldo_de_la_obligacion(obligacion):
+    """Importe vigente menos los movimientos válidos aplicados (RN-22): se deriva, nunca se guarda. Hasta la E3 no hay
+    movimientos y el saldo es el importe vigente."""
+    return importe_vigente(obligacion) - movimientos.abonos_validos(obligacion)
+
+
+def estado_de_la_obligacion(obligacion, hoy=None):
+    """RF-14: anulada si fue anulada; pagada si el saldo es cero; vencida si hay saldo y `hoy` (la fecha local de la
+    organización) supera la fecha límite; pendiente en cualquier otro caso. El último día de gracia aún es pendiente."""
+    hoy = hoy or hoy_local()
+    if obligacion.anulada_en is not None:
+        return ANULADA
+    if saldo_de_la_obligacion(obligacion) <= 0:
+        return PAGADA
+    return VENCIDA if hoy > obligacion.fecha_limite else PENDIENTE
 
 
 def importe_vigente(obligacion):

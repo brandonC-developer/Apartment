@@ -273,8 +273,8 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 ### Tareas específicas (del criterio de salida, los hallazgos y el plan)
 
-- [ ] Proceso diario idempotente: dos ejecuciones sin duplicados (criterio de salida; RNF-04, RNF-16)
-- [ ] Casos de fin de mes, año bisiesto, prorrateo y días de gracia pasan (criterio de salida)
+- [x] Proceso diario idempotente: dos ejecuciones sin duplicados (criterio de salida; RNF-04, RNF-16): probado en Windows y en WSL como `sga_app` (actualización 2026-10-26k)
+- [x] Casos de fin de mes, año bisiesto, prorrateo y días de gracia pasan (criterio de salida): probados en los grupos B y E
 - [ ] Medir con fotos reales (un iPhone y dos Android) los metadatos que deja la reducción y registrar el resultado (CA-82, DP-29)
 - [ ] Fijar las cifras de reducción de la fotografía del contrato (DP-29; hoy parten de 3508 px y calidad 0,85)
 - [x] CA-67 completo: rechazo de contratos nuevos con un inquilino que revocó el consentimiento (HI-04): `crear_contrato` lo rechaza y lo prueba (actualización 2026-10-26i)
@@ -303,10 +303,10 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Corrección retroactiva con motivo y ajustes inmutables; bloqueo si el importe queda bajo lo abonado (CA-22, CA-40, CA-55): `condiciones.corregir_contrato` (monto, día de vencimiento y días de gracia) y `ajustar_manualmente` (RF-09); **por la decisión 3 de la E2 las fechas de vencimiento y límite de las no pagadas se actualizan con auditoría del valor anterior y el nuevo**; el historial de importes se reconstruye con `selectors.historial_de_importes`; un error en el período (la fecha de inicio) **no** se corrige aquí
 
 **E. Obligaciones y proceso diario** (RF-11, RF-12, RF-14, RF-42, RF-43; RNF-04, RNF-16)
-- [ ] Generación 30 días antes del período para contratos futuros, vigentes y por decidir, idempotente y segura en paralelo (CA-03, CA-30, CA-14, CA-36, CA-50)
-- [ ] Saldo de apertura con su fecha de vencimiento digitada (CA-49)
-- [ ] Estado de la obligación derivado (pendiente, vencida, pagada, anulada) con la fecha local de la organización
-- [ ] Comando del proceso diario con `EjecucionProceso` y su unidad `systemd` con temporizador (propuesta); dos ejecuciones sin duplicados (criterio de salida)
+- [x] Generación 30 días antes del período para contratos futuros, vigentes y por decidir, idempotente y segura en paralelo (CA-03, CA-30, CA-14, CA-36, CA-50): `obligaciones.generar_obligaciones`; el último período nace prorrateado y el contrato por decidir sigue generando (actualización 2026-10-26k)
+- [x] Saldo de apertura con su fecha de vencimiento digitada (CA-49): `registrar_saldo_de_apertura`; la fecha de apertura va en `datos_calculo` (propuesta)
+- [x] Estado de la obligación derivado (pendiente, vencida, pagada, anulada) con la fecha local de la organización: `selectors.estado_de_la_obligacion`
+- [x] Comando del proceso diario con `EjecucionProceso` y su unidad `systemd` con temporizador (propuesta); dos ejecuciones sin duplicados (criterio de salida): `ejecutar_proceso_diario`, `sga-proceso-diario.timer` a las 07:00
 
 **F. Fotografías del contrato y cédula desde el perfil** (RF-51, RF-52; CA-75, CA-76, CA-77, CA-82)
 - [ ] Fotografía del contrato: hasta 10, bloqueo de la fila del contrato, reducción en el navegador con lado de 3508 px de partida y entrega solo con sesión, auditada (H18)

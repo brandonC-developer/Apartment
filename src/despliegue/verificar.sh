@@ -60,11 +60,15 @@ for ataque in "/static../etc/passwd" "/static/../etc/passwd" "/static/%2e%2e/%2e
 done
 prueba "los documentos privados no se sirven por /static/" '[ "$(curl -ks -o /dev/null -w "%{http_code}" https://localhost/static/cedulas/x.jpg)" = "404" ]'
 
+echo; echo "== Proceso diario (RF-11, RNF-16)"
+prueba "el temporizador del proceso diario está activo" 'systemctl is-active --quiet sga-proceso-diario.timer'
+prueba "el proceso diario corre como sga_app y dos ejecuciones terminan bien" 'for i in 1 2; do runuser -u sga_app -- env $(grep -v "^#" /etc/sga/entorno | xargs) /opt/sga/venv/bin/python /opt/sga/src/manage.py ejecutar_proceso_diario || exit 1; done'
+
 echo; echo "== Limpieza de la cuenta de prueba"
-runuser -u postgres -- psql -X -q -d sga -c "TRUNCATE cuentas_administrador, nucleo_auditoria, inquilinos_accesodocumento, inquilinos_documentoidentidad, inquilinos_consentimiento, inquilinos_textoconsentimiento, inquilinos_inquilino CASCADE; DELETE FROM django_session" >/dev/null && rm -rf /var/lib/sga/documentos/cedulas && ok "datos de prueba y archivos borrados" || mal "no se borraron los datos de prueba"
+runuser -u postgres -- psql -X -q -d sga -c "TRUNCATE cuentas_administrador, nucleo_auditoria, alquileres_ejecucionproceso, inquilinos_accesodocumento, inquilinos_documentoidentidad, inquilinos_consentimiento, inquilinos_textoconsentimiento, inquilinos_inquilino CASCADE; DELETE FROM django_session" >/dev/null && rm -rf /var/lib/sga/documentos/cedulas && ok "datos de prueba y archivos borrados" || mal "no se borraron los datos de prueba"
 
 echo; echo "== systemd-analyze security (informativo, ADR-032 d4)"
-for unidad in sga-gunicorn.service sga-respaldo.service; do
+for unidad in sga-gunicorn.service sga-respaldo.service sga-proceso-diario.service; do
   [ -f "/etc/systemd/system/$unidad" ] && systemd-analyze security "$unidad" --no-pager 2>/dev/null | tail -1 | sed "s/^/$unidad: /"
 done
 

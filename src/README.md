@@ -110,3 +110,6 @@ Aplicación `alquileres` (propiedades, contratos, condiciones, obligaciones, aju
 
 ## E2, grupo D: reajuste y corrección (actualización 2026-10-26j)
 `alquileres/condiciones.py`: `reajustar_contrato`, `corregir_contrato` y `ajustar_manualmente`. Todo cambio de importe es un ajuste inmutable y todo cambio de condiciones una fila nueva; el importe vigente se deriva (`selectors.importe_vigente`, `historial_de_importes`). Una corrección actualiza también `fecha_vencimiento` y `fecha_limite` de las obligaciones no pagadas (decisión 3 de la E2; el valor anterior queda en la auditoría). 622 pruebas en Windows; 611 en WSL.
+
+## E2, grupo E: obligaciones y proceso diario (actualización 2026-10-26k)
+`alquileres/obligaciones.py` (`generar_obligaciones`, idempotente y segura en paralelo; `registrar_saldo_de_apertura`), `proceso.py` y `python manage.py ejecutar_proceso_diario` (registra cada ejecución en `EjecucionProceso`; sale con error si falló). `selectors.estado_de_la_obligacion` deriva pendiente, vencida, pagada o anulada con la fecha local. En WSL el temporizador `sga-proceso-diario.timer` corre a las 07:00 de Costa Rica. 676 pruebas en Windows; 665 en WSL.
