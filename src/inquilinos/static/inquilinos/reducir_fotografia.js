@@ -78,12 +78,13 @@
     });
   }
 
-  function reducir(archivo) {
+  function reducir(archivo, ladoMaximo) {
+    var ladoDePartida = ladoMaximo || LADO_MAXIMO;
     if (!puedeReducir()) { return Promise.reject(new Error('Este navegador no puede reducir imágenes')); }
     return decodificar(archivo).then(function (imagen) {
       var medidas = anchoYAlto(imagen);
       if (!medidas.ancho || !medidas.alto) { throw new Error('Imagen sin tamaño'); }
-      var escala = Math.min(1, LADO_MAXIMO / Math.max(medidas.ancho, medidas.alto));  // nunca se amplía
+      var escala = Math.min(1, ladoDePartida / Math.max(medidas.ancho, medidas.alto));  // nunca se amplía
       var ancho = Math.max(1, Math.round(medidas.ancho * escala));
       var alto = Math.max(1, Math.round(medidas.alto * escala));
       var estado = { blob: null, calidad: CALIDADES[0], ancho: ancho, alto: alto };
@@ -122,8 +123,8 @@
     });
   }
 
-  function prepararEnvio(archivo) {
-    return reducir(archivo).catch(function () {
+  function prepararEnvio(archivo, ladoMaximo) {
+    return reducir(archivo, ladoMaximo).catch(function () {
       if (TIPOS_ADMITIDOS.indexOf(archivo.type) !== -1 && archivo.size <= LIMITE_BYTES) {
         return { blob: archivo, ancho: 0, alto: 0, calidad: 0, original: true };
       }
@@ -147,6 +148,13 @@
     return partes.length ? partes.join(' ') : 'No se pudo guardar la fotografía.';
   }
 
+  // La fotografía del contrato parte de un lado mayor de 3508 px (RF-52, DP-29): el formulario lo declara en
+  // `data-lado-maximo`. Un valor ausente o fuera de rango se ignora y rige el de la cédula.
+  function ladoDelFormulario(formulario) {
+    var valor = parseInt(formulario.getAttribute('data-lado-maximo'), 10);
+    return valor >= LADO_MINIMO && valor <= 8000 ? valor : LADO_MAXIMO;
+  }
+
   function enlazar(formulario) {
     formulario.addEventListener('submit', function (evento) {
       evento.preventDefault();
@@ -154,7 +162,7 @@
       var archivo = entrada && entrada.files && entrada.files[0];
       if (!archivo) { mostrar(formulario, 'Elija una fotografía.', 'sin-enviar'); return; }
       mostrar(formulario, 'Preparando la fotografía…', 'preparando');
-      prepararEnvio(archivo).then(function (resultado) {
+      prepararEnvio(archivo, ladoDelFormulario(formulario)).then(function (resultado) {
         var datos = new window.FormData();
         datos.append('archivo', resultado.blob, resultado.original ? archivo.name : 'documento.jpg');
         var token = formulario.querySelector('input[name="csrfmiddlewaretoken"]');

@@ -113,3 +113,6 @@ Aplicación `alquileres` (propiedades, contratos, condiciones, obligaciones, aju
 
 ## E2, grupo E: obligaciones y proceso diario (actualización 2026-10-26k)
 `alquileres/obligaciones.py` (`generar_obligaciones`, idempotente y segura en paralelo; `registrar_saldo_de_apertura`), `proceso.py` y `python manage.py ejecutar_proceso_diario` (registra cada ejecución en `EjecucionProceso`; sale con error si falló). `selectors.estado_de_la_obligacion` deriva pendiente, vencida, pagada o anulada con la fecha local. En WSL el temporizador `sga-proceso-diario.timer` corre a las 07:00 de Costa Rica. 676 pruebas en Windows; 665 en WSL.
+
+## E2, grupo F: fotografías del contrato y cédula desde el perfil (actualización 2026-10-27a)
+`alquileres/fotografias.py` (subida de una fotografía del contrato, hasta 10; cédula desde la propiedad), `views.py` y `urls.py` (subida de un archivo por petición y entrega solo con sesión, auditada en `AccesoDocumentoContrato`). Los archivos del contrato van a la subcarpeta privada `contratos`. El script de reducción lee `data-lado-maximo` del formulario: 3508 px para el contrato, 2048 px para la cédula. 731 pruebas en Windows; 717 en WSL.

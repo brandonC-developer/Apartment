@@ -345,6 +345,6 @@ class NginxTests(TestCase):
         sitio = (Path(settings.BASE_DIR) / 'despliegue/nginx/sga-sitio.conf').read_text(encoding='utf-8')
         self.assertEqual(sitio.count('client_max_body_size 6m;'), 1)
         self.assertIn('client_max_body_size 1m;', sitio)
-        bloque = sitio.split('location ~ ^/inquilinos/[0-9]+/fotografias/(frente|reverso)/$ {')[1].split('}')[0]
+        bloque = sitio.split('location ~ ^/(inquilinos/[0-9]+/fotografias/(frente|reverso)|contratos/[0-9]+/fotografias/subir|propiedades/[0-9]+/cedula/(frente|reverso))/$ {')[1].split('}')[0]
         self.assertIn('client_max_body_size 6m;', bloque)
         self.assertIn('sga-proxy.conf', bloque)

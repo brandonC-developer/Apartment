@@ -7,12 +7,15 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from . import movimientos
-from .models import AjusteObligacion, Contrato, Propiedad
+from inquilinos.models import DocumentoIdentidad
+
+from .models import MAXIMO_DE_FOTOGRAFIAS_POR_CONTRATO, AjusteObligacion, Contrato, DocumentoContrato, Propiedad
 
 PENDIENTE, VENCIDA, PAGADA, ANULADA = 'pendiente', 'vencida', 'pagada', 'anulada'  # estados de la obligación (RF-14)
 FUTURO, VIGENTE, POR_DECIDIR, FINALIZADO, ANULADO = 'futuro', 'vigente', 'por_decidir', 'finalizado', 'anulado'
 ESTADOS_DE_CONTRATO = (FUTURO, VIGENTE, POR_DECIDIR, FINALIZADO, ANULADO)
 DISPONIBLE, OCUPADA, INACTIVA = 'disponible', 'ocupada', 'inactiva'
+AVISO_SIN_CONTRATO_VIGENTE = 'No hay contrato vigente.'  # RF-51, CA-75
 ESTADOS_QUE_OCUPAN = (FUTURO, VIGENTE, POR_DECIDIR)  # RF-06: no se inactiva la propiedad ni se desactiva al inquilino
 
 
@@ -77,6 +80,26 @@ def estado_de_la_propiedad(propiedad, hoy=None):
 def contrato_vigente_de_la_propiedad(propiedad, hoy=None):
     """El contrato vigente (o por decidir) de la propiedad, o None; la cédula y el contrato se agregan desde su perfil (RF-51)."""
     return contratos_en_estado(VIGENTE, POR_DECIDIR, hoy=hoy, propiedad=propiedad).first()
+
+
+def cedula_en_el_perfil(propiedad, hoy=None):
+    """Lo que el perfil de la propiedad ofrece de la cédula del inquilino del contrato vigente (RF-51, CA-75): por cada
+    cara, la acción «Agregar» o «Reemplazar» según haya una fotografía activa; sin contrato vigente (libre o solo con
+    un contrato futuro) la acción está desactivada con el aviso «No hay contrato vigente»."""
+    contrato = contrato_vigente_de_la_propiedad(propiedad, hoy)
+    if contrato is None:
+        return {'habilitada': False, 'aviso': AVISO_SIN_CONTRATO_VIGENTE, 'contrato': None, 'caras': []}
+    activas = {d.cara: d for d in DocumentoIdentidad.objects.filter(inquilino_id=contrato.inquilino_id, eliminado_en__isnull=True)}
+    caras = [{'cara': cara, 'accion': 'Reemplazar' if cara in activas else 'Agregar',
+              'documento_id': activas[cara].pk if cara in activas else None}
+             for cara in (DocumentoIdentidad.FRENTE, DocumentoIdentidad.REVERSO)]
+    return {'habilitada': True, 'aviso': '', 'contrato': contrato, 'caras': caras}
+
+
+def fotografias_del_contrato(contrato):
+    """Las fotografías del contrato, en su orden, y cuántas caben todavía (RF-52, CA-76)."""
+    documentos = list(DocumentoContrato.objects.filter(contrato=contrato).order_by('orden'))
+    return {'documentos': documentos, 'restantes': MAXIMO_DE_FOTOGRAFIAS_POR_CONTRATO - len(documentos)}
 
 
 def listar_propiedades(*, busqueda=None, incluir_inactivas=True):

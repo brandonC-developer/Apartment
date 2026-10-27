@@ -1,0 +1,24 @@
+{% extends "cuentas/base.html" %}
+{% load static %}
+{% block titulo %}Cédula del inquilino{% endblock %}
+{% block contenido %}
+<h1>Cédula del inquilino de {{ propiedad.alias }}</h1>
+<noscript><p role="alert">Esta página necesita JavaScript para preparar las fotografías antes de enviarlas.</p></noscript>
+{% if not cedula.habilitada %}
+  <p><button type="button" disabled>Agregar</button> <span role="status">{{ cedula.aviso }}</span></p>
+{% else %}
+  {% for item in cedula.caras %}
+  <section>
+    <h2>{% if item.cara == "frente" %}Frente{% else %}Reverso{% endif %}</h2>
+    {% if item.documento_id %}<p><a href="{% url 'inquilinos:ver_documento' item.documento_id %}">Ver</a></p>{% endif %}
+    <form method="post" action="{% url 'alquileres:subir_cedula_propiedad' propiedad.pk item.cara %}" enctype="multipart/form-data" data-sga-fotografia data-cara="{{ item.cara }}">
+      {% csrf_token %}
+      <p><label>{{ item.accion }} <input type="file" name="archivo" accept="image/jpeg,image/png"></label></p>
+      <button type="submit">{{ item.accion }}</button>
+      <p role="status" aria-live="polite" data-sga-mensaje></p>
+    </form>
+  </section>
+  {% endfor %}
+{% endif %}
+<script src="{% static 'inquilinos/reducir_fotografia.js' %}" defer></script>
+{% endblock %}

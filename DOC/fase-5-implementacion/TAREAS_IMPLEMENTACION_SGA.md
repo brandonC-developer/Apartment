@@ -278,7 +278,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] Medir con fotos reales (un iPhone y dos Android) los metadatos que deja la reducción y registrar el resultado (CA-82, DP-29)
 - [ ] Fijar las cifras de reducción de la fotografía del contrato (DP-29; hoy parten de 3508 px y calidad 0,85)
 - [x] CA-67 completo: rechazo de contratos nuevos con un inquilino que revocó el consentimiento (HI-04): `crear_contrato` lo rechaza y lo prueba (actualización 2026-10-26i)
-- [ ] CA-75 y CA-78 (cédula desde el perfil de la propiedad y contrato rechazado sin frente) (HI-08): **CA-78 ya se rechaza y se prueba en el servicio** (actualización 2026-10-26i); CA-75 es del grupo F
+- [x] CA-75 y CA-78 (cédula desde el perfil de la propiedad y contrato rechazado sin frente) (HI-08): **CA-78 ya se rechaza y se prueba en el servicio** (actualización 2026-10-26i); CA-75 se rechaza y se prueba desde el grupo F (actualización 2026-10-27a)
 
 ### Plan de trabajo de la E2 (propuesta del asistente derivada de los RF, RN, CA, el modelo de datos v0.7 y el diseño técnico; sin aprobar)
 **A. Modelos y esquema** (MDD v0.7; ADR-027, ADR-028, ADR-030, ADR-031)
@@ -309,8 +309,8 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Comando del proceso diario con `EjecucionProceso` y su unidad `systemd` con temporizador (propuesta); dos ejecuciones sin duplicados (criterio de salida): `ejecutar_proceso_diario`, `sga-proceso-diario.timer` a las 07:00
 
 **F. Fotografías del contrato y cédula desde el perfil** (RF-51, RF-52; CA-75, CA-76, CA-77, CA-82)
-- [ ] Fotografía del contrato: hasta 10, bloqueo de la fila del contrato, reducción en el navegador con lado de 3508 px de partida y entrega solo con sesión, auditada (H18)
-- [ ] Cédula desde el perfil de la propiedad, con «Reemplazar» y acción desactivada sin contrato vigente
+- [x] Fotografía del contrato: hasta 10, bloqueo de la fila del contrato, reducción en el navegador con lado de 3508 px de partida y entrega solo con sesión, auditada (H18): `fotografias.subir_fotografia_del_contrato`; la número 11 se rechaza (actualización 2026-10-27a)
+- [x] Cédula desde el perfil de la propiedad, con «Reemplazar» y acción desactivada sin contrato vigente: `fotografias.subir_cedula_desde_la_propiedad` y `selectors.cedula_en_el_perfil`
 
 **G. Pantallas** (como en la E1: funcionales y accesibles, sin estilos)
 - [ ] Propiedades y su perfil, contratos y sus condiciones, obligaciones por contrato, saldo de apertura, reajuste y corrección

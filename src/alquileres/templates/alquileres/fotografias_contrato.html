@@ -1,0 +1,25 @@
+{% extends "cuentas/base.html" %}
+{% load static %}
+{% block titulo %}Fotografías del contrato{% endblock %}
+{% block contenido %}
+<h1>Fotografías del contrato</h1>
+<noscript><p role="alert">Esta página necesita JavaScript para preparar las fotografías antes de enviarlas.</p></noscript>
+{% if contrato.anulado_en %}<p role="alert">El contrato está anulado: no se pueden agregar fotografías.</p>{% endif %}
+<p>{{ documentos|length }} de 10 fotografías.{% if restantes > 0 %} Caben {{ restantes }} más.{% else %} Se llegó al máximo.{% endif %}</p>
+<ol>
+{% for documento in documentos %}
+  <li>Fotografía {{ documento.orden }}: <a href="{% url 'alquileres:ver_fotografia_contrato' documento.pk %}">Ver</a> · <a href="{% url 'alquileres:descargar_fotografia_contrato' documento.pk %}">Descargar</a></li>
+{% empty %}
+  <li>Todavía no hay fotografías del contrato.</li>
+{% endfor %}
+</ol>
+{% if not contrato.anulado_en and restantes > 0 %}
+<form method="post" action="{% url 'alquileres:subir_fotografia_contrato' contrato.pk %}" enctype="multipart/form-data" data-sga-fotografia data-lado-maximo="{{ lado_de_partida }}">
+  {% csrf_token %}
+  <p><label>Agregar una fotografía del contrato <input type="file" name="archivo" accept="image/jpeg,image/png"></label></p>
+  <button type="submit">Enviar</button>
+  <p role="status" aria-live="polite" data-sga-mensaje></p>
+</form>
+{% endif %}
+<script src="{% static 'inquilinos/reducir_fotografia.js' %}" defer></script>
+{% endblock %}
