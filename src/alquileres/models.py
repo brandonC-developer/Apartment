@@ -154,8 +154,12 @@ class CondicionContrato(RegistroProtegido):
 
 class Obligacion(RegistroProtegido):
     """Entidad OBLIGACION (RF-11 a RF-15, RF-43, RN-04, RN-05, RN-12, RN-13). `importe_inicial` no se modifica
-    nunca; solo se completa una vez la anulación. Saldo, importe vigente y estado se derivan."""
-    CAMPOS_ACTUALIZABLES = ('anulada_en', 'motivo_anulacion')
+    nunca; solo se completa una vez la anulación. Saldo, importe vigente y estado se derivan.
+
+    `fecha_vencimiento` y `fecha_limite` se pueden actualizar en una corrección retroactiva (RF-10, CA-22): decisión 3
+    de la E2, 26-oct-2026. El valor anterior y el nuevo constan en la auditoría. Es la única excepción a la
+    inmutabilidad de estas filas, además de la anulación."""
+    CAMPOS_ACTUALIZABLES = ('anulada_en', 'motivo_anulacion', 'fecha_vencimiento', 'fecha_limite')
     REGULAR, APERTURA = 'regular', 'apertura'
     TIPOS = [(REGULAR, 'Regular'), (APERTURA, 'Saldo de apertura')]
 

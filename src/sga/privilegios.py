@@ -44,8 +44,9 @@ PRIVILEGIOS = {
     'alquileres_contrato': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('fecha_fin', 'cerrado_en', 'anulado_en', 'motivo_anulacion')}},
     # El historial de condiciones no se edita: una corrección es una fila nueva (ADR-014).
     'alquileres_condicioncontrato': {'tabla': ('SELECT', 'INSERT')},
-    # `importe_inicial` no se actualiza nunca (R12); solo se completa la anulación, una vez.
-    'alquileres_obligacion': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('anulada_en', 'motivo_anulacion')}},
+    # `importe_inicial` no se actualiza nunca (R12); se completa la anulación, una vez, y las dos fechas de pago se
+    # corrigen solo en una corrección retroactiva, con auditoría (decisión 3 de la E2).
+    'alquileres_obligacion': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('anulada_en', 'motivo_anulacion', 'fecha_vencimiento', 'fecha_limite')}},
     # R12: los ajustes de importe son solo inserción (ADR-016).
     'alquileres_ajusteobligacion': {'tabla': ('SELECT', 'INSERT')},
     # Sin eliminado_en: la conservación depende de DP-28 (abierta).

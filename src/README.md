@@ -107,3 +107,6 @@ Aplicación `alquileres` (propiedades, contratos, condiciones, obligaciones, aju
 
 ## E2, grupo C: propiedades y contratos (actualización 2026-10-26i)
 `alquileres/services.py` (escritura), `selectors.py` (estados y consultas), `movimientos.py` (punto de extensión que la E3 reemplaza con `movimientos.usar(proveedor)`) y `bloqueos.py` (se registra en `inquilinos.bloqueos` al arrancar). Los errores de datos son `inquilinos.services.ErrorDeValidacion`. Las operaciones reciben `ahora` para poder probarlas con fechas fijas; el «hoy» sale de él en la zona horaria activa. 575 pruebas en Windows; 564 en WSL.
+
+## E2, grupo D: reajuste y corrección (actualización 2026-10-26j)
+`alquileres/condiciones.py`: `reajustar_contrato`, `corregir_contrato` y `ajustar_manualmente`. Todo cambio de importe es un ajuste inmutable y todo cambio de condiciones una fila nueva; el importe vigente se deriva (`selectors.importe_vigente`, `historial_de_importes`). Una corrección actualiza también `fecha_vencimiento` y `fecha_limite` de las obligaciones no pagadas (decisión 3 de la E2; el valor anterior queda en la auditoría). 622 pruebas en Windows; 611 en WSL.

@@ -85,6 +85,25 @@ def listar_propiedades(*, busqueda=None, incluir_inactivas=True):
     return propiedades if incluir_inactivas else propiedades.filter(inactiva=False)
 
 
+def condicion_vigente_en(contrato, fecha):
+    """La condición del contrato que rige en una fecha: la de mayor `vigente_desde` que no la supere; en un empate,
+    la registrada después (propuesta, ver `calculo.condicion_aplicable`)."""
+    from . import calculo
+    return calculo.condicion_aplicable(list(contrato.condiciones.all()), fecha)
+
+
+def historial_de_importes(obligacion):
+    """El importe de la obligación paso a paso: el inicial y cada ajuste con su importe anterior y el nuevo, para
+    reconstruir los valores sin que ninguno se haya sobrescrito (CA-22, CA-55, ADR-016)."""
+    pasos, actual = [], obligacion.importe_inicial
+    pasos.append({'registrado_en': obligacion.creado_en, 'tipo': 'inicial', 'motivo': '', 'anterior': None, 'nuevo': actual})
+    for ajuste in AjusteObligacion.objects.filter(obligacion=obligacion).order_by('registrado_en', 'id'):
+        pasos.append({'registrado_en': ajuste.registrado_en, 'tipo': ajuste.tipo, 'motivo': ajuste.motivo,
+                      'anterior': actual, 'nuevo': actual + ajuste.importe_delta})
+        actual += ajuste.importe_delta
+    return pasos
+
+
 def importe_vigente(obligacion):
     """Importe exigible vigente: el inicial más la suma de sus ajustes (MDD sección 5, RF-10)."""
     suma = AjusteObligacion.objects.filter(obligacion=obligacion).aggregate(total=Coalesce(Sum('importe_delta'), Decimal('0')))

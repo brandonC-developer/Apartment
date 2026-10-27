@@ -158,9 +158,10 @@ class RolesYPrivilegiosTests(TestCase):
             self.rechazado('app', f'DELETE FROM {tabla}')
             self.rechazado('app', f'TRUNCATE {tabla}')
 
-    def test_de_la_obligacion_solo_se_completa_la_anulacion_y_el_importe_inicial_no_cambia(self):
-        self.como('app', 'UPDATE alquileres_obligacion SET anulada_en = anulada_en, motivo_anulacion = motivo_anulacion')
-        for columna in ('importe_inicial', 'fecha_vencimiento', 'fecha_limite', 'periodo_inicio', 'contrato_id', 'moneda'):
+    def test_de_la_obligacion_solo_cambian_la_anulacion_y_las_fechas_de_pago_y_el_importe_inicial_no(self):
+        self.como('app', 'UPDATE alquileres_obligacion SET anulada_en = anulada_en, motivo_anulacion = motivo_anulacion, '
+                         'fecha_vencimiento = fecha_vencimiento, fecha_limite = fecha_limite')
+        for columna in ('importe_inicial', 'periodo_inicio', 'periodo_fin', 'contrato_id', 'moneda', 'tipo', 'datos_calculo'):
             self.rechazado('app', f'UPDATE alquileres_obligacion SET {columna} = {columna}')
         self.rechazado('app', 'DELETE FROM alquileres_obligacion')
 

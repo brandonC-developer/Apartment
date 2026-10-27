@@ -111,16 +111,22 @@ def _validar_propiedad(datos, *, parciales=False, excluir_id=None):
     return limpios
 
 
-def _validar_condiciones(datos, fecha_inicio, errores):
-    """Monto, día de vencimiento y días de gracia (R3). El día de vencimiento, por omisión, es el de inicio (DP-24)."""
-    monto = _decimal(datos.get('monto_mensual'), 'monto_mensual', errores)
+def _validar_monto(valor, errores, campo='monto_mensual'):
+    """Un monto mayor que cero, con hasta dos decimales y 12 cifras enteras (R3; `numeric(14,2)`)."""
+    monto = _decimal(valor, campo, errores)
     if monto is not None:
         if monto <= 0:
-            errores['monto_mensual'] = ['El monto mensual debe ser mayor que cero.']
+            errores[campo] = ['El monto debe ser mayor que cero.']
             monto = None
         elif monto != monto.quantize(Decimal('0.01')) or abs(monto) >= Decimal(10) ** 12:
-            errores['monto_mensual'] = ['El monto admite hasta dos decimales y no más de 12 cifras enteras.']
+            errores[campo] = ['El monto admite hasta dos decimales y no más de 12 cifras enteras.']
             monto = None
+    return monto
+
+
+def _validar_condiciones(datos, fecha_inicio, errores):
+    """Monto, día de vencimiento y días de gracia (R3). El día de vencimiento, por omisión, es el de inicio (DP-24)."""
+    monto = _validar_monto(datos.get('monto_mensual'), errores)
     dia = datos.get('dia_vencimiento')
     if dia in (None, ''):
         dia = fecha_inicio.day if fecha_inicio else None

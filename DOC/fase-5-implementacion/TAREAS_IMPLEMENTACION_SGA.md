@@ -299,8 +299,8 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Registrar en `inquilinos.bloqueos` el motivo real «contrato vigente o futuro» (CA-29, parte de la E2): se registra al arrancar la aplicación; bloquea con contrato futuro, vigente o por decidir (los futuros, propuesta); **la aceptación escrita del solicitante para el bloqueo por saldos de la E3 sigue pendiente al cierre**
 
 **D. Reajuste y corrección** (RF-10; RN-14)
-- [ ] Reajuste con fecha efectiva al inicio del período siguiente, tope digitado con su fuente, advertencia sin bloqueo y rechazo en moneda extranjera (CA-12, CA-39, CA-51)
-- [ ] Corrección retroactiva con motivo y ajustes inmutables; bloqueo si el importe queda bajo lo abonado (CA-22, CA-40, CA-55)
+- [x] Reajuste con fecha efectiva al inicio del período siguiente, tope digitado con su fuente, advertencia sin bloqueo y rechazo en moneda extranjera (CA-12, CA-39, CA-51): `condiciones.reajustar_contrato`; el porcentaje se calcula con fracciones exactas y 4 decimales; en vivienda el tope y la fuente son obligatorios y superarlo solo advierte; las obligaciones pagadas no se tocan (actualización 2026-10-26j)
+- [x] Corrección retroactiva con motivo y ajustes inmutables; bloqueo si el importe queda bajo lo abonado (CA-22, CA-40, CA-55): `condiciones.corregir_contrato` (monto, día de vencimiento y días de gracia) y `ajustar_manualmente` (RF-09); **por la decisión 3 de la E2 las fechas de vencimiento y límite de las no pagadas se actualizan con auditoría del valor anterior y el nuevo**; el historial de importes se reconstruye con `selectors.historial_de_importes`; un error en el período (la fecha de inicio) **no** se corrige aquí
 
 **E. Obligaciones y proceso diario** (RF-11, RF-12, RF-14, RF-42, RF-43; RNF-04, RNF-16)
 - [ ] Generación 30 días antes del período para contratos futuros, vigentes y por decidir, idempotente y segura en paralelo (CA-03, CA-30, CA-14, CA-36, CA-50)
@@ -323,6 +323,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 **Decisiones del solicitante de la E2 (26-oct-2026; actualización 2026-10-26f)**
 1. **Acceso a la fotografía del contrato:** tabla propia `AccesoDocumentoContrato` en `alquileres`, con clave foránea al `DocumentoContrato` y solo inserción; la cédula sigue en `inquilinos.AccesoDocumento`. R23 se cumple por construcción (cada tabla tiene una sola clave foránea). Descartadas: aplicación neutra con referencia genérica y referencia sin clave foránea.
 2. **Renovación del contrato (actualización 2026-10-26i):** renovar es cambiar la fecha de fin del mismo contrato a una posterior o quitarla, con motivo y auditoría; se rechaza si el contrato está anulado o cerrado, si ya es abierto o si el cambio solapa con otro. Descartadas: contrato nuevo contiguo y no implementar la renovación.
+3. **Fechas de las obligaciones en una corrección (actualización 2026-10-26j):** se actualizan `fecha_vencimiento` y `fecha_limite` de las obligaciones no pagadas, no anuladas y de períodos desde la fecha efectiva, con auditoría del valor anterior y el nuevo; el importe inicial sigue inmutable. Descartadas: que solo rija para las obligaciones nuevas y anular y regenerar.
 
 ### Requisitos funcionales
 
