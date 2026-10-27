@@ -43,6 +43,12 @@ def _sumar_meses(anio, mes, meses):
     return indice // 12, indice % 12 + 1
 
 
+def mas_meses(fecha, meses):
+    """La misma fecha `meses` meses después, o el último día de ese mes si no existe (29 de febrero más un año = 28)."""
+    anio, mes = _sumar_meses(fecha.year, fecha.month, meses)
+    return _con_dia(anio, mes, fecha.day)
+
+
 def _inicio_del_periodo(fecha_inicio, numero):
     anio, mes = _sumar_meses(fecha_inicio.year, fecha_inicio.month, numero)
     return _con_dia(anio, mes, fecha_inicio.day)

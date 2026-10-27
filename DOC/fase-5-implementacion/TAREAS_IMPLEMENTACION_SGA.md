@@ -277,8 +277,8 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [ ] Casos de fin de mes, año bisiesto, prorrateo y días de gracia pasan (criterio de salida)
 - [ ] Medir con fotos reales (un iPhone y dos Android) los metadatos que deja la reducción y registrar el resultado (CA-82, DP-29)
 - [ ] Fijar las cifras de reducción de la fotografía del contrato (DP-29; hoy parten de 3508 px y calidad 0,85)
-- [ ] CA-67 completo: rechazo de contratos nuevos con un inquilino que revocó el consentimiento (HI-04)
-- [ ] CA-75 y CA-78 (cédula desde el perfil de la propiedad y contrato rechazado sin frente) (HI-08)
+- [x] CA-67 completo: rechazo de contratos nuevos con un inquilino que revocó el consentimiento (HI-04): `crear_contrato` lo rechaza y lo prueba (actualización 2026-10-26i)
+- [ ] CA-75 y CA-78 (cédula desde el perfil de la propiedad y contrato rechazado sin frente) (HI-08): **CA-78 ya se rechaza y se prueba en el servicio** (actualización 2026-10-26i); CA-75 es del grupo F
 
 ### Plan de trabajo de la E2 (propuesta del asistente derivada de los RF, RN, CA, el modelo de datos v0.7 y el diseño técnico; sin aprobar)
 **A. Modelos y esquema** (MDD v0.7; ADR-027, ADR-028, ADR-030, ADR-031)
@@ -291,12 +291,12 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 - [x] Cálculo guardado en `datos_calculo` para reconstruir la regla (RN-13): `Prorrateo.datos_calculo()` devuelve la regla, los días cobrables y del período, el importe previo (cociente exacto con 6 decimales) y el final
 
 **C. Propiedades y contratos** (RF-06 a RF-09, RF-36, RF-48; RN-02, RN-30)
-- [ ] Servicios de propiedad: alias único, inactiva con bloqueo si hay contrato vigente, futuro o por decidir, y sin contratos nuevos mientras esté inactiva (CA-63)
-- [ ] Crear contrato: frente cargado (R26), solape (R2), advertencia por vigencia menor de tres años, condición inicial, auditoría (CA-02, CA-78, CA-32)
-- [ ] Rechazar contratos nuevos con un inquilino que revocó el consentimiento (CA-67 completo, HI-04)
-- [ ] Estado derivado del contrato y de la propiedad (futuro, vigente, por decidir, finalizado, anulado)
-- [ ] Finalizar contrato con prorrateo y anulación de obligaciones futuras sin movimientos; anular contrato sin movimientos; sustituir inquilino (CA-24, CA-31, CA-62)
-- [ ] Registrar en `inquilinos.bloqueos` el motivo real «contrato vigente o futuro» (CA-29, parte de la E2)
+- [x] Servicios de propiedad: alias único, inactiva con bloqueo si hay contrato vigente, futuro o por decidir, y sin contratos nuevos mientras esté inactiva (CA-63): alias sin distinguir mayúsculas (propuesta), dirección y descripción sin valor en la auditoría
+- [x] Crear contrato: frente cargado (R26), solape (R2), advertencia por vigencia menor de tres años, condición inicial, auditoría (CA-02, CA-78, CA-32): todos los motivos de rechazo a la vez; la comprobación previa del solape dice con qué contrato choca y la restricción de la base es la última defensa; el depósito (RF-07, «cuando corresponda») es de la E3
+- [x] Rechazar contratos nuevos con un inquilino que revocó el consentimiento (CA-67 completo, HI-04)
+- [x] Estado derivado del contrato y de la propiedad (futuro, vigente, por decidir, finalizado, anulado): nueva marca `cerrado_en` (propuesta) para distinguir finalizado de por decidir; la consulta por estado y el estado de un contrato coinciden en los nueve casos probados
+- [x] Finalizar contrato con prorrateo y anulación de obligaciones futuras sin movimientos; anular contrato sin movimientos; sustituir inquilino (CA-24, CA-31, CA-62), **y renovar cambiando la fecha de fin del mismo contrato (decisión 2 de la E2)**; los movimientos de la E3 se consultan por un proveedor reemplazable (`alquileres/movimientos.py`)
+- [x] Registrar en `inquilinos.bloqueos` el motivo real «contrato vigente o futuro» (CA-29, parte de la E2): se registra al arrancar la aplicación; bloquea con contrato futuro, vigente o por decidir (los futuros, propuesta); **la aceptación escrita del solicitante para el bloqueo por saldos de la E3 sigue pendiente al cierre**
 
 **D. Reajuste y corrección** (RF-10; RN-14)
 - [ ] Reajuste con fecha efectiva al inicio del período siguiente, tope digitado con su fuente, advertencia sin bloqueo y rechazo en moneda extranjera (CA-12, CA-39, CA-51)
@@ -322,6 +322,7 @@ Plan, sección 3.1. Una entrega no se da por terminada si falta alguna.
 
 **Decisiones del solicitante de la E2 (26-oct-2026; actualización 2026-10-26f)**
 1. **Acceso a la fotografía del contrato:** tabla propia `AccesoDocumentoContrato` en `alquileres`, con clave foránea al `DocumentoContrato` y solo inserción; la cédula sigue en `inquilinos.AccesoDocumento`. R23 se cumple por construcción (cada tabla tiene una sola clave foránea). Descartadas: aplicación neutra con referencia genérica y referencia sin clave foránea.
+2. **Renovación del contrato (actualización 2026-10-26i):** renovar es cambiar la fecha de fin del mismo contrato a una posterior o quitarla, con motivo y auditoría; se rechaza si el contrato está anulado o cerrado, si ya es abierto o si el cambio solapa con otro. Descartadas: contrato nuevo contiguo y no implementar la renovación.
 
 ### Requisitos funcionales
 

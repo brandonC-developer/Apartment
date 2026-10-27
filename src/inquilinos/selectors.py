@@ -67,3 +67,8 @@ def obtener_ficha(inquilino_id):
         'reverso': documentos.get(DocumentoIdentidad.REVERSO),
         'falta_frente': DocumentoIdentidad.FRENTE not in documentos,
     }
+
+
+def tiene_frente(inquilino):
+    """¿Tiene el frente de la fotografía del documento activo? Sin él no se le puede crear un contrato (R26, RF-07, CA-78)."""
+    return inquilino.documentos.filter(cara=DocumentoIdentidad.FRENTE, eliminado_en__isnull=True).exists()

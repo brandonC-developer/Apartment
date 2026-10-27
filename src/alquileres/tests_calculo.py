@@ -93,6 +93,16 @@ class PeriodoTests(SimpleTestCase):
         self.assertEqual((primero.numero, primero.inicio), (5, d('2026-06-10')))
 
 
+class MasMesesTests(SimpleTestCase):
+    def test_suma_meses_y_recorta_al_ultimo_dia_si_no_existe(self):
+        self.assertEqual(calculo.mas_meses(d('2026-10-26'), 3), d('2027-01-26'))
+        self.assertEqual(calculo.mas_meses(d('2027-01-31'), 1), d('2027-02-28'))
+        self.assertEqual(calculo.mas_meses(d('2028-01-31'), 1), d('2028-02-29'))
+        self.assertEqual(calculo.mas_meses(d('2028-02-29'), 12), d('2029-02-28'))
+        self.assertEqual(calculo.mas_meses(d('2026-12-15'), 3), d('2027-03-15'))
+        self.assertEqual(calculo.mas_meses(d('2027-01-10'), 0), d('2027-01-10'))
+
+
 class VencimientoTests(SimpleTestCase):
     def test_el_dia_de_vencimiento_dentro_del_mes_de_inicio(self):
         self.assertEqual(vencimiento(periodo(d('2026-01-01'), 0), 5), d('2026-01-05'))

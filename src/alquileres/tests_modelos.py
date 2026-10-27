@@ -186,6 +186,31 @@ class ProteccionDelContratoTests(TestCase):
         self.assertEqual(c.motivo_anulacion, 'Error de captura')
 
 
+class CierreDelContratoTests(TestCase):
+    def test_un_contrato_cerrado_tiene_su_fecha_de_fin(self):
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            un_contrato(cerrado_en=AHORA)
+        un_contrato(fin=date(2026, 12, 31), cerrado_en=AHORA)
+
+    def test_el_cierre_se_completa_una_sola_vez_aunque_se_salte_django(self):
+        c = un_contrato(fin=date(2026, 12, 31))
+        c.cerrado_en = AHORA
+        c.save(update_fields=['cerrado_en'])
+        for sql in ('UPDATE alquileres_contrato SET cerrado_en = NULL WHERE id = %s',
+                    "UPDATE alquileres_contrato SET cerrado_en = now() WHERE id = %s"):
+            with self.assertRaises(IntegrityError, msg=sql), transaction.atomic(), connection.cursor() as cursor:
+                cursor.execute(sql, [c.pk])
+        c.refresh_from_db()
+        self.assertEqual(c.cerrado_en, AHORA)
+
+    def test_el_fin_de_un_contrato_cerrado_puede_corregirse_pero_el_cierre_no_cambia(self):
+        c = un_contrato(fin=date(2026, 12, 31), cerrado_en=AHORA)
+        c.fecha_fin = date(2026, 11, 30)
+        c.save(update_fields=['fecha_fin'])
+        c.refresh_from_db()
+        self.assertEqual((c.fecha_fin, c.cerrado_en), (date(2026, 11, 30), AHORA))
+
+
 class CondicionContratoTests(TestCase):
     def setUp(self):
         self.contrato = un_contrato()

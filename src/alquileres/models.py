@@ -47,8 +47,13 @@ class Propiedad(models.Model):
 
 class Contrato(RegistroProtegido):
     """Entidad CONTRATO (RF-07 a RF-10, RF-36, RF-48). Las condiciones económicas viven en `CondicionContrato`.
-    Solo cambian la fecha de fin (RF-09) y la anulación (RF-48, que se completa una sola vez)."""
-    CAMPOS_ACTUALIZABLES = ('fecha_fin', 'anulado_en', 'motivo_anulacion')
+    Solo cambian la fecha de fin (RF-09, y su renovación), el cierre y la anulación (RF-48); el cierre y la anulación
+    se completan una sola vez.
+
+    `cerrado_en` (propuesta del asistente, actualización 2026-10-26i) distingue un contrato *finalizado* (el
+    administrador registró su fin, RF-09) de uno *por decidir* (la fecha de fin pasó sin cierre ni renovación,
+    RF-42): sin esa marca el estado de RN-30 no se puede derivar."""
+    CAMPOS_ACTUALIZABLES = ('fecha_fin', 'cerrado_en', 'anulado_en', 'motivo_anulacion')
     VIVIENDA, OTRO = 'vivienda', 'otro'
     DESTINOS = [(VIVIENDA, 'Vivienda'), (OTRO, 'Otro')]  # OL-06, OL-08
 
@@ -58,6 +63,7 @@ class Contrato(RegistroProtegido):
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField(null=True, blank=True)  # inclusive (RN-02)
     moneda = models.CharField(max_length=3, choices=MONEDAS)
+    cerrado_en = models.DateTimeField(null=True, blank=True)
     anulado_en = models.DateTimeField(null=True, blank=True)
     motivo_anulacion = models.TextField(null=True, blank=True)
     creado_en = models.DateTimeField(auto_now_add=True)
@@ -83,6 +89,8 @@ class Contrato(RegistroProtegido):
             models.CheckConstraint(
                 name='contrato_fin_no_anterior_al_inicio',
                 condition=Q(fecha_fin__isnull=True) | Q(fecha_fin__gte=F('fecha_inicio'))),
+            # Un contrato cerrado tiene su fecha de fin.
+            models.CheckConstraint(name='contrato_cerrado_con_fin', condition=Q(cerrado_en__isnull=True) | Q(fecha_fin__isnull=False)),
             # R21: la anulación lleva su motivo, y sin anulación no hay motivo.
             models.CheckConstraint(
                 name='contrato_anulacion_con_motivo',

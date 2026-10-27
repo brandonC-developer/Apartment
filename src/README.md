@@ -104,3 +104,6 @@ Aplicación `alquileres` (propiedades, contratos, condiciones, obligaciones, aju
 
 ## E2, grupo B: cálculo de períodos y prorrateo (actualización 2026-10-26h)
 `alquileres/calculo.py` reúne las funciones puras de períodos, vencimientos, fecha límite, condición aplicable y prorrateo (RN-03, RN-05, RN-06, RN-12, RN-13). No usa la base ni el reloj: las fechas son `date` y los importes `Decimal` (un `float` se rechaza). El redondeo es siempre `ROUND_HALF_UP` y se hace una sola vez al final. 508 pruebas en Windows; 497 en WSL.
+
+## E2, grupo C: propiedades y contratos (actualización 2026-10-26i)
+`alquileres/services.py` (escritura), `selectors.py` (estados y consultas), `movimientos.py` (punto de extensión que la E3 reemplaza con `movimientos.usar(proveedor)`) y `bloqueos.py` (se registra en `inquilinos.bloqueos` al arrancar). Los errores de datos son `inquilinos.services.ErrorDeValidacion`. Las operaciones reciben `ahora` para poder probarlas con fechas fijas; el «hoy» sale de él en la zona horaria activa. 575 pruebas en Windows; 564 en WSL.

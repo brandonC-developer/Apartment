@@ -40,8 +40,8 @@ PRIVILEGIOS = {
     # --- alquileres (E2)
     # Sin DELETE: la propiedad se marca inactiva, no se borra (RF-06).
     'alquileres_propiedad': {'tabla': ('SELECT', 'INSERT', 'UPDATE')},
-    # Del contrato solo cambian la fecha de fin (RF-09) y la anulación, que se completa una sola vez (R21; disparador).
-    'alquileres_contrato': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('fecha_fin', 'anulado_en', 'motivo_anulacion')}},
+    # Del contrato solo cambian la fecha de fin (RF-09 y su renovación), el cierre y la anulación, que se completan una sola vez (R21; disparador).
+    'alquileres_contrato': {'tabla': ('SELECT', 'INSERT'), 'columnas': {'UPDATE': ('fecha_fin', 'cerrado_en', 'anulado_en', 'motivo_anulacion')}},
     # El historial de condiciones no se edita: una corrección es una fila nueva (ADR-014).
     'alquileres_condicioncontrato': {'tabla': ('SELECT', 'INSERT')},
     # `importe_inicial` no se actualiza nunca (R12); solo se completa la anulación, una vez.

@@ -144,7 +144,7 @@ class RolesYPrivilegiosTests(TestCase):
         self.rechazado('app', 'DELETE FROM alquileres_propiedad')
 
     def test_del_contrato_solo_cambian_la_fecha_de_fin_y_la_anulacion(self):
-        self.como('app', 'UPDATE alquileres_contrato SET fecha_fin = fecha_fin, anulado_en = anulado_en, motivo_anulacion = motivo_anulacion')
+        self.como('app', 'UPDATE alquileres_contrato SET fecha_fin = fecha_fin, cerrado_en = cerrado_en, anulado_en = anulado_en, motivo_anulacion = motivo_anulacion')
         for columna in ('fecha_inicio', 'moneda', 'propiedad_id', 'inquilino_id', 'destino'):
             self.rechazado('app', f'UPDATE alquileres_contrato SET {columna} = {columna}')
         self.rechazado('app', 'DELETE FROM alquileres_contrato')

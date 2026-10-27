@@ -18,6 +18,8 @@ CAMPOS_PERSONALES = frozenset({
     # Identidad y direcciones del responsable (ORGANIZACION): también datos personales.
     'nombre_responsable', 'direccion_responsable', 'correo_admin', 'correo_aviso_secundario',
     'telefono_whatsapp_admin',
+    # Propiedad (E2): la dirección y la descripción pueden identificar a una persona (propuesta, actualización 2026-10-26i).
+    'descripcion', 'direccion',
 })
 # Nunca se guardan sus valores: contraseñas, códigos, tokens y secretos.
 CAMPOS_SECRETOS = frozenset({
